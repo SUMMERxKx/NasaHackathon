@@ -275,15 +275,15 @@
     <table>
       <thead><tr><th>Screen</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td class="k">Brief</td><td>Habitat picker, Evidence Coverage dial with bars for prevention, detection and suppression, top insights, top five investigations, biggest gaps.</td></tr>
+        <tr><td class="k">Brief</td><td>Habitat picker, Evidence Coverage dial with bars for prevention, detection and suppression, top insights, top five investigations, biggest gaps. A "Why this matters" strip with Apollo 1, Apollo 13 and the 1997 Mir fire, each linked to its NASA page.</td></tr>
         <tr><td class="k">Atmosphere Map</td><td>Every test as a dot on oxygen against pressure. Habitat markers, filters, and tooltips that link to the source rows.</td></tr>
         <tr><td class="k">Investigations</td><td>Ranked cards with "Why this rank" bars. Filters by fire safety role, fuel and hardware family.</td></tr>
         <tr><td class="k">Investigation detail</td><td>Plain summary, objectives, hardware, what varied and what stayed fixed between tests, the test table, publications, link to the NASA record.</td></tr>
         <tr><td class="k">Compare</td><td>Two or three investigations aligned row by row on a shared map.</td></tr>
         <tr><td class="k">Lab</td><td>Droplet burn calculator, extinction explorer, and a view of what microgravity and normal gravity bound for the Moon. Each shows its check against real tests.</td></tr>
         <tr><td class="k">Ask</td><td>Question box. The evidence appears at once. A live model then streams a short answer with a source chip on every sentence.</td></tr>
-        <tr><td class="k">Earth</td><td>Uses on Earth, drawn from each record's impact text.</td></tr>
-        <tr><td class="k">Methods</td><td>Formulas, constants, assumptions, limits, SI disclosure and sources.</td></tr>
+        <tr><td class="k">Earth</td><td>Three NASA spinoffs from the challenge resources (firefighter air tanks, a fire detector that tells smoke from dust, firefighter clothing), then uses on Earth drawn from each record's impact text.</td></tr>
+        <tr><td class="k">Methods</td><td>Formulas, constants, assumptions, limits, SI disclosure, sources, and the ten challenge resources with how each was used.</td></tr>
       </tbody>
     </table>
   </div>
@@ -301,7 +301,8 @@
         <li>Investigation pages</li>
         <li>Six verified insight cards</li>
         <li>Ask: evidence answer, live answer with source chips, grounding check, pinned example answers</li>
-        <li>Methods page with SI disclosure and sources</li>
+        <li>Methods page with SI disclosure, sources and the ten challenge resources</li>
+        <li>"Why this matters" strip with three real incidents, cited</li>
         <li>Live site and public repository</li>
       </ul>
     </div>
@@ -311,10 +312,10 @@
         <li>Compare view</li>
         <li>Lab with three tools</li>
         <li>Search by meaning in the browser</li>
-        <li>Earth page</li>
+        <li>Earth page, led by three NASA spinoffs</li>
         <li>Adjust the method drawer</li>
         <li>Download cleaned test data as CSV</li>
-        <li>Partner research panel from the challenge Resources tab</li>
+        <li>Incident and spinoff cards as context in Ask</li>
       </ul>
     </div>
     <div class="panel">
@@ -534,6 +535,26 @@
     <div class="plain"><h4>High oxygen evidence is gas and droplets</h4><p class="small">Everything at 30 percent oxygen or more comes from gas flames (452 rows, up to 85 percent) and 24 FLEX droplet tests.</p></div>
     <div class="plain"><h4>A classic law checks out</h4><p class="small">The d-squared law for a burning droplet predicts burn time. Across 196 FLEX tests, predicted divided by measured burn time has a median of 0.95.</p></div>
     <div class="plain"><h4>No partial gravity data</h4><p class="small">PSI holds no Moon or Mars gravity combustion tests yet. Microgravity and normal gravity results bound the answer, and the app says so.</p></div>
+  </div>
+
+  <h3 id="resources">Challenge resources, and how each is used</h3>
+  <p class="prose small">The ten NASA links from the challenge Resources tab. All are cited in the app. The incident and spinoff pages are context and do not feed the coverage score.</p>
+  <div class="tablewrap">
+    <table class="wide">
+      <thead><tr><th>Resource</th><th>Link</th><th>How EMBER uses it</th></tr></thead>
+      <tbody>
+        <tr><td class="k">PSI Data Repository: Combustion Science</td><td><a href="https://psi.nasa.gov/physci/repo/search?q=combustion">psi.nasa.gov</a></td><td>The required data source. Every number in the app comes from it.</td></tr>
+        <tr><td class="k">NASA Combustion Science</td><td><a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/">nasa.gov</a></td><td>Second source for the plain summaries of each investigation. Linked from every investigation page.</td></tr>
+        <tr><td class="k">NASA ScienceCasts: The Power of Studying Combustion on the ISS (video, 2018)</td><td><a href="https://www.youtube.com/watch?v=W1oXykoz9zg">youtube.com</a></td><td>A "watch first" link on the Brief screen and a reference on the Methods screen. Linked, not copied.</td></tr>
+        <tr><td class="k">A Researcher's Guide to International Space Station Combustion Science (2015)</td><td><a href="https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/">nasa.gov</a></td><td>Source for the science explainers and the glossary. The science lead reads it first.</td></tr>
+        <tr><td class="k">Apollo 1</td><td><a href="https://sma.nasa.gov/sma-disciplines/accllp/apollo-1">sma.nasa.gov</a></td><td>Real-world stakes: the 1967 cabin fire during a pre-launch test that killed the crew of three.</td></tr>
+        <tr><td class="k">Apollo 13</td><td><a href="https://sma.nasa.gov/sma-disciplines/accllp/apollo-13">sma.nasa.gov</a></td><td>Real-world stakes: the oxygen tank explosion on the way to the Moon.</td></tr>
+        <tr><td class="k">25 Years Ago: Fire Aboard Space Station Mir</td><td><a href="https://www.nasa.gov/history/25-years-ago-fire-aboard-space-station-mir/">nasa.gov</a></td><td>Real-world stakes: the fire in an oxygen generating system on 24 February 1997, with six crew aboard.</td></tr>
+        <tr><td class="k">Fireman's Air Tanks (1970s spinoff)</td><td><a href="https://spinoff.nasa.gov/node/9582">spinoff.nasa.gov</a></td><td>Earth page: lighter air tanks for firefighters, adapted from spacesuit technology.</td></tr>
+        <tr><td class="k">Fire Detector (1970s spinoff)</td><td><a href="https://spinoff.nasa.gov/node/9407">spinoff.nasa.gov</a></td><td>Earth page: a shuttle smoke detector that tells smoke from dust. Linked to the smoke and dust investigations SAME and DAFT.</td></tr>
+        <tr><td class="k">New Technology for the Fire Attire (1980s spinoff)</td><td><a href="https://spinoff.nasa.gov/node/9918">spinoff.nasa.gov</a></td><td>Earth page: firefighter clothing improved with spacesuit technology.</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <h3>The science behind the numbers</h3>
@@ -766,7 +787,7 @@
       <tbody>
         <tr class="group"><td colspan="5">Saturday 14 November</td></tr>
         <tr class="all"><td class="t">Morning</td><td colspan="4"><strong>Review this plan, all four.</strong> Agree any changes. Person 4 asks the Local Lead about the local schedule.</td></tr>
-        <tr><td class="t">By 11:00</td><td class="p1">Fill in team and repository names. Paste the build brief. <strong>Start the build.</strong></td><td class="p2">Hand over the links from the challenge Resources tab</td><td class="p3">Start the design direction page</td><td class="p4">Check the Members tab. Save the project name</td></tr>
+        <tr><td class="t">By 11:00</td><td class="p1">Fill in team and repository names. Paste the build brief. <strong>Start the build.</strong></td><td class="p2">Read the Researcher's Guide from the challenge resources</td><td class="p3">Start the design direction page</td><td class="p4">Check the Members tab. Save the project name</td></tr>
         <tr><td class="t">11:00</td><td class="p1">Watch the build. Sign up for Azure. Log in to GitHub and Cloudflare when asked. First deploy</td><td class="p2">Check the assumed atmospheres against the NASA records</td><td class="p3">Design direction by 11:45, then storyboard the video</td><td class="p4">Story, summary, slide outline</td></tr>
         <tr class="all"><td class="t">13:00</td><td colspan="4"><strong>Lunch and first look at the live site.</strong></td></tr>
         <tr><td class="t">13:30</td><td class="p1">Fix round one. Live model endpoint goes live</td><td class="p2">Recompute three insight cards by hand</td><td class="p3">Design review list. Early screenshots</td><td class="p4">Detailed description. NASA Data field</td></tr>
@@ -804,7 +825,6 @@
     <table class="wide">
       <thead><tr><th>From</th><th>To</th><th>What</th><th>When</th></tr></thead>
       <tbody>
-        <tr><td>Person 2</td><td>Person 1</td><td>Resources tab links for the build brief</td><td class="t">Sat 10:45</td></tr>
         <tr><td>Person 3</td><td>Person 1</td><td>Design direction page</td><td class="t">Sat 11:45</td></tr>
         <tr><td>Person 1</td><td>Everyone</td><td>Live link and repository link</td><td class="t">Sat 13:00</td></tr>
         <tr><td>Person 2</td><td>Person 1</td><td>Corrections, each with the new value and the NASA link that supports it</td><td class="t">Sat, in batches</td></tr>
@@ -883,6 +903,7 @@
         <tr><td>A science error reaches the page or the video.</td><td><span class="tag warn">Medium</span></td><td>A script blocks wrong numbers. The science lead recomputes three cards by hand and signs off every claim. Unconfirmed assumptions stay marked.</td></tr>
         <tr><td>A judge questions how much of the project is SI-made.</td><td><span class="tag warn">Medium</span></td><td>AI use is confirmed as allowed. The disclosure is honest and specific, and the human work is visible: science checks, reviewed answers, design and story.</td></tr>
         <tr><td>Our entry looks like every other chat over the catalogue.</td><td><span class="tag warn">Medium</span></td><td>Lead with the map and the gap. Every live answer shows its sources, which a plain chat does not.</td></tr>
+        <tr><td>An incident or spinoff card says something its NASA page does not.</td><td><span class="tag info">Low</span></td><td>Each card is at most two sentences taken from its linked page. The science lead checks every one.</td></tr>
         <tr><td>The NASA data service is down on Saturday.</td><td><span class="tag info">Low</span></td><td>The 22 tables can be downloaded by hand from the PSI pages. The app works from whatever files are present.</td></tr>
         <tr><td>The video runs over 30 seconds or its link needs a login.</td><td><span class="tag info">Low</span></td><td>Aim for 28 seconds. Stopwatch check. Private window check.</td></tr>
         <tr><td>The Local Event ends before Sunday night.</td><td><span class="tag info">Low</span></td><td>A complete version is already submitted on Saturday at 21:30.</td></tr>
