@@ -53,7 +53,7 @@ export function parseNumber(cell: string | null | undefined): Parsed {
 
 export type ListValue = { value: number; typoFixed: boolean }
 
-// The ACME BRE oxygen column holds a list per test day such as "21; 26.5; 40".
+// The ACME BRE oxygen column holds a list per test day, such as 21, 26.5 and 40 separated by semicolon marks.
 // Values such as "3400%" and "2100%" are typos for 34 and 21. This fix applies to that column only.
 export function parseBreOxygenList(cell: string): ListValue[] {
   const out: ListValue[] = []

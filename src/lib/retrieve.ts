@@ -157,7 +157,7 @@ export function retrieve(question: string, engine: SearchEngine, ctx: RetrieveCo
   // What the question is after changes which kind of evidence should lead.
   const lowerQ = question.toLowerCase()
   const wantsHardware = /hardware|\brack\b|glovebox|apparatus|facility|shared/.test(lowerQ)
-  const wantsDefinition = /^\s*what (is|are) (a|an|the)?\s*/.test(lowerQ) && questionWords(question).length <= 4
+  const wantsDefinition = /^\s*what (is|are) an? /.test(lowerQ) || /\bdefine\b|what does .* mean/.test(lowerQ)
   const wantsList = /^\s*which\b|\blist\b/.test(lowerQ)
   const items = new Map<string, { score: number; docs: string[] }>()
   for (const [docId, base] of scores) {

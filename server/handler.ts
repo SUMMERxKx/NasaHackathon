@@ -145,7 +145,7 @@ export async function handleAsk(request: Request, env: Env, deps: Deps = {}): Pr
   // The page and the function share one origin, so no Access-Control headers are sent.
   return new Response(stream, {
     status: 200,
-    headers: { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store, no-transform', 'x-accel-buffering': 'no' },
+    headers: { 'content-type': 'text/event-stream', 'cache-control': 'no-store, no-transform', 'x-accel-buffering': 'no' },
   })
 }
 
