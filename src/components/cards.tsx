@@ -58,7 +58,7 @@ export function InsightCard({ card, compact = false }: { card: Insight; compact?
       <h3 className="text-[16px] font-semibold leading-snug">{card.headline}</h3>
       {!compact ? <p className="text-[14px] text-muted">{card.detail}</p> : null}
       <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
-        <SiTag />
+        <SiTag label={compact ? 'SI drafted' : undefined} />
       </div>
     </article>
   )

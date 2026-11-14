@@ -81,7 +81,7 @@ export default function MapScreen() {
 
   return (
     <div className="page">
-      <PageHeader title="Atmosphere Map" lead="Every mark is one real NASA flight test, placed by the oxygen and pressure it ran at. The ring is your habitat. Dark means nobody has tested there." />
+      <PageHeader title="Atmosphere Map" lead="Every mark is one real NASA flight test, placed by the oxygen and pressure it ran at. The ring is your habitat. Where the map glows, NASA has flown tests. Where it stays empty, nobody has tested." />
 
       <div className="mb-4 flex flex-col gap-3" role="group" aria-label="Map filters">
         <div className="flex flex-wrap items-center gap-2">

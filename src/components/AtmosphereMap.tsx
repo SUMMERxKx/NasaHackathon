@@ -138,12 +138,9 @@ function CoverageField({ box, domain, size, tests }: { box: MapBox; domain: MapD
     context.putImageData(image, 0, 0)
   }, [groups, domain, theme])
   return (
-    <canvas
-      ref={ref}
-      aria-hidden="true"
-      className="pointer-events-none absolute"
-      style={{ left: box.left, top: box.top, width: box.width, height: box.height, filter: 'blur(6px)', opacity: size.width > 0 ? 1 : 0, transition: 'opacity var(--t-emphasis)' }}
-    />
+    <div aria-hidden="true" className="pointer-events-none absolute overflow-hidden" style={{ left: box.left, top: box.top, width: box.width, height: box.height }}>
+      <canvas ref={ref} className="h-full w-full" style={{ filter: 'blur(6px)', opacity: size.width > 0 ? 1 : 0, transition: 'opacity var(--t-emphasis)' }} />
+    </div>
   )
 }
 
@@ -402,11 +399,26 @@ function MapBody({
   const tip = hover ?? null
   const tipTest = tip?.kind === 'mark' ? testById.get(tip.mark.testId) : null
   const pinTest = pinned?.kind === 'mark' ? testById.get(pinned.mark.testId) : null
-  const xTicks = PRESSURE_TICKS.filter((t) => t >= domain.psi[0] - 1e-6 && t <= domain.psi[1] + 1e-6)
+  const narrow = size.width < 480
+  const xTicks = PRESSURE_TICKS.filter((t) => t >= domain.psi[0] - 1e-6 && t <= domain.psi[1] + 1e-6 && (!narrow || [3, 8.2, 14.7, 30, 80].includes(t)))
   const yTicks = OXYGEN_TICKS.filter((t) => t >= domain.o2Pct[0] - 1e-6 && t <= domain.o2Pct[1] + 1e-6)
   const curve = normoxicPoints(domain)
   const curvePath = curve.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.psi).toFixed(1)},${y(p.o2Pct).toFixed(1)}`).join('')
-  const curveLabel = curve[Math.floor(curve.length * 0.55)]
+  const curveLabel = curve.find((p) => p.o2Pct <= 72) ?? curve[Math.floor(curve.length * 0.3)]
+  // Presets that share a point, such as the Exploration atmosphere and the Mars habitat, share one label.
+  const presetGroups = useMemo(() => {
+    const short: Record<string, string> = { iss: 'ISS cabin', 'shuttle-eva': 'Shuttle EVA prep', exploration: 'Exploration', 'moon-bound': 'Moon Base bound', mars: 'Mars habitat', suit: 'Spacesuit' }
+    const groups = new Map<string, { ids: string[]; o2: number; pressurePsi: number; label: string }>()
+    for (const h of habitats) {
+      const key = `${h.o2}|${h.pressurePsi}`
+      const entry = groups.get(key)
+      if (entry) {
+        entry.ids.push(h.id)
+        entry.label = `${entry.label} and ${short[h.id] ?? h.name}`
+      } else groups.set(key, { ids: [h.id], o2: h.o2, pressurePsi: h.pressurePsi, label: short[h.id] ?? h.name })
+    }
+    return [...groups.values()]
+  }, [habitats])
   const clipId = `map-clip-${compact ? 'c' : 'f'}`
   const fontSize = compact ? 10 : 11
 
@@ -462,7 +474,7 @@ function MapBody({
             <g aria-hidden="true">
               <title>A reference line, not data. It has no rows behind it.</title>
               <path d={curvePath} fill="none" stroke="var(--freefall)" strokeWidth={1.5} strokeDasharray="2 4" />
-              {!compact && curveLabel ? (
+              {!compact && !narrow && curveLabel ? (
                 <text x={x(curveLabel.psi) + 8} y={y(curveLabel.o2Pct) - 6} fontSize={11} fill="var(--freefall)">
                   same oxygen for breathing as sea level
                 </text>
@@ -471,7 +483,7 @@ function MapBody({
           ) : null}
           <TestDots marks={layout.marks} stacks={layout.stacks} dimmed={dimmed} colorOf={markColor} radius={compact ? 2.6 : 3.2} labelOf={labelOf} open={open} intro={intro && !reduced} order={order} />
           {layout.stacks
-            .filter((s) => s.badge)
+            .filter((s) => s.badge && (!narrow || s.count >= 100))
             .map((stack) => {
               const accessions = Object.keys(stack.byAccession)
               const text = `${stack.count} ${accessions.length === 1 ? (invByAcc[accessions[0]]?.displayName ?? '') : 'tests'}`
@@ -485,16 +497,17 @@ function MapBody({
               )
             })}
           {showPresets
-            ? habitats.map((h) => {
-                const hx = x(h.pressurePsi)
-                const hy = y(h.o2 * 100)
-                const active = scenario.presetId === h.id
+            ? presetGroups.map((group) => {
+                const hx = x(group.pressurePsi)
+                const hy = y(group.o2 * 100)
+                const active = group.ids.includes(scenario.presetId ?? '')
+                const left = group.pressurePsi > 5
                 return (
-                  <g key={h.id} transform={`translate(${hx},${hy})`} aria-hidden="true" pointerEvents="none" opacity={active ? 1 : 0.85}>
+                  <g key={group.ids.join('+')} transform={`translate(${hx},${hy})`} aria-hidden="true" pointerEvents="none" opacity={active ? 1 : 0.85}>
                     <path d="M0,-6L6,0L0,6L-6,0Z" fill={active ? 'var(--habitat)' : 'var(--bg)'} stroke="var(--habitat)" strokeWidth={1.5} />
-                    {!compact ? (
-                      <text x={9} y={4} fontSize={11} fill="var(--habitat)" fontWeight={600} stroke="var(--bg)" strokeWidth={3} paintOrder="stroke">
-                        {h.name}
+                    {!compact && (!narrow || active) ? (
+                      <text x={left ? -10 : 10} y={4} textAnchor={left ? 'end' : 'start'} fontSize={11} fill="var(--habitat)" fontWeight={600} stroke="var(--bg)" strokeWidth={3} paintOrder="stroke">
+                        {group.label}
                       </text>
                     ) : null}
                   </g>
@@ -545,20 +558,20 @@ function MapBody({
               open,
             )}
           >
-            <rect width={compact ? 132 : zoomMoon ? 250 : 196} height={compact ? 22 : zoomMoon ? 66 : 50} rx={8} fill="var(--surface)" stroke="var(--gap)" fillOpacity={0.94} />
+            <rect width={compact ? 132 : zoomMoon && !narrow ? 250 : 196} height={compact ? 22 : zoomMoon && !narrow ? 66 : 50} rx={8} fill="var(--surface)" stroke="var(--gap)" fillOpacity={0.94} />
             {compact ? (
               <text x={8} y={15} fontSize={11} fill="var(--ink)">
                 Moon Base region
               </text>
             ) : (
               <>
-                <text x={10} y={zoomMoon ? 16 : 15} fontSize={10} fill="var(--gap)" fontWeight={700} letterSpacing="0.08em">
+                <text x={10} y={zoomMoon && !narrow ? 16 : 15} fontSize={10} fill="var(--gap)" fontWeight={700} letterSpacing="0.08em">
                   MOON BASE REGION
                 </text>
-                <text x={10} y={zoomMoon ? 40 : 31} fontSize={zoomMoon ? 20 : 13} fill="var(--ink)" fontWeight={600} className="num">
+                <text x={10} y={zoomMoon && !narrow ? 40 : 31} fontSize={zoomMoon && !narrow ? 20 : 13} fill="var(--ink)" fontWeight={600} className="num">
                   {region.solid} solid, {region.liquid} liquid, {region.gas} gas
                 </text>
-                <text x={10} y={zoomMoon ? 57 : 44} fontSize={11} fill="var(--muted)">
+                <text x={10} y={zoomMoon && !narrow ? 57 : 44} fontSize={11} fill="var(--muted)">
                   {region.edge} droplet tests on the edge
                 </text>
               </>

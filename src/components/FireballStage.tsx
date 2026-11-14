@@ -245,9 +245,11 @@ export function FireballStage({ droplet = null, compact = false, showEarth = tru
             <>
               <span className="si-label absolute bottom-2 left-2">{SI_LABEL}</span>
               {showEarth && params.shape !== 'earth' ? <span className="absolute bottom-9 left-[12%] text-[11px] text-muted">On Earth</span> : null}
-              <span className="absolute bottom-3 text-[11px] text-muted" style={{ left: showEarth && params.shape !== 'earth' ? '62%' : '46%' }}>
-                {params.shape === 'earth' ? 'On Earth, at 1 g' : 'In freefall'}
-              </span>
+              {showEarth ? (
+                <span className="absolute bottom-3 text-[11px] text-muted" style={{ left: params.shape !== 'earth' ? '62%' : '46%' }}>
+                  {params.shape === 'earth' ? 'On Earth, at 1 g' : 'In freefall'}
+                </span>
+              ) : null}
             </>
           ) : null}
           {reduced && !asked && !failed ? (

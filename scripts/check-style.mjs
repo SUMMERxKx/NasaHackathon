@@ -34,6 +34,8 @@ function scanCode(file) {
   let i = 0
   let line = 1
   let prev = ''
+  // Shader source in a string marked with a glsl comment is code, not text.
+  let shaderNext = false
   const stripped = []
   const n = src.length
   const regexAllowed = () => prev === '' || '(,=:[!&|?{+*%~^'.includes(prev) || prev === SEMI || prev === '\n'
@@ -56,6 +58,7 @@ function scanCode(file) {
       const end = src.indexOf('*/', i + 2)
       const text = src.slice(i + 2, end < 0 ? n : end)
       text.split('\n').forEach((t, k) => checkText(file, line + k, t, 'a comment'))
+      if (text.trim() === 'glsl') shaderNext = true
       line += text.split('\n').length - 1
       i = end < 0 ? n : end + 2
     } else if ((c === "'" || c === '"' || c === '`') && !isWordApostrophe(i)) {
@@ -84,7 +87,10 @@ function scanCode(file) {
         text += src[j]
         j += 1
       }
-      checkText(file, startLine, text, 'a string')
+      if (shaderNext) {
+        if (text.includes(EM_DASH)) report(file, startLine, 'em dash in shader source', text)
+        shaderNext = false
+      } else checkText(file, startLine, text, 'a string')
       stripped.push('""')
       prev = '"'
       i = j + 1
