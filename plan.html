@@ -239,8 +239,8 @@
     <div class="panel">
       <span class="tag ok">Settled</span>
       <h3>A live language model is in</h3>
-      <p>It is part of the product and the demo, on a free service.</p>
-      <p class="small muted">Answers are held to the NASA evidence, and the demo never depends on the model being up. Paid options are priced below and not chosen.</p>
+      <p>It is part of the product and the demo. It runs on Azure, paid from the event's free $200 credit.</p>
+      <p class="small muted">A free Cloudflare model is the backup. Answers are held to the NASA evidence, and the demo never depends on a model being up.</p>
     </div>
   </div>
 </section>
@@ -588,7 +588,7 @@
 <section id="stack">
   <p class="eyebrow">Tech stack</p>
   <h2>Every piece, by name and version</h2>
-  <p class="prose">Everything here is free. Versions are those available on 14 November 2026. The build records the exact versions it installs.</p>
+  <p class="prose">Everything here is free or paid from the event's free Azure credit. Versions are those available on 14 November 2026. The build records the exact versions it installs.</p>
   <div class="tablewrap">
     <table class="wide">
       <thead><tr><th>Piece</th><th>Choice and version</th><th>Why</th></tr></thead>
@@ -613,14 +613,18 @@
         <tr><td class="k">App data</td><td>Static JSON files committed to the repository</td><td>The site reads only these, so it works even if PSI is down.</td></tr>
         <tr><td class="k">Database</td><td>None</td><td>Nothing is stored about users. All data is read-only.</td></tr>
         <tr class="group"><td colspan="3">Live language model</td></tr>
-        <tr><td class="k">Model</td><td>Llama 3.3 70B on Cloudflare Workers AI, served as <code>@cf/meta/llama-3.3-70b-instruct-fp8-fast</code></td><td>Free daily allocation with published limits, a capable open model, streaming, no model key to hold.</td></tr>
-        <tr><td class="k">How it is called</td><td>The browser posts the question to one Cloudflare Worker. The Worker calls the model and streams the answer back</td><td>The call runs on a server, so the server controls exactly what the model sees.</td></tr>
+        <tr><td class="k">Primary model</td><td>GPT-5 mini on Azure AI Foundry, Global Standard deployment, paid from the $200 Azure free account credit</td><td>The most capable chat model a new Azure free account can deploy. Larger models need a paid tier.</td></tr>
+        <tr><td class="k">Backup model</td><td>Llama 3.3 70B on Cloudflare Workers AI, free plan</td><td>Free daily allocation. Takes over when Azure fails or the credit ends.</td></tr>
+        <tr><td class="k">How it is called</td><td>The browser posts the question to one Cloudflare Worker. The Worker calls Azure first, then the Cloudflare model, and streams the answer back</td><td>The call runs on a server, so the server controls exactly what the model sees.</td></tr>
+        <tr><td class="k">Secret handling</td><td>The Azure key is stored only as a secret on the Cloudflare Worker</td><td>It is never in the repository or the browser, so nobody can drain the credit.</td></tr>
         <tr><td class="k">Deploy tool</td><td>Wrangler 4.162</td><td>Official tool to run and deploy the Cloudflare Worker.</td></tr>
         <tr><td class="k">Fallback</td><td>Evidence answer built in the browser, plus pinned answers for the example questions</td><td>The Ask screen always answers, even with no model.</td></tr>
         <tr class="group"><td colspan="3">Hosting and repository</td></tr>
         <tr><td class="k">Site host</td><td>GitHub Pages</td><td>Free, public and widely reachable.</td></tr>
         <tr><td class="k">Deploy pipeline</td><td>GitHub Actions: checkout v7, setup-node v7, configure-pages v6, upload-pages-artifact v5, deploy-pages v5</td><td>Tests run before every deploy. The history shows the work happened during the event.</td></tr>
         <tr><td class="k">Model endpoint host</td><td>Cloudflare Workers, free plan</td><td>Free. The site still works without it.</td></tr>
+        <tr><td class="k">Model host</td><td>Azure AI Foundry on an Azure free account</td><td>$200 credit for 30 days from the event offer. No charges unless the account is upgraded.</td></tr>
+        <tr><td class="k">Short link, optional</td><td>A free domain from the GoDaddy Registry offer, set to forward to the GitHub Pages address</td><td>A clean address for the video end card and the slides. The GitHub Pages address stays the submitted link.</td></tr>
         <tr><td class="k">Repository</td><td>Public GitHub repository, Apache 2.0 licence</td><td>The event requires open source work and a public link.</td></tr>
         <tr class="group"><td colspan="3">Build and demo tools</td></tr>
         <tr><td class="k">Coding assistant</td><td>Fable 5.2 in Claude Code</td><td>Builds the app in one session from the build brief. Disclosed as SI use.</td></tr>
@@ -638,7 +642,7 @@
 <section id="model">
   <p class="eyebrow">Live model design</p>
   <h2>A live model that can only repeat the NASA evidence</h2>
-  <p class="prose">The Ask screen shows the evidence first, with no model. A live model then writes a short answer from that evidence. If the model is slow, down or over its free limit, the evidence answer is already on screen.</p>
+  <p class="prose">The Ask screen shows the evidence first, with no model. A live model then writes a short answer from that evidence. It tries GPT-5 mini on Azure first and a free Cloudflare model second. If both are slow or down, the evidence answer is already on screen.</p>
   <figure>
     <div class="figscroll">
 <svg viewBox="0 0 760 250" width="100%" role="img" aria-labelledby="flowT" id="ask-flow">
@@ -646,32 +650,32 @@
       <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
       <g font-size="12" fill="currentColor">
         <text x="150" y="20" text-anchor="middle" font-size="12" fill-opacity=".7">In the browser</text>
-        <text x="470" y="20" text-anchor="middle" font-size="12" fill-opacity=".7">Cloudflare, free plan</text>
+        <text x="470" y="20" text-anchor="middle" font-size="12" fill-opacity=".7">Server side</text>
         <line x1="318" y1="8" x2="318" y2="245" stroke="currentColor" stroke-opacity=".2" stroke-dasharray="4 4"/>
         <line x1="622" y1="8" x2="622" y2="245" stroke="currentColor" stroke-opacity=".2" stroke-dasharray="4 4"/>
         <text x="691" y="20" text-anchor="middle" font-size="12" fill-opacity=".7">In the browser</text>
         <g id="f-q"><title>The user asks a question</title><rect x="10" y="40" width="130" height="62" rx="10" fill="none" stroke="currentColor" stroke-opacity=".6"/><text x="75" y="66" text-anchor="middle" font-weight="700">1. Question</text><text x="75" y="84" text-anchor="middle">typed or a chip</text></g>
         <g id="f-r"><title>Retrieval picks the evidence</title><rect x="170" y="40" width="136" height="62" rx="10" fill="none" stroke="var(--c-liquid)" stroke-width="2"/><text x="238" y="66" text-anchor="middle" font-weight="700">2. Retrieve</text><text x="238" y="84" text-anchor="middle">top six evidence ids</text></g>
         <g id="f-w"><title>The server loads the evidence text itself</title><rect x="332" y="40" width="136" height="62" rx="10" fill="none" stroke="var(--c-solid)" stroke-width="2"/><text x="400" y="62" text-anchor="middle" font-weight="700">3. Server</text><text x="400" y="79" text-anchor="middle">loads the text for</text><text x="400" y="94" text-anchor="middle">each id itself</text></g>
-        <g id="f-m"><title>The model writes from the evidence only</title><rect x="486" y="40" width="126" height="62" rx="10" fill="none" stroke="var(--c-gas)" stroke-width="2"/><text x="549" y="62" text-anchor="middle" font-weight="700">4. Model</text><text x="549" y="79" text-anchor="middle">evidence only,</text><text x="549" y="94" text-anchor="middle">cites every line</text></g>
+        <g id="f-m"><title>The model writes from the evidence only</title><rect x="486" y="40" width="126" height="62" rx="10" fill="none" stroke="var(--c-gas)" stroke-width="2"/><text x="549" y="62" text-anchor="middle" font-weight="700">4. Model</text><text x="549" y="79" text-anchor="middle">Azure first,</text><text x="549" y="94" text-anchor="middle">then Cloudflare</text></g>
         <g id="f-c"><title>The browser checks ids and numbers</title><rect x="634" y="40" width="118" height="62" rx="10" fill="none" stroke="var(--c-hab)" stroke-width="2"/><text x="693" y="62" text-anchor="middle" font-weight="700">5. Check</text><text x="693" y="79" text-anchor="middle">ids and numbers</text><text x="693" y="94" text-anchor="middle">match sources</text></g>
         <g stroke="currentColor" stroke-opacity=".7" marker-end="url(#ah2)"><line x1="140" y1="71" x2="168" y2="71"/><line x1="306" y1="71" x2="330" y2="71"/><line x1="468" y1="71" x2="484" y2="71"/><line x1="612" y1="71" x2="632" y2="71"/></g>
         <g id="f-e"><title>Evidence answer, always shown</title><rect x="170" y="170" width="290" height="62" rx="10" fill="none" stroke="var(--c-liquid)" stroke-dasharray="5 4"/><text x="315" y="196" text-anchor="middle" font-weight="700">Evidence answer, shown at once</text><text x="315" y="214" text-anchor="middle">insight cards, records and test rows with links</text></g>
         <g stroke="var(--c-liquid)" stroke-dasharray="4 3" marker-end="url(#ah2)"><line x1="238" y1="102" x2="238" y2="168"/></g>
         <g id="f-ok"><title>Checked live answer</title><rect x="634" y="170" width="118" height="62" rx="10" fill="none" stroke="var(--c-hab)" stroke-width="2"/><text x="693" y="196" text-anchor="middle" font-weight="700">Live answer</text><text x="693" y="214" text-anchor="middle">checked, with chips</text></g>
         <g stroke="var(--c-hab)" marker-end="url(#ah2)"><line x1="693" y1="102" x2="693" y2="168"/></g>
-        <g id="f-fb"><title>Fallback when the model fails</title><path d="M549,102 L549,201 L462,201" fill="none" stroke="var(--c-gap)" stroke-dasharray="5 4" marker-end="url(#ah2)"/><text x="556" y="150" font-size="11" fill="var(--c-gap)">slow, error or</text><text x="556" y="164" font-size="11" fill="var(--c-gap)">over the limit</text></g>
+        <g id="f-fb"><title>Fallback when the model fails</title><path d="M549,102 L549,201 L462,201" fill="none" stroke="var(--c-gap)" stroke-dasharray="5 4" marker-end="url(#ah2)"/><text x="556" y="150" font-size="11" fill="var(--c-gap)">both models</text><text x="556" y="164" font-size="11" fill="var(--c-gap)">slow or down</text></g>
         
       </g>
     </svg>
     </div>
-    <figcaption>The six example questions skip the model. Their answers are written by the same model during the build, checked, reviewed by the science lead and shipped with the site.</figcaption>
+    <figcaption>The six example questions skip the model. Their answers are written by the Azure model during the build, checked, reviewed by the science lead and shipped with the site.</figcaption>
   </figure>
   <div class="grid">
     <div class="panel">
       <h3>How answers stay grounded</h3>
       <ul class="small">
-        <li>The server accepts evidence ids only. It loads the text itself from a bundle built from the NASA snapshot, so the model is never shown anything else.</li>
+        <li>These rules apply to both models. The server accepts evidence ids only. It loads the text itself from a bundle built from the NASA snapshot, so the model is never shown anything else.</li>
         <li>The instruction tells the model to use only that evidence, end every sentence with the id of its source, and copy numbers exactly without computing new ones.</li>
         <li>If the evidence does not answer the question, the model must reply: "The PSI evidence in EMBER does not answer that."</li>
         <li>The model may never call a habitat or material safe or unsafe.</li>
@@ -684,38 +688,69 @@
       <ul class="small">
         <li><strong>Evidence first.</strong> The evidence answer is on screen before the model is called, so there is never an empty screen.</li>
         <li><strong>Pinned answers.</strong> The six example questions appear at once and need no network.</li>
-        <li><strong>Time limits.</strong> No first word within 8 seconds, or no finished answer within 25 seconds, and the request is dropped.</li>
-        <li><strong>Errors and limits.</strong> Any error or a used-up daily allocation leaves the evidence answer with one quiet line.</li>
+        <li><strong>Automatic switch.</strong> Any Azure error, or no first word from Azure within 6 seconds, and the same request goes to the Cloudflare model.</li>
+        <li><strong>Time limits.</strong> No first word within 12 seconds, or no finished answer within 30 seconds, and the request is dropped.</li>
+        <li><strong>When the credit ends.</strong> Azure starts refusing requests about 14 December. The Cloudflare model then answers everything.</li>
+        <li><strong>Errors.</strong> If both models fail, the evidence answer stays with one quiet line.</li>
         <li><strong>The demo.</strong> The recording taps an example question first, then types one question to show the live stream.</li>
       </ul>
     </div>
   </div>
 
-  <h3>The free option and its limits</h3>
+  <h3>The model chain</h3>
+  <div class="tablewrap">
+    <table class="wide">
+      <thead><tr><th>Step</th><th>Model</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td class="k">1. Primary</td><td>GPT-5 mini on Azure AI Foundry, paid from the $200 free account credit</td><td>Answers every question while the credit lasts. 500 requests per minute on the free tier.</td></tr>
+        <tr><td class="k">2. Backup</td><td>Llama 3.3 70B on Cloudflare Workers AI, free plan</td><td>Takes over on any Azure error, a slow start, or once the credit ends. About 75 answers per day, then requests fail and nothing is charged.</td></tr>
+        <tr><td class="k">3. Always</td><td>Evidence answer and pinned example answers, built into the site</td><td>Shown first every time, so the screen is never empty and the demo never depends on a model.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>The Azure model: cost and how long it lasts</h3>
   <div class="tablewrap">
     <table class="wide">
       <thead><tr><th>Item</th><th>Fact</th><th>What it means for us</th></tr></thead>
       <tbody>
-        <tr><td class="k">Chosen default</td><td>Cloudflare Workers AI on the free plan, model Llama 3.3 70B</td><td>No cost. One free Cloudflare account, one login during the build.</td></tr>
-        <tr><td class="k">Daily allocation</td><td>10,000 Neurons per day at no charge. Resets at 00:00 UTC. Past the limit, requests fail and nothing is charged on the free plan.</td><td>About 128 Neurons per answer, so about 75 live answers per day. Enough for judges. Tight on build day, so tests use a stand-in and real calls are spent with care.</td></tr>
-        <tr><td class="k">Stretching it</td><td>Finished answers are cached. Example questions are pinned.</td><td>Repeat questions and all example questions cost nothing.</td></tr>
-        <tr><td class="k">Lighter model</td><td>Gemma 4 26B on the same service, about 31 Neurons per answer</td><td>About 320 answers per day. Switch only if its answers prove accurate on the six example questions.</td></tr>
-        <tr><td class="k">Context size</td><td>24,000 tokens for this model</td><td>The evidence sent with a question is kept to six items, about 2,500 tokens.</td></tr>
-        <tr><td class="k">Money safety</td><td>No billing details are entered anywhere</td><td>If any step asks for a card, the build stops and asks the build lead.</td></tr>
+        <tr><td class="k">Why GPT-5 mini</td><td>Microsoft lists a Free tier that can deploy only three chat models: gpt-4.1-mini, gpt-5-mini and o4-mini. Larger models need a paid tier. Claude on Azure is not offered to free trial accounts.</td><td>GPT-5 mini is the newest of the three. o4-mini costs the most but is older. One setting switches between them.</td></tr>
+        <tr><td class="k">Check on the day</td><td>A new free account is expected to start in the Free tier.</td><td>Person 1 opens the quota page first. If a larger model shows quota, the largest one is deployed instead.</td></tr>
+        <tr><td class="k">Price</td><td>$0.25 per million input tokens, $2.00 per million output tokens</td><td>About $0.002 per answer, counting the model's hidden reasoning.</td></tr>
+        <tr><td class="k">What $200 covers</td><td>About 100,000 answers</td><td>The credit will not be used up. The 30 days are the real limit.</td></tr>
+        <tr><td class="k">When it ends</td><td>30 days after sign-up, so about 14 December 2026. Azure then disables the account. Nothing is charged unless it is upgraded.</td><td>Covers local judging and the Global Nominee announcement on 3 December. Not the Global Finalists on 17 December or the Winners on 26 January.</td></tr>
+        <tr><td class="k">After it ends</td><td>The Worker switches to the Cloudflare backup on its own</td><td>Live answers continue at about 75 a day. No redeploy is needed.</td></tr>
+        <tr><td class="k">Keeping Azure longer</td><td>Needs an upgrade to pay-as-you-go, about $0.002 per answer on the owner's card</td><td>Not approved now. The owner can decide in December.</td></tr>
+        <tr><td class="k">Key safety</td><td>The owner types the Azure key into a secret prompt on the server side and enters any card details personally</td><td>The key is never in the repository, the browser or a chat.</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="small muted">Figures come from Cloudflare's published pricing and limits on 14 November 2026. The per-answer numbers are estimates from those rates, not measurements. Two other free routes were looked at and not chosen: the Google Gemini API free tier, whose limits are set per project and whose free prompts are used to improve Google products, and a model running fully in the browser, which needs a large download.</p>
-
-  <h3>Paid options, listed and not chosen</h3>
-  <p class="prose small">Anything that costs money needs the owner's approval first. None of these is in the build.</p>
+  <p class="small muted">Sources: Microsoft's Azure AI Foundry quota page, Azure pricing page and Azure free account pages, and Cloudflare's Workers AI pricing page, all read on 14 November 2026. Per-answer figures are estimates from those prices, not measurements. Nothing has been deployed or tested yet.</p>
+  <h3>Options not chosen</h3>
   <div class="tablewrap">
     <table class="wide">
-      <thead><tr><th>Option</th><th>Exact price</th><th>Rough cost for this feature</th><th>What it would add</th></tr></thead>
+      <thead><tr><th>Option</th><th>Exact price</th><th>Why it is not in the build</th></tr></thead>
       <tbody>
-        <tr><td class="k">Claude Haiku 5.5, Anthropic API</td><td>$0.10 per million input tokens, $0.50 per million output tokens</td><td>About $0.0005 per answer. About $0.50 per 1,000 answers.</td><td>Likely steadier at following the grounding rules. No daily cap. Not tested for this project.</td></tr>
-        <tr><td class="k">Claude Opus 5.5, Anthropic API</td><td>$4.00 per million input tokens, $20.00 per million output tokens</td><td>About $0.02 per answer. About $20 per 1,000 answers.</td><td>The strongest answers of the three. More than this feature needs.</td></tr>
-        <tr><td class="k">Cloudflare Workers Paid plan</td><td>$5.00 per month minimum, then $0.011 per 1,000 Neurons above the free 10,000 per day</td><td>$5.00 for the month of judging plus usage.</td><td>Removes the daily cap on the same open model.</td></tr>
+        <tr><td class="k">o4-mini on Azure</td><td>$1.10 per million input tokens, $4.40 per million output tokens. About $0.005 per answer</td><td>The most expensive model the free tier allows, but older than GPT-5 mini. One setting switches to it.</td></tr>
+        <tr><td class="k">Larger Azure models, such as GPT-5.5 or GPT-6.1 Sol</td><td>Listed on the Azure pricing page</td><td>Not available on the Free tier. They need pay-as-you-go, which is not approved.</td></tr>
+        <tr><td class="k">Claude models</td><td>Claude Haiku 5.5 is $0.10 and $0.50 per million tokens. Claude Opus 5.5 is $4.00 and $20.00</td><td>Azure does not offer Claude to free trial accounts. The Anthropic API bills a card.</td></tr>
+        <tr><td class="k">Cloudflare Workers Paid plan</td><td>$5.00 per month minimum, then $0.011 per 1,000 Neurons above the free amount</td><td>Would lift the backup's daily cap. Bills a card.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Event offers: used or skipped</h3>
+  <div class="tablewrap">
+    <table class="wide">
+      <thead><tr><th>Offer</th><th>Decision</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Microsoft Azure, $200 for 30 days</td><td>Used</td><td>Primary live model.</td></tr>
+        <tr><td class="k">GoDaddy Registry free domain</td><td>Used, optional</td><td>A short forwarding address for the video end card and slides. The GitHub Pages address is still the one submitted, because a brand new domain is more likely to be blocked by a judge's web filter.</td></tr>
+        <tr><td class="k">Google Cloud, $300 for 90 days</td><td>Skipped for now</td><td>Its 90 days would cover judging to late January. A third provider adds work today. Worth adding if the team becomes a Global Nominee on 3 December.</td></tr>
+        <tr><td class="k">Microsoft Planetary Computer</td><td>Skipped</td><td>Earth observation data. Nothing in it concerns microgravity combustion.</td></tr>
+        <tr><td class="k">Meteomatics Weather API</td><td>Skipped</td><td>Weather data has no use in this project.</td></tr>
+        <tr><td class="k">GitHub Copilot Free</td><td>Skipped</td><td>The build runs through one coding assistant. A second adds a tool to disclose and no gain.</td></tr>
+        <tr><td class="k">Microsoft Copilot</td><td>Skipped</td><td>Not needed for the product.</td></tr>
+        <tr><td class="k">Microsoft Teams Free</td><td>Skipped</td><td>The team is together at the event.</td></tr>
+        <tr><td class="k">Miro Business trial and board templates</td><td>Skipped</td><td>The trial needs a card, and the storyboard is six frames on paper.</td></tr>
       </tbody>
     </table>
   </div>
@@ -732,7 +767,7 @@
         <tr class="group"><td colspan="5">Saturday 14 November</td></tr>
         <tr class="all"><td class="t">Morning</td><td colspan="4"><strong>Review this plan, all four.</strong> Agree any changes. Person 4 asks the Local Lead about the local schedule.</td></tr>
         <tr><td class="t">By 11:00</td><td class="p1">Fill in team and repository names. Paste the build brief. <strong>Start the build.</strong></td><td class="p2">Hand over the links from the challenge Resources tab</td><td class="p3">Start the design direction page</td><td class="p4">Check the Members tab. Save the project name</td></tr>
-        <tr><td class="t">11:00</td><td class="p1">Watch the build. Log in to GitHub and Cloudflare when asked. First deploy</td><td class="p2">Check the assumed atmospheres against the NASA records</td><td class="p3">Design direction by 11:45, then storyboard the video</td><td class="p4">Story, summary, slide outline</td></tr>
+        <tr><td class="t">11:00</td><td class="p1">Watch the build. Sign up for Azure. Log in to GitHub and Cloudflare when asked. First deploy</td><td class="p2">Check the assumed atmospheres against the NASA records</td><td class="p3">Design direction by 11:45, then storyboard the video</td><td class="p4">Story, summary, slide outline</td></tr>
         <tr class="all"><td class="t">13:00</td><td colspan="4"><strong>Lunch and first look at the live site.</strong></td></tr>
         <tr><td class="t">13:30</td><td class="p1">Fix round one. Live model endpoint goes live</td><td class="p2">Recompute three insight cards by hand</td><td class="p3">Design review list. Early screenshots</td><td class="p4">Detailed description. NASA Data field</td></tr>
         <tr><td class="t">15:30</td><td class="p1">Compare view, then Lab</td><td class="p2">Explainers. Review the pinned answers</td><td class="p3">Polish list. Rehearse the recording</td><td class="p4">SI disclosure field. Slides version one</td></tr>
@@ -759,7 +794,7 @@
   <h2>One builder, one scientist, one designer, one storyteller</h2>
   <p class="prose">The build is one person's job because the coding assistant does the typing. The other three do the work that wins and that an assistant cannot be trusted with alone. Swap roles to fit the team's skills.</p>
   <div class="grid">
-    <div class="panel role r1"><h3>Person 1</h3><p><strong>Build lead</strong></p><p class="small">Runs the one-session build from the build brief, answers the assistant's questions, logs in to GitHub and Cloudflare when asked, applies fixes from the others, deploys the site and the live model endpoint, keeps the repository in order.</p></div>
+    <div class="panel role r1"><h3>Person 1</h3><p><strong>Build lead</strong></p><p class="small">Runs the one-session build from the build brief, answers the assistant's questions, sets up the Azure free account and logs in to GitHub and Cloudflare when asked, applies fixes from the others, deploys the site and the live model endpoint, keeps the repository in order.</p></div>
     <div class="panel role r2"><h3>Person 2</h3><p><strong>Science and data lead</strong></p><p class="small">Confirms assumptions against the NASA records, recomputes insight numbers by hand, reviews the pinned answers and tests the live model, writes the explainers, owns the reference list, signs off every claim.</p></div>
     <div class="panel role r3"><h3>Person 3</h3><p><strong>Design and demo video lead</strong></p><p class="small">Sets the visual direction in the first hour, reviews the live site twice, storyboards, records and edits the 30 second video, captures screenshots.</p></div>
     <div class="panel role r4"><h3>Person 4</h3><p><strong>Story, slides and submission lead</strong></p><p class="small">Owns the project page, the story, the seven slides, the SI disclosure text, the clock, and pressing Submit early and again at the end.</p></div>
@@ -812,9 +847,10 @@
         <li>Everything in English</li>
         <li>No NASA logo or branding in the app, video or slides</li>
         <li>Nothing in the project was made before 9:00 AM Saturday</li>
-        <li>No paid service in use</li>
+        <li>Azure is still a free account, not upgraded to pay-as-you-go</li>
+        <li>The Azure key is only a server secret</li>
         <li>Demo video is 30 seconds or less and plays in a private window</li>
-        <li>Live site and public repository open in a private window</li>
+        <li>Live site, at its GitHub Pages address, and public repository open in a private window</li>
       </ul>
     </div>
     <div class="plain">
@@ -840,7 +876,9 @@
       <thead><tr><th>Risk</th><th>Level</th><th>Fallback</th></tr></thead>
       <tbody>
         <tr><td>The live model states something the NASA data does not say.</td><td><span class="tag warn">Medium</span></td><td>The model only sees evidence the server loads itself. The browser removes any sentence with an unknown source or a number that is not in its source. The science lead tests it before the recording.</td></tr>
-        <tr><td>The live model is slow, down or over its free daily limit.</td><td><span class="tag warn">Medium</span></td><td>The evidence answer is always shown first. Example questions use pinned answers. Finished answers are cached. Nothing is ever charged on the free plan.</td></tr>
+        <tr><td>The Azure model is slow or down, or its credit ends during judging.</td><td><span class="tag warn">Medium</span></td><td>The credit ends about 14 December, before the finalist and winner rounds. The server switches to the free Cloudflare model on its own. The evidence answer is always shown first and example questions use pinned answers.</td></tr>
+        <tr><td>Azure sign-up fails, or the free account shows no quota for the model.</td><td><span class="tag warn">Medium</span></td><td>The build carries on with the Cloudflare model as the live model. Nothing else changes.</td></tr>
+        <tr><td>The Azure key leaks.</td><td><span class="tag info">Low</span></td><td>The key is only a server secret. The free account cannot be charged, so the worst case is an early switch to the Cloudflare model.</td></tr>
         <tr><td>The one-session build stalls or produces a broken app.</td><td><span class="tag warn">Medium</span></td><td>The brief orders the work so a deployable slice exists early. If it is not live by 13:30, cut to four screens: Brief, Map, Investigations, Methods.</td></tr>
         <tr><td>A science error reaches the page or the video.</td><td><span class="tag warn">Medium</span></td><td>A script blocks wrong numbers. The science lead recomputes three cards by hand and signs off every claim. Unconfirmed assumptions stay marked.</td></tr>
         <tr><td>A judge questions how much of the project is SI-made.</td><td><span class="tag warn">Medium</span></td><td>AI use is confirmed as allowed. The disclosure is honest and specific, and the human work is visible: science checks, reviewed answers, design and story.</td></tr>
