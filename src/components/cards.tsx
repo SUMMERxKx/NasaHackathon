@@ -8,7 +8,7 @@ import { RANK_FORMULAS, RANK_WEIGHTS } from '../lib/ranking.ts'
 import type { RankParts, Ranked } from '../lib/ranking.ts'
 import { formatBytes } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
-import { Chip, ScenarioLink, SiTag, SourcedNumber, VerifiedMark, useDrillProps } from './ui.tsx'
+import { Chip, ScenarioLink, SiTag, SourcedNumber, VerifiedMark, useDrillDescribed } from './ui.tsx'
 
 export const PILLAR_NAME: Record<string, string> = {
   prevention: 'Prevention',
@@ -67,7 +67,7 @@ export function InsightCard({ card, compact = false }: { card: Insight; compact?
 const PART_KEYS: (keyof RankParts)[] = ['A', 'F', 'P', 'D']
 
 export function WhyRankBars({ ranked }: { ranked: Ranked }) {
-  const props = useDrillProps()
+  const props = useDrillDescribed()
   const { invByAcc } = useData()
   const name = invByAcc[ranked.accession]?.displayName ?? ranked.accession
   return (
@@ -82,8 +82,7 @@ export function WhyRankBars({ ranked }: { ranked: Ranked }) {
               key={part}
               className="drillable rounded px-1 py-0.5 hover:bg-surface-2"
               tabIndex={0}
-              title={`${info.formula} Value ${value.toFixed(2)}, weight ${RANK_WEIGHTS[part]}.`}
-              {...props([{ kind: 'rank', accession: ranked.accession, part }], `${info.label} for ${name}: ${value.toFixed(2)}. ${info.formula} Press Enter for the tests that were counted.`)}
+              {...props([{ kind: 'rank', accession: ranked.accession, part }], `${info.label} for ${name}. ${info.formula} Weight ${RANK_WEIGHTS[part]}. Press Enter for the tests that were counted.`)}
             >
               <span className="flex items-baseline justify-between gap-1 text-[11px] text-muted">
                 <span className="truncate">{info.label}</span>

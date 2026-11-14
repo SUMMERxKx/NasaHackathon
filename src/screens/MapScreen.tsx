@@ -16,7 +16,7 @@ import { DataTable } from '../components/DataTable.tsx'
 import type { Column } from '../components/DataTable.tsx'
 import { oxygenText, pressureText } from '../components/DrillPanel.tsx'
 import { PILLAR_NAME } from '../components/cards.tsx'
-import { Chip, NotASafetyRating, ScenarioLink, SourcedNumber, useDrillProps } from '../components/ui.tsx'
+import { Chip, NotASafetyRating, ScenarioLink, SourcedNumber, useDrillDescribed } from '../components/ui.tsx'
 import { useDrill } from '../state/hooks.ts'
 
 const PILLAR_FILTERS = ['prevention', 'detection', 'suppression', 'fundamentals']
@@ -28,7 +28,7 @@ export default function MapScreen() {
   const coverage = useCoverage()
   const [params, setParams] = useSearchParams()
   const { open } = useDrill()
-  const drill = useDrillProps()
+  const drill = useDrillDescribed()
   const pillar = params.get('pillar') ?? ''
   const fuel = params.get('fuel') ?? ''
   const inv = params.get('inv') ?? ''

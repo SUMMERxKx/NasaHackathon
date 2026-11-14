@@ -313,13 +313,6 @@ function MapBody({
   const visible = (px: number, py: number) => inBox(px, py)
 
   const find = (px: number, py: number): Hover => {
-    if (showPresets) {
-      for (const h of habitats) {
-        const hx = x(h.pressurePsi)
-        const hy = y(h.o2 * 100)
-        if (Math.hypot(hx - px, hy - py) <= 9 && visible(hx, hy) && scenario.presetId !== h.id) return { kind: 'preset', habitat: h, x: hx, y: hy }
-      }
-    }
     for (const stack of layout.stacks) {
       if (Math.hypot(stack.x - px, stack.y - py) <= 12) return { kind: 'stack', stack, x: stack.x, y: stack.y }
     }
@@ -333,7 +326,16 @@ function MapBody({
         best = mark
       }
     }
-    return best ? { kind: 'mark', mark: best, x: best.x, y: best.y } : null
+    if (best) return { kind: 'mark', mark: best, x: best.x, y: best.y }
+    // A preset marker is offered only where no test sits under the pointer.
+    if (showPresets) {
+      for (const h of habitats) {
+        const hx = x(h.pressurePsi)
+        const hy = y(h.o2 * 100)
+        if (Math.hypot(hx - px, hy - py) <= 9 && visible(hx, hy) && scenario.presetId !== h.id) return { kind: 'preset', habitat: h, x: hx, y: hy }
+      }
+    }
+    return null
   }
 
   const local = (event: ReactPointerEvent<SVGRectElement>) => {
@@ -366,7 +368,9 @@ function MapBody({
   }
   const onDown = (event: ReactPointerEvent<SVGRectElement>) => {
     const { px, py } = local(event)
-    if (dragRing && onRing(px, py) && !find(px, py)) {
+    // The centre of the ring is a handle. It can be grabbed even where tests sit under it.
+    const onHandle = showRing && Math.hypot(px - ringX, py - ringY) <= 12
+    if (dragRing && (onHandle || (onRing(px, py) && !find(px, py)))) {
       dragState.current = { startX: px, startY: py, moved: false }
       event.currentTarget.setPointerCapture(event.pointerId)
     }
@@ -374,9 +378,11 @@ function MapBody({
   const onUp = (event: ReactPointerEvent<SVGRectElement>) => {
     const { px, py } = local(event)
     const wasDrag = dragState.current?.moved
+    const grabbed = dragState.current != null
     dragState.current = null
     setDrag(null)
     if (wasDrag) return
+    if (grabbed && showRing && Math.hypot(px - ringX, py - ringY) <= 12) return open([{ kind: 'near', o2: scenario.o2, pressureAtm: psiToAtm(scenario.pressurePsi) }])
     const hit = find(px, py)
     if (event.pointerType === 'touch' && hit && hit.kind !== 'preset') {
       setPinned(hit)
@@ -530,7 +536,7 @@ function MapBody({
                   filter: 'drop-shadow(0 0 calc(8px * var(--glow-strength)) var(--habitat))',
                 }}
               />
-              <circle cx={ringX} cy={ringY} r={2.5} fill="var(--habitat)" style={{ transition: drag || reduced ? 'none' : 'cx var(--t-scene) var(--ease-in-out), cy var(--t-scene) var(--ease-in-out)' }} />
+              <circle cx={ringX} cy={ringY} r={dragRing ? 4.5 : 2.5} fill="var(--habitat)" stroke="var(--bg)" strokeWidth={dragRing ? 1.5 : 0} style={{ transition: drag || reduced ? 'none' : 'cx var(--t-scene) var(--ease-in-out), cy var(--t-scene) var(--ease-in-out)' }} />
             </g>
           ) : null}
         </g>
@@ -554,7 +560,7 @@ function MapBody({
             transform={`translate(${regionBox.x + 8},${regionBox.y + 8})`}
             {...drillProps(
               [{ kind: 'region', id: 'moon' }],
-              `The Moon Base region: ${region.solid} solid, ${region.liquid} liquid, ${region.gas} gas tests. ${region.edge} droplet tests on its edge. Press Enter for its rows.`,
+              compact ? 'Moon Base region. Press Enter for its rows.' : `Moon Base region ${region.solid} solid, ${region.liquid} liquid, ${region.gas} gas ${region.edge} droplet tests on the edge. Press Enter for its rows.`,
               open,
             )}
           >

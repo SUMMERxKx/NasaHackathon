@@ -9,6 +9,7 @@ export const CONFIG = {
   labels: {
     'anthropic/claude-haiku-5.5': 'Claude Haiku 5.5 through OpenRouter',
     'openai/gpt-6-luna': 'GPT-6 Luna through OpenRouter',
+    'mock/local': 'a local mock that calls nothing',
   } as Record<string, string>,
   // Both models think before they write unless told not to. Thinking counts against the cap,
   // so it starts off. If the evaluation turns it on, set "low" and raise maxTokens to 1500.

@@ -4,7 +4,7 @@ import { useId } from 'react'
 import type { CoverageResult, Pillar } from '../types.ts'
 import { PILLARS } from '../lib/coverage.ts'
 import { formatNumber } from '../lib/units.ts'
-import { NotASafetyRating, useCountUp, useDrillProps } from './ui.tsx'
+import { NotASafetyRating, useCountUp, useDrillDescribed, useDrillProps } from './ui.tsx'
 
 const START = 135
 const SWEEP = 270
@@ -37,6 +37,7 @@ export function CoverageDial({
 }) {
   const id = useId().replace(/:/g, '')
   const props = useDrillProps()
+  const described = useDrillDescribed()
   const score = Math.max(0, Math.min(100, coverage.overall))
   const shown = useCountUp(score)
   const stroke = size >= 160 ? 14 : size >= 120 ? 10 : 7
@@ -49,7 +50,7 @@ export function CoverageDial({
   const big = size >= 160
   const track = arc(c, c, r, START, START + SWEEP)
   const ringR = r - stroke - 4
-  const drill = interactive ? props([{ kind: 'coverage', pillar: 'overall' }], `${label}: Evidence Coverage ${Math.round(score)} out of 100. Not a safety rating. Press Enter for the tests behind it.`) : null
+  const drill = interactive ? described([{ kind: 'coverage', pillar: 'overall' }], `${label}: Evidence Coverage ${Math.round(score)} out of 100. Not a safety rating. Press Enter for the tests behind it.`) : null
   return (
     <div className="relative inline-block" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden={interactive ? undefined : true} role={interactive ? 'group' : undefined} aria-label={interactive ? `${label} coverage dial` : undefined}>
@@ -151,7 +152,7 @@ export function AssumedShare({ coverage }: { coverage: CoverageResult }) {
 }
 
 export function PillarBars({ coverage, focus, onFocus }: { coverage: CoverageResult; focus: Pillar | null; onFocus?: (pillar: Pillar | null) => void }) {
-  const props = useDrillProps()
+  const props = useDrillDescribed()
   return (
     <ul className="m-0 flex list-none flex-col gap-3 p-0">
       {PILLARS.map((pillar) => {

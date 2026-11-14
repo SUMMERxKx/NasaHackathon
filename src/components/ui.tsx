@@ -298,9 +298,18 @@ export function useDrillProps() {
   return (path: DrillPath, label: string) => drillProps(path, label, open)
 }
 
+// For a control whose visible text is already its name. The extra words become its description.
+export function useDrillDescribed() {
+  const { open } = useDrill()
+  return (path: DrillPath, description: string) => {
+    const { 'aria-label': _label, ...rest } = drillProps(path, description, open)
+    return { ...rest, 'aria-description': description, title: description }
+  }
+}
+
 // A number from NASA data. One click opens the rows it came from.
 export function SourcedNumber({ path, label, children, className = '' }: { path: DrillPath; label: string; children: ReactNode; className?: string }) {
-  const props = useDrillProps()(path, `${label}. Press Enter for its rows.`)
+  const props = useDrillDescribed()(path, `${label}. Press Enter for its rows.`)
   return (
     <button type="button" className={`sourced ${className}`} {...props} role={undefined}>
       {children}

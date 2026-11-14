@@ -13,7 +13,7 @@ import { DataTable } from '../components/DataTable.tsx'
 import type { Column } from '../components/DataTable.tsx'
 import { oxygenText, pressureText } from '../components/DrillPanel.tsx'
 import { InformsChips, InvestigationChips, Thumb, years } from '../components/cards.tsx'
-import { ScenarioLink, SiTag, useDrillProps } from '../components/ui.tsx'
+import { ScenarioLink, SiTag, useDrillDescribed } from '../components/ui.tsx'
 
 export function downloadCsv(name: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }))
@@ -27,7 +27,7 @@ export function downloadCsv(name: string, text: string) {
 const CLASS_WORDS: Record<string, string> = { constant: 'Fixed', factor: 'Varied in steps', continuous: 'Varied', identifier: 'Identifier', notes: 'Notes' }
 
 function ProfileRow({ inv, tableIndex, columnIndex, column }: { inv: Investigation; tableIndex: number; columnIndex: number; column: ColumnProfile }) {
-  const props = useDrillProps()
+  const props = useDrillDescribed()
   const path = (value: string) => [{ kind: 'column' as const, accession: inv.accession, table: tableIndex, column: columnIndex, value }]
   const range = column.klass === 'continuous' && column.min != null && column.max != null
   return (
