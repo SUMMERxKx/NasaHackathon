@@ -241,7 +241,15 @@ export function FireballStage({ droplet = null, compact = false, showEarth = tru
               <LiveFireball params={params} view={view} droplet={droplet} showEarth={showEarth} onFail={() => setFailed(true)} />
             </Suspense>
           ) : null}
-          {showLive ? <span className="si-label absolute bottom-2 left-2">{SI_LABEL}</span> : null}
+          {showLive ? (
+            <>
+              <span className="si-label absolute bottom-2 left-2">{SI_LABEL}</span>
+              {showEarth && params.shape !== 'earth' ? <span className="absolute bottom-9 left-[12%] text-[11px] text-muted">On Earth</span> : null}
+              <span className="absolute bottom-3 text-[11px] text-muted" style={{ left: showEarth && params.shape !== 'earth' ? '62%' : '46%' }}>
+                {params.shape === 'earth' ? 'On Earth, at 1 g' : 'In freefall'}
+              </span>
+            </>
+          ) : null}
           {reduced && !asked && !failed ? (
             <button type="button" className="btn btn-secondary btn-sm absolute right-2 top-2" onClick={() => setAsked(true)}>
               <Play size={14} aria-hidden="true" /> Play
