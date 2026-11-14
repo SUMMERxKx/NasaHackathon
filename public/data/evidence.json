@@ -1,0 +1,602 @@
+{
+ "schemaVersion": 1,
+ "bundleId": "f6c46dba",
+ "generatedBy": "Built from the PSI snapshot and the insight cards. Wording drafted by SI and reviewed by the team.",
+ "items": {
+  "I1": {
+   "id": "I1",
+   "kind": "insight",
+   "title": "Solid material tests in PSI stop at 22.2% oxygen. A Moon Base is planned at 30% or more.",
+   "text": "Solid material tests in PSI stop at 22.2% oxygen. A Moon Base is planned at 30% or more. The highest oxygen level in any solid material test is 22.2%, in BASS-II, over 129 tests. PSI holds 0 solid material tests at or above 30% oxygen. The challenge statement names two planned experiments that could close this gap: the Lunar-g Combustion Investigation (LUCI) and Flammability of Materials on the Moon (FM2).",
+   "href": "/?drill=insight.I1.maxSolidO2Pct"
+  },
+  "I2": {
+   "id": "I2",
+   "kind": "insight",
+   "title": "Inside the Moon Base region PSI holds 66 tests, and all 66 are gas flames. 0 solid, 0 liquid.",
+   "text": "Inside the Moon Base region PSI holds 66 tests, and all 66 are gas flames. 0 solid, 0 liquid. The region is 30% oxygen or more at 10.2 psi or less, from the challenge statement. Counting every test at or above 30% oxygen at any pressure gives 507: 483 gas flame tests, 24 droplet tests and 0 solid material tests (ACME Flame Design 222, ACME BRE 23, ACME s-Flame 8, FLEX 24, ACME CFI-G 230). 17 FLEX droplet tests sit just outside the region, at 10.3 to 10.5 psi.",
+   "href": "/?drill=insight.I2.moonRegionTests"
+  },
+  "I3": {
+   "id": "I3",
+   "kind": "insight",
+   "title": "PSI holds 0 partial-gravity combustion investigations. All 24 are microgravity or ground studies.",
+   "text": "PSI holds 0 partial-gravity combustion investigations. All 24 are microgravity or ground studies. Of the 24 combustion investigations, 19 are microgravity investigations and 5 are ground investigations. None ran at Moon or Mars gravity. The challenge statement says microgravity and normal gravity results could bound what occurs in between, and that the ACME E-FIELD Flames experiment mimicked partial gravity with an electric field.",
+   "href": "/?drill=insight.I3.partialGravityInvestigations"
+  },
+  "I4": {
+   "id": "I4",
+   "kind": "insight",
+   "title": "The d-squared law predicts FLEX burn times to within about 5%: the median of predicted over measured is 0.951.",
+   "text": "The d-squared law predicts FLEX burn times to within about 5%: the median of predicted over measured is 0.951. For the 196 FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of 0.951. Half of the tests fall between 0.916 and 0.975. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.",
+   "href": "/?drill=insight.I4.medianRatio"
+  },
+  "I5": {
+   "id": "I5",
+   "kind": "insight",
+   "title": "In FLEX, flames went out in 27 of 28 droplet tests at 10 to 15% oxygen and in 2 of 24 at 28 to 36%.",
+   "text": "In FLEX, flames went out in 27 of 28 droplet tests at 10 to 15% oxygen and in 2 of 24 at 28 to 36%. Tests that ended in extinction by oxygen band: 27 of 28 at 10 to 15%, 76 of 87 at 15 to 19%, 63 of 91 at 19 to 23%, 2 of 24 at 28 to 36%. The median extinction ratio, the flame-out diameter divided by the starting diameter, is 0.8 at 10 to 15% oxygen and 0.23 at 28 to 36%. These counts mix fuels, pressures and added gases, so they show a direction and not a limit.",
+   "href": "/?drill=insight.I5.extinction28to36"
+  },
+  "I6": {
+   "id": "I6",
+   "kind": "insight",
+   "title": "186 of 274 FLEX droplet tests ended with the visible flame going out before the fuel was gone.",
+   "text": "186 of 274 FLEX droplet tests ended with the visible flame going out before the fuel was gone. Methanol, 157 tests: 126 extinction, 23 disruption, 8 completion. Heptane, 117 tests: 60 extinction, 38 disruption, 19 completion. Extinction means the visible flame went out. Disruption means the droplet broke up. Completion means it burned away. A flame going out is not proof that all burning stopped, because FLEX also found cool flames.",
+   "href": "/?drill=insight.I6.extinctionAll"
+  },
+  "I7": {
+   "id": "I7",
+   "kind": "insight",
+   "title": "In Saffire-II, 5 of 8 single-material samples burned a shorter length in microgravity than in normal gravity. 0 burned longer.",
+   "text": "In Saffire-II, 5 of 8 single-material samples burned a shorter length in microgravity than in normal gravity. 0 burned longer. 3 samples burned the same length in both. 3 of the shorter ones were silicone samples that burned in normal gravity and barely burned in microgravity. The table gives lengths as text such as \"Complete\" and \"~ 10 cm\", which EMBER reads as the full sample length and 10 cm. This is 9 samples at one flow speed and about 22% oxygen, so it bounds the question and does not settle it.",
+   "href": "/?drill=insight.I7.shorterInMicrogravity"
+  },
+  "I8": {
+   "id": "I8",
+   "kind": "insight",
+   "title": "BASS-II burned 129 solid samples in 7 material groups, at 13.6% to 22.2% oxygen.",
+   "text": "BASS-II burned 129 solid samples in 7 material groups, at 13.6% to 22.2% oxygen. PMMA rods: 54 tests, oxygen 13.6% to 22.2%. Cotton and fiberglass fabric (SIBAL): 27 tests, oxygen 16.4% to 20.8%. PMMA films: 22 tests, oxygen 15% to 22.2%. PMMA sheets and slabs: 20 tests, oxygen 17.9% to 22.2%. Nomex: 3 tests, oxygen 21% to 22.2%. Other materials: 2 tests, oxygen 17.2% to 17.3%. Candle wax: 1 test, oxygen 17.4%. EMBER groups the free-text sample names in the table into these families. Pressure is not in the table and is assumed to be one atmosphere.",
+   "href": "/?drill=insight.I8.tests"
+  },
+  "I9": {
+   "id": "I9",
+   "kind": "insight",
+   "title": "SAME-R made smoke from 5 materials in 109 tests and let it age for 21 s to 1,923 s before measuring it.",
+   "text": "SAME-R made smoke from 5 materials in 109 tests and let it age for 21 s to 1,923 s before measuring it. Tests by material: Kapton 29, Silicone 22, Lampwick 20, Pyrell 20, Teflon 18. 104 tests list a net ageing time. Smoke particles grow as smoke ages, and particle size decides whether a detector sees them. The atmosphere is not in the table and is assumed to be cabin air.",
+   "href": "/?drill=insight.I9.tests"
+  },
+  "I10": {
+   "id": "I10",
+   "kind": "insight",
+   "title": "The highest oxygen level in any PSI combustion test is 85%, in 131 inverse gas flame tests.",
+   "text": "The highest oxygen level in any PSI combustion test is 85%, in 131 inverse gas flame tests. ACME Flame Design 52, ACME CFI-G 79. Every one is an inverse flame, where the oxidizer flows from the burner into a fuel gas. So 85% is the oxygen level of the oxidizer stream and not of a cabin atmosphere.",
+   "href": "/?drill=insight.I10.maxO2Pct"
+  },
+  "I11": {
+   "id": "I11",
+   "kind": "insight",
+   "title": "The 24 combustion investigations hold 13.5 TB of archived data. The test tables EMBER reads are a summary of it.",
+   "text": "The 24 combustion investigations hold 13.5 TB of archived data. The test tables EMBER reads are a summary of it. The three largest archives are ACME Flame Design at 2.2 TB, ACME CFI-G at 2.1 TB, ACME BRE at 2.0 TB. EMBER works from the experimental tables, which list one row per test, and not from the raw video and sensor files.",
+   "href": "/?drill=insight.I11.totalTB"
+  },
+  "I12": {
+   "id": "I12",
+   "kind": "insight",
+   "title": "Evidence Coverage is 100 out of 100 near the ISS cabin and 67 near the Exploration atmosphere.",
+   "text": "Evidence Coverage is 100 out of 100 near the ISS cabin and 67 near the Exploration atmosphere. Evidence Coverage by habitat: ISS cabin 100, Shuttle EVA preparation 97, Exploration atmosphere 67, Moon Base bound 82, Mars surface habitat 67, Spacesuit 0. The score counts real flight tests near each atmosphere, with tests that rest on an assumed value at half weight. It is not a safety rating.",
+   "href": "/?drill=insight.I12.exploration"
+  },
+  "PSI-10": {
+   "id": "PSI-10",
+   "kind": "investigation",
+   "title": "ACME Flame Design: Advanced Combustion via Microgravity Experiments / Flame Design",
+   "text": "ACME Flame Design (PSI-10) is the investigation \"Advanced Combustion via Microgravity Experiments / Flame Design\". It is a microgravity investigation in the pillar fundamentals, which supports all three pillars. Hardware: Combustion Integrated Rack with the ACME insert. It ran from 1999 to 2025. What was burned: Ethylene and methane gas flames around a small spherical burner, in both normal and inverse (inside-out) form. What was varied: Oxygen level, dilution with inert gas, flow rate and pressure. Why it matters: It maps when gas flames make soot and when they go out, which feeds the flame models that fire safety tools rely on. It informs habitat atmosphere and ventilation design. Its PSI table lists 327 tests. Fuels or materials: C2H4 (307), C3H8 (20). Oxygen from 19.8% to 85%. Pressure from 6.3 to 44.4 psi.",
+   "href": "/investigations/PSI-10"
+  },
+  "PSI-20": {
+   "id": "PSI-20",
+   "kind": "investigation",
+   "title": "ACME BRE: Advanced Combustion via Microgravity Experiments - Burning Rate Emulator",
+   "text": "ACME BRE (PSI-20) is the investigation \"Advanced Combustion via Microgravity Experiments - Burning Rate Emulator\". It is a microgravity investigation in the pillar prevention. Hardware: Combustion Integrated Rack with the ACME insert. It ran from 2010 to 2025. What was burned: Methane and ethylene gas mixtures fed through porous flat burners of 25 and 50 mm, standing in for burning solids and liquids. What was varied: The surrounding oxygen level, the burner size and the fuel mixture. Why it matters: The record says burning like that of materials such as PMMA and Nylon carried on in microgravity with no air flow, which matters because stopping ventilation is a standard step in fighting a spacecraft fire. It informs material selection and flammability screening and habitat atmosphere and ventilation design. Its PSI table lists 43 tests. Fuels or materials: 100% C2H4 (27), 50% C2H4 (11), 100% CH4 (5). Oxygen from 21% to 40%. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-20"
+  },
+  "PSI-21": {
+   "id": "PSI-21",
+   "kind": "investigation",
+   "title": "ACME CLD Flame: Advanced Combustion via Microgravity Experiments / Coflow Laminar Diffusion Flame",
+   "text": "ACME CLD Flame (PSI-21) is the investigation \"Advanced Combustion via Microgravity Experiments / Coflow Laminar Diffusion Flame\". It is a microgravity investigation in the pillar fundamentals, which supports all three pillars. Hardware: Combustion Integrated Rack with the ACME insert. It ran from 2006 to 2022. What was burned: Methane and ethylene gas flames in a slow stream of air around the burner (coflow). What was varied: Flow speed and how much the fuel was diluted. Why it matters: It gives clean data on weak and sooty flames to test computer models of flame shape, lift-off and extinction. Its PSI table lists 32 tests. Fuels or materials: 40% CH4 (13), 100% C2H4 (8), 50% C2H4 (6), 100% CH4 (3), 30% C2H4 (2). The table states no oxygen value.",
+   "href": "/investigations/PSI-21"
+  },
+  "PSI-22": {
+   "id": "PSI-22",
+   "kind": "investigation",
+   "title": "ACME E-FIELD Flames: Advanced Combustion via Microgravity Experiments Electric-Field Effects on Laminar Diffusion Flames",
+   "text": "ACME E-FIELD Flames (PSI-22) is the investigation \"Advanced Combustion via Microgravity Experiments Electric-Field Effects on Laminar Diffusion Flames\". It is a microgravity investigation in the pillar fundamentals, which supports all three pillars. Hardware: Combustion Integrated Rack with the ACME insert. It ran from 2016 to 2020. What was burned: Methane and ethylene gas flames between a burner and a charged mesh. What was varied: The electric field, its polarity and the fuel concentration. Why it matters: It shows how an electric field pulls on flame ions and moves a flame. The challenge statement notes this was used to mimic partial gravity. Its PSI table lists 32 tests. Fuels or materials: 100% C2H4 (14), 100% CH4 (9), 40% CH4 (5), 30% C2H4 (4). The table states no oxygen value.",
+   "href": "/investigations/PSI-22"
+  },
+  "PSI-23": {
+   "id": "PSI-23",
+   "kind": "investigation",
+   "title": "ACME s-Flame: Advanced Combustion via Microgravity Experiments-Structure and Response of Spherical Diffusion Flames",
+   "text": "ACME s-Flame (PSI-23) is the investigation \"Advanced Combustion via Microgravity Experiments-Structure and Response of Spherical Diffusion Flames\". It is a microgravity investigation in the pillar fundamentals, which supports all three pillars. Hardware: Combustion Integrated Rack with the ACME insert. It ran from 2015 to 2019. What was burned: Hydrogen, methane and ethylene mixtures from a spherical porous burner, giving round flames. What was varied: The fuel mixture, the inert gas and the oxygen level, near 21 and 30 percent. Why it matters: Simple round flames let models of flame structure and extinction be tested without buoyancy in the way. It informs habitat atmosphere and ventilation design. Its PSI table lists 23 tests. Fuels or materials: 50% C2H4 with N2 (3), 100% H2 (2), 25% C2H4 with He (2), 30% C2H4 with He (2), 35% H2 with He (2), 45% CH4 with He (2), 45% CH4 with N2 (2), 45% H2 with He (2). Oxygen from 21% to 30%. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-23"
+  },
+  "PSI-25": {
+   "id": "PSI-25",
+   "kind": "investigation",
+   "title": "BASS-II: Burning and Suppression of Solids - II",
+   "text": "BASS-II (PSI-25) is the investigation \"Burning and Suppression of Solids - II\". It is a microgravity investigation in the pillar prevention. Hardware: Microgravity Science Glovebox with the SPICE flow duct. It ran from 2010 to 2022. What was burned: Solid samples such as PMMA rods, PMMA films and fabric in a small wind tunnel in the glovebox. What was varied: Oxygen level, air flow speed, flow direction and sample thickness. Why it matters: It measures where a solid stops burning in low flow, to connect NASA's ground flammability test with how materials really burn in microgravity. It informs material selection and flammability screening and habitat atmosphere and ventilation design. Its PSI table lists 129 tests. Fuels or materials: PMMA rods (54), Cotton and fiberglass fabric (SIBAL) (27), PMMA films (22), PMMA sheets and slabs (20), Nomex (3), Other materials (2), Candle wax (1). Oxygen from 13.6% to 22.2%. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-25"
+  },
+  "PSI-26": {
+   "id": "PSI-26",
+   "kind": "investigation",
+   "title": "BASS: Burning and Suppression of Solids",
+   "text": "BASS (PSI-26) is the investigation \"Burning and Suppression of Solids\". It is a microgravity investigation in the pillar prevention. Hardware: Microgravity Science Glovebox with the SPICE flow duct. It ran from 2009 to 2013. What was burned: Solid samples including cotton and fiberglass fabric, Nomex and PMMA spheres in a small wind tunnel in the glovebox. What was varied: Material, sample shape and air flow. Some tests used nitrogen to put the flame out. Why it matters: It begins to bridge NASA's normal gravity screening test (NASA-STD-6001 Test 1) and real flammability in microgravity. It informs extinguishers and suppressants and material selection and flammability screening. Its PSI table lists 122 tests. Fuels or materials: PMMA spheres (50), PMMA sheets and slabs (28), Candle wax (23), Cotton and fiberglass fabric (SIBAL) (12), Nomex (6), Other materials (3). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-26"
+  },
+  "PSI-39": {
+   "id": "PSI-39",
+   "kind": "investigation",
+   "title": "CFI: Cool Flames Investigation",
+   "text": "CFI (PSI-39) is the investigation \"Cool Flames Investigation\". It is a microgravity investigation in the pillar fundamentals, which supports all three pillars. Hardware: Combustion Integrated Rack with the Multi-user Droplet Combustion Apparatus. It ran from 2020 to 2021. What was burned: Droplets of n-dodecane and mixtures with iso-dodecane, some held on a fiber. What was varied: Pressure, oxygen level and helium dilution. Why it matters: It studies cool flames, where a droplet keeps burning at low temperature after the visible flame goes out. It informs habitat atmosphere and ventilation design. Its PSI table lists 87 tests. Fuels or materials: [.60]/[.40] C12H26/iso-dodecane (41), [.75]/[.25] C12H26/iso-dodecane (24), C12H26 (22). Oxygen from 17% to 21%. Pressure from 7.3 to 73.5 psi.",
+   "href": "/investigations/PSI-39"
+  },
+  "PSI-47": {
+   "id": "PSI-47",
+   "kind": "investigation",
+   "title": "DAFT and DAFT-2: Dust and Aerosol Measurement Feasibility Test / Dust and Aerosol Measurement Feasibility Test-2",
+   "text": "DAFT and DAFT-2 (PSI-47) is the investigation \"Dust and Aerosol Measurement Feasibility Test / Dust and Aerosol Measurement Feasibility Test-2\". It is a microgravity investigation in the pillar detection. Hardware: Smoke and aerosol instruments. It ran from 2003 to 2009. What was burned: Nothing was burned. It sampled dust and aerosol particles in ISS cabin air. What was varied: The instrument used and the place sampled. Why it matters: It proved a particle counter could work in microgravity before the SAME smoke experiment relied on it, which supports better smoke detectors. It informs smoke and fire detectors. Its PSI table lists 2 tests. Fuels or materials: Arizona Road Dust (ARD Fine) (2). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-47"
+  },
+  "PSI-60": {
+   "id": "PSI-60",
+   "kind": "investigation",
+   "title": "SPICE data analysis: Computational and Experimental Analysis of SPICE Data Sets",
+   "text": "SPICE data analysis (PSI-60) is the investigation \"Computational and Experimental Analysis of SPICE Data Sets\". It is a ground investigation in the pillar fundamentals, which supports all three pillars. Hardware: Ground and modelling studies. It ran from 2019 to 2022. What was burned: Nothing new was burned. This ground study analysed images of SPICE gas jet flames held in PSI. What was varied: The analysis compared soot in normal gravity and microgravity flames. Why it matters: It turns archived flame images into soot temperature and soot amount, which improves models of soot and heat from flames. It has no test table in PSI.",
+   "href": "/investigations/PSI-60"
+  },
+  "PSI-62": {
+   "id": "PSI-62",
+   "kind": "investigation",
+   "title": "BASS flame spread modelling: Concurrent Flame Spread Modeling using Flamelet Generated Manifolds in Microgravity with Comparison to BASS Experiments using Two-Color Tomography",
+   "text": "BASS flame spread modelling (PSI-62) is the investigation \"Concurrent Flame Spread Modeling using Flamelet Generated Manifolds in Microgravity with Comparison to BASS Experiments using Two-Color Tomography\". It is a ground investigation in the pillar prevention. Hardware: Ground and modelling studies. It ran from 2019 to 2021. What was burned: Nothing new was burned. This ground study modelled flame spread over solids and compared it with BASS flight data. What was varied: The modelling method, checked against flames spreading with the air flow. Why it matters: The record says it provides predictive tools for screening the flammability limits of new materials. It informs material selection and flammability screening. It has no test table in PSI.",
+   "href": "/investigations/PSI-62"
+  },
+  "PSI-68": {
+   "id": "PSI-68",
+   "kind": "investigation",
+   "title": "FLEX-2: Flame Extinguishment Experiment - 2",
+   "text": "FLEX-2 (PSI-68) is the investigation \"Flame Extinguishment Experiment - 2\". It is a microgravity investigation in the pillar suppression. Hardware: Combustion Integrated Rack with the Multi-user Droplet Combustion Apparatus. It ran from 2016 to 2019. What was burned: Droplets of liquid fuels such as heptane, octane, decane and alcohol mixtures. What was varied: Fuel, oxygen level, pressure, the inert gas and flow speed. Why it matters: It extends FLEX to more realistic fuels and gives benchmark data to test models of droplet burning and extinction. It informs extinguishers and suppressants and habitat atmosphere and ventilation design. Its PSI table lists 8 tests. Fuels or materials: Decane (pure) (1), Ethanol (pure) (1), Heptane (50%) IsoOctane (50%) (mixture) (1), Heptane (pure) (1), IsoOctane (pure) (1), Propanol (80%) Glycerol (20%) (mixture) (1), Propanol (95%) Glycerol (5%) (mixture) (1), n-Octane (pure) (1). The table states no oxygen value.",
+   "href": "/investigations/PSI-68"
+  },
+  "PSI-69": {
+   "id": "PSI-69",
+   "kind": "investigation",
+   "title": "FLEX: Flame Extinguishment Experiment",
+   "text": "FLEX (PSI-69) is the investigation \"Flame Extinguishment Experiment\". It is a microgravity investigation in the pillar suppression. Hardware: Combustion Integrated Rack with the Multi-user Droplet Combustion Apparatus. It ran from 2007 to 2016. What was burned: Single droplets of methanol and heptane, a few millimetres across. What was varied: Oxygen level, pressure and the added gases carbon dioxide and helium. Why it matters: It maps where liquid fuel flames go out in microgravity and how well gaseous suppressants work, which informs extinguisher design. It informs extinguishers and suppressants and habitat atmosphere and ventilation design. Its PSI table lists 274 tests. Fuels or materials: Methanol (157), Heptane (117). Oxygen from 12% to 34%. Pressure from 10.2 to 44.9 psi.",
+   "href": "/investigations/PSI-69"
+  },
+  "PSI-98": {
+   "id": "PSI-98",
+   "kind": "investigation",
+   "title": "Saffire-I: Spacecraft Fire Safety Experiment-I",
+   "text": "Saffire-I (PSI-98) is the investigation \"Spacecraft Fire Safety Experiment-I\". It is a microgravity investigation in the pillar prevention. Hardware: Cygnus cargo vehicle. It ran from 2001 to 2008. What was burned: A large sheet of cotton and fiberglass fabric, about 40 cm wide and 94 cm long, inside an uncrewed Cygnus cargo vehicle. What was varied: The direction of the air flow relative to the flame. Why it matters: It shows how fast a large fire grows in low gravity, at a scale that cannot be tested with a crew aboard. It informs material selection and flammability screening. Its PSI table lists 2 tests. Fuels or materials: Cotton and fiberglass fabric (SIBAL) (2). Oxygen 21.5%. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-98"
+  },
+  "PSI-99": {
+   "id": "PSI-99",
+   "kind": "investigation",
+   "title": "Saffire-II: Spacecraft Fire Experiment-II",
+   "text": "Saffire-II (PSI-99) is the investigation \"Spacecraft Fire Experiment-II\". It is a microgravity investigation in the pillar prevention. Hardware: Cygnus cargo vehicle. It ran from 2016 to 2017. What was burned: Nine smaller samples including silicone, cotton and fiberglass fabric, PMMA and Nomex, inside an uncrewed Cygnus cargo vehicle. What was varied: Material, thickness and flow direction, with the same samples also tested in normal gravity. Why it matters: It compares low gravity flammability limits with NASA's normal gravity screening test, material by material. It informs material selection and flammability screening. Its PSI table lists 9 tests. Fuels or materials: Silicone (4), Cotton and fiberglass fabric (SIBAL) (2), PMMA sheets and slabs (2), Nomex (1). Oxygen from 21.5% to 22.1%. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-99"
+  },
+  "PSI-100": {
+   "id": "PSI-100",
+   "kind": "investigation",
+   "title": "Saffire-III: Spacecraft Fire Experiment-III",
+   "text": "Saffire-III (PSI-100) is the investigation \"Spacecraft Fire Experiment-III\". It is a microgravity investigation in the pillar prevention. Hardware: Cygnus cargo vehicle. What was burned: A large sheet of cotton and fiberglass fabric inside an uncrewed Cygnus cargo vehicle, at a higher air flow than Saffire-I. What was varied: The direction of the air flow relative to the flame. Why it matters: It adds a second large scale fire test in low gravity, to see how flow speed changes fire growth. It informs material selection and flammability screening. Its PSI table lists 2 tests. Fuels or materials: Cotton and fiberglass fabric (SIBAL) (2). The table states no oxygen value. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-100"
+  },
+  "PSI-101": {
+   "id": "PSI-101",
+   "kind": "investigation",
+   "title": "SAME-R: Smoke Aerosol Measurement Experiment-Reflight",
+   "text": "SAME-R (PSI-101) is the investigation \"Smoke Aerosol Measurement Experiment-Reflight\". It is a microgravity investigation in the pillar detection. Hardware: Smoke and aerosol instruments. It ran from 2010 to 2010. What was burned: Nothing was set alight. Samples of Kapton, silicone, lamp wick, Pyrell and Teflon were overheated to make smoke. What was varied: Material, air flow, heating and how long the smoke aged before it was measured. Why it matters: It measures smoke particle sizes in microgravity so that future spacecraft fire detectors can be tuned to real smoke. It informs smoke and fire detectors. Its PSI table lists 109 tests. Fuels or materials: Kapton (29), Silicone (22), Lampwick (20), Pyrell (20), Teflon (18). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-101"
+  },
+  "PSI-102": {
+   "id": "PSI-102",
+   "kind": "investigation",
+   "title": "SAME: Smoke and Aerosol Measurement Experiment",
+   "text": "SAME (PSI-102) is the investigation \"Smoke and Aerosol Measurement Experiment\". It is a microgravity investigation in the pillar detection. Hardware: Smoke and aerosol instruments. It ran from 2001 to 2008. What was burned: Nothing was set alight. Spacecraft materials such as Teflon were overheated to make smoke. What was varied: Material, air flow and smoke ageing time. Why it matters: The record says SAME will provide technology for an advanced fire detector for long missions. It informs smoke and fire detectors. Its PSI table lists 8 tests. Fuels or materials: Teflon (4), Dibutyl Phthalate (1), Kapton (1), Lampwick (1), Silicone Rubber (1). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-102"
+  },
+  "PSI-106": {
+   "id": "PSI-106",
+   "kind": "investigation",
+   "title": "SLICE: Structure and Liftoff In Combustion Experiment",
+   "text": "SLICE (PSI-106) is the investigation \"Structure and Liftoff In Combustion Experiment\". It is a microgravity investigation in the pillar fundamentals, which supports all three pillars. Hardware: Microgravity Science Glovebox with the SPICE flow duct. What was burned: Methane, ethylene and nitrogen-diluted gas jet flames in the glovebox flow duct. What was varied: Fuel, dilution, burner size and flow speed. Why it matters: It studies what holds a flame to its burner and when it lifts off, which improves models of flame stability. Its PSI table lists 12 tests. Fuels or materials: 100% CH4 (3), 70% CH4 (balance N2) (3), 20% C2H4 (balance N2) (2), 40% CH4 (balance N2) (2), 100% C2H4 (1), 100% C2H6 (1). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-106"
+  },
+  "PSI-107": {
+   "id": "PSI-107",
+   "kind": "investigation",
+   "title": "SPICE: Smoke Point In Co-flow Experiment",
+   "text": "SPICE (PSI-107) is the investigation \"Smoke Point In Co-flow Experiment\". It is a microgravity investigation in the pillar fundamentals, which supports all three pillars. Hardware: Microgravity Science Glovebox with the SPICE flow duct. What was burned: Gas jet flames of methane, ethylene, propane and propylene in a stream of air. What was varied: Fuel, nozzle size, fuel flow and air speed. Why it matters: It finds the smoke point, the flame size at which a flame starts to give off soot, with no buoyancy. Its PSI table lists 469 tests. Fuels or materials: 75% Propylene (135), Propylene (122), 50% Propylene (111), Propane (50), Ethylene (47), Methane (4). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
+   "href": "/investigations/PSI-107"
+  },
+  "PSI-115": {
+   "id": "PSI-115",
+   "kind": "investigation",
+   "title": "SAME smoke simulation: Utilization of the Smoke Aerosol Measurement Experiment Data for Advanced Modeling and Simulation of Smoke Generation in Micro-Gravity",
+   "text": "SAME smoke simulation (PSI-115) is the investigation \"Utilization of the Smoke Aerosol Measurement Experiment Data for Advanced Modeling and Simulation of Smoke Generation in Micro-Gravity\". It is a ground investigation in the pillar detection. Hardware: Ground and modelling studies. It ran from 2017 to 2019. What was burned: Nothing was burned. This ground study simulated smoke particles from the SAME experiment. What was varied: Gravity level in the simulation, Earth gravity against microgravity. Why it matters: The record says such models would lead to better smoke detection devices. It informs smoke and fire detectors. It has no test table in PSI.",
+   "href": "/investigations/PSI-115"
+  },
+  "PSI-117": {
+   "id": "PSI-117",
+   "kind": "investigation",
+   "title": "Cool flame CFD analysis: Effect of External Thermo-Convective Perturbation on Cool Flame Dynamics: A Multidimensional Multi-Physics CFD Analysis",
+   "text": "Cool flame CFD analysis (PSI-117) is the investigation \"Effect of External Thermo-Convective Perturbation on Cool Flame Dynamics: A Multidimensional Multi-Physics CFD Analysis\". It is a ground investigation in the pillar fundamentals, which supports all three pillars. Hardware: Ground and modelling studies. It ran from 2017 to 2022. What was burned: Nothing was burned. This ground study simulated cool flames on fuel droplets using FLEX flight data. What was varied: Heating and drift of the droplet in the simulation. Why it matters: It explains why cool flames behaved differently from run to run, which improves spacecraft fire models. It has no test table in PSI.",
+   "href": "/investigations/PSI-117"
+  },
+  "PSI-142": {
+   "id": "PSI-142",
+   "kind": "investigation",
+   "title": "Cool flame counterflow study: Quantitative Studies of Cool Flame Transitions at Radiation / Stretch Extinction Using Counterflow Flames",
+   "text": "Cool flame counterflow study (PSI-142) is the investigation \"Quantitative Studies of Cool Flame Transitions at Radiation / Stretch Extinction Using Counterflow Flames\". It is a ground investigation in the pillar fundamentals, which supports all three pillars. Hardware: Ground and modelling studies. It ran from 2016 to 2021. What was burned: Laboratory flames on the ground, set up to mirror FLEX conditions. What was varied: Oxygen level and the addition of ozone. Why it matters: It maps when cool flames can exist and when they go out, building on FLEX data. Its PSI table lists 8 tests. Fuels or materials: . The table states no oxygen value.",
+   "href": "/investigations/PSI-142"
+  },
+  "PSI-159": {
+   "id": "PSI-159",
+   "kind": "investigation",
+   "title": "ACME CFI-G: Advanced Combustion via Microgravity Experiments / Cool Flames Investigation with Gases",
+   "text": "ACME CFI-G (PSI-159) is the investigation \"Advanced Combustion via Microgravity Experiments / Cool Flames Investigation with Gases\". It is a microgravity investigation in the pillar fundamentals, which supports all three pillars. Hardware: Combustion Integrated Rack with the ACME insert. What was burned: Gas flames of ethane, propane, butane and similar fuels around a spherical burner, in normal and inverse form. What was varied: Fuel, oxygen level up to 85 percent in the oxidizer stream, dilution and pressure. Why it matters: It finds the conditions where cool gas flames exist, and holds the highest oxygen levels of any microgravity test in PSI. It informs habitat atmosphere and ventilation design. Its PSI table lists 333 tests. Fuels or materials: ethane (67), propane (63), butane (58), 30% butane (52), 30% propane (36), 50% butane (30), 30% ethane (27). Oxygen from 12% to 85%. Pressure from 7.2 to 48 psi.",
+   "href": "/investigations/PSI-159"
+  },
+  "G-cool-flame": {
+   "id": "G-cool-flame",
+   "kind": "glossary",
+   "title": "Cool flame",
+   "text": "Cool flame: A flame that burns at a low temperature with little or no visible light. NASA's Researcher's Guide describes stable cool flames that form after the visible flame of a heptane droplet goes out. FLEX discovered this, and CFI and CFI-G studied it further.",
+   "href": "/methods?section=glossary"
+  },
+  "G-microgravity": {
+   "id": "G-microgravity",
+   "kind": "glossary",
+   "title": "Microgravity",
+   "text": "Microgravity: The near weightless condition of freefall, as on the International Space Station. Hot gas does not rise, so flames lose the upward flow that feeds them on Earth and often become round.",
+   "href": "/methods?section=glossary"
+  },
+  "G-partial-gravity": {
+   "id": "G-partial-gravity",
+   "kind": "glossary",
+   "title": "Partial gravity",
+   "text": "Partial gravity: Gravity between zero and Earth level, such as the Moon at 0.166 g or Mars at 0.38 g. PSI holds no partial-gravity combustion tests yet.",
+   "href": "/methods?section=glossary"
+  },
+  "G-diffusion-flame": {
+   "id": "G-diffusion-flame",
+   "kind": "glossary",
+   "title": "Diffusion flame",
+   "text": "Diffusion flame: A flame where fuel and oxygen start apart and meet at the flame. A candle is one. Most accidental fires are diffusion flames.",
+   "href": "/methods?section=glossary"
+  },
+  "G-inverse-flame": {
+   "id": "G-inverse-flame",
+   "kind": "glossary",
+   "title": "Inverse flame",
+   "text": "Inverse flame: An inside-out flame. The oxidizer flows from the burner into a surrounding fuel gas. In these tests the oxygen value describes the oxidizer stream and not a cabin atmosphere.",
+   "href": "/methods?section=glossary"
+  },
+  "G-d-squared-law": {
+   "id": "G-d-squared-law",
+   "kind": "glossary",
+   "title": "d-squared law",
+   "text": "d-squared law: A classical result for a burning droplet. The square of its diameter falls in a straight line with time. The slope is the burning rate constant.",
+   "href": "/methods?section=glossary"
+  },
+  "G-burning-rate": {
+   "id": "G-burning-rate",
+   "kind": "glossary",
+   "title": "Burning rate constant",
+   "text": "Burning rate constant: How fast the square of a droplet's diameter shrinks, in square millimetres per second. A larger value means the droplet burns away faster.",
+   "href": "/methods?section=glossary"
+  },
+  "G-extinction": {
+   "id": "G-extinction",
+   "kind": "glossary",
+   "title": "Extinction",
+   "text": "Extinction: The point where a flame goes out. In FLEX, extinction means the visible flame went out before the droplet was fully burned.",
+   "href": "/methods?section=glossary"
+  },
+  "G-flammability-limit": {
+   "id": "G-flammability-limit",
+   "kind": "glossary",
+   "title": "Flammability limit",
+   "text": "Flammability limit: The boundary between conditions where a material burns and where it does not, for example the lowest oxygen level that still supports a flame.",
+   "href": "/methods?section=glossary"
+  },
+  "G-normoxic": {
+   "id": "G-normoxic",
+   "kind": "glossary",
+   "title": "Normoxic atmosphere",
+   "text": "Normoxic atmosphere: An atmosphere that gives the same oxygen partial pressure as sea level air, about 0.21 atm. Lower pressure with more oxygen can keep breathing normal and still make materials easier to burn.",
+   "href": "/methods?section=glossary"
+  },
+  "G-diluent": {
+   "id": "G-diluent",
+   "kind": "glossary",
+   "title": "Diluent",
+   "text": "Diluent: An inert gas mixed into the atmosphere or the fuel, such as nitrogen, carbon dioxide or helium. Diluents take heat from a flame and can put it out.",
+   "href": "/methods?section=glossary"
+  },
+  "G-carbon-dioxide": {
+   "id": "G-carbon-dioxide",
+   "kind": "glossary",
+   "title": "Carbon dioxide as a suppressant",
+   "text": "Carbon dioxide as a suppressant: The FLEX record names carbon dioxide and helium among the gaseous fire suppressants it set out to measure. FLEX burned droplets in atmospheres with added carbon dioxide to see how well it suppresses a flame.",
+   "href": "/methods?section=glossary"
+  },
+  "G-helium": {
+   "id": "G-helium",
+   "kind": "glossary",
+   "title": "Helium as a diluent",
+   "text": "Helium as a diluent: Helium carries heat away from a flame quickly. FLEX and CFI used helium in some atmospheres to study extinction and cool flames.",
+   "href": "/methods?section=glossary"
+  },
+  "G-pmma": {
+   "id": "G-pmma",
+   "kind": "glossary",
+   "title": "PMMA",
+   "text": "PMMA: Polymethyl methacrylate, a clear plastic also known as acrylic. It burns steadily, so it is a standard sample in flammability tests such as BASS-II and Saffire-II.",
+   "href": "/methods?section=glossary"
+  },
+  "G-sibal": {
+   "id": "G-sibal",
+   "kind": "glossary",
+   "title": "SIBAL fabric",
+   "text": "SIBAL fabric: A fabric of 75 percent cotton on a 25 percent fiberglass backing, made for flame spread tests. BASS and Saffire burned it.",
+   "href": "/methods?section=glossary"
+  },
+  "G-concurrent-flow": {
+   "id": "G-concurrent-flow",
+   "kind": "glossary",
+   "title": "Concurrent and opposed flow",
+   "text": "Concurrent and opposed flow: Concurrent means the flame spreads in the same direction as the air flow. Opposed means it spreads against the flow. Saffire and BASS tested both.",
+   "href": "/methods?section=glossary"
+  },
+  "G-smoke-point": {
+   "id": "G-smoke-point",
+   "kind": "glossary",
+   "title": "Smoke point",
+   "text": "Smoke point: The flame size at which a flame starts to release soot as smoke. SPICE measured smoke points of gas jet flames in microgravity.",
+   "href": "/methods?section=glossary"
+  },
+  "G-smoke-aerosol": {
+   "id": "G-smoke-aerosol",
+   "kind": "glossary",
+   "title": "Smoke aerosol",
+   "text": "Smoke aerosol: The tiny particles and droplets that make up smoke. Their size decides whether a detector can see them. SAME and SAME-R measured them in microgravity.",
+   "href": "/methods?section=glossary"
+  },
+  "G-adiabatic-flame-temperature": {
+   "id": "G-adiabatic-flame-temperature",
+   "kind": "glossary",
+   "title": "Adiabatic flame temperature",
+   "text": "Adiabatic flame temperature: The temperature a flame would reach if it lost no heat. It is a calculated upper value. The ACME tables list it in a column headed Tad (K).",
+   "href": "/methods?section=glossary"
+  },
+  "G-evidence-coverage": {
+   "id": "G-evidence-coverage",
+   "kind": "glossary",
+   "title": "Evidence Coverage",
+   "text": "Evidence Coverage: EMBER's count of real flight tests near a chosen habitat atmosphere, on a scale of 0 to 100. It is not a safety rating.",
+   "href": "/methods?section=glossary"
+  },
+  "G-pillars": {
+   "id": "G-pillars",
+   "kind": "glossary",
+   "title": "Prevention, detection and suppression",
+   "text": "Prevention, detection and suppression: The three parts of spacecraft fire safety named in the challenge statement. Prevention is about materials and ignition sources. Detection is about sensing smoke. Suppression is about putting a fire out.",
+   "href": "/methods?section=glossary"
+  },
+  "G-nasa-std-6001": {
+   "id": "G-nasa-std-6001",
+   "kind": "glossary",
+   "title": "NASA-STD-6001 Test 1",
+   "text": "NASA-STD-6001 Test 1: NASA's standard flammability screening test, an upward flame propagation test in normal gravity. BASS and Saffire set out to connect it with real behaviour in microgravity.",
+   "href": "/methods?section=glossary"
+  },
+  "G-cir": {
+   "id": "G-cir",
+   "kind": "glossary",
+   "title": "Combustion Integrated Rack",
+   "text": "Combustion Integrated Rack: A combustion laboratory rack on the ISS. It hosted the droplet experiments FLEX, FLEX-2 and CFI, and the ACME gas flame experiments.",
+   "href": "/methods?section=glossary"
+  },
+  "G-msg": {
+   "id": "G-msg",
+   "kind": "glossary",
+   "title": "Microgravity Science Glovebox",
+   "text": "Microgravity Science Glovebox: A sealed work volume on the ISS where crew can run small experiments by hand. BASS, BASS-II, SPICE and SLICE ran in it.",
+   "href": "/methods?section=glossary"
+  },
+  "G-cygnus": {
+   "id": "G-cygnus",
+   "kind": "glossary",
+   "title": "Cygnus cargo vehicle",
+   "text": "Cygnus cargo vehicle: An uncrewed supply ship. After it left the ISS, the Saffire experiments burned large samples inside it, which would be too risky with a crew aboard.",
+   "href": "/methods?section=glossary"
+  },
+  "G-exploration-atmosphere": {
+   "id": "G-exploration-atmosphere",
+   "kind": "glossary",
+   "title": "Exploration atmosphere",
+   "text": "Exploration atmosphere: A cabin atmosphere with more oxygen at lower pressure than sea level air, planned so crews can start spacewalks faster. NASA reports give 34 percent oxygen at 8.2 psi. The challenge statement expects 30 percent or more at 10.2 psi or less for a Moon Base.",
+   "href": "/methods?section=glossary"
+  },
+  "H-iss": {
+   "id": "H-iss",
+   "kind": "habitat",
+   "title": "ISS cabin",
+   "text": "ISS cabin: 21% oxygen at 14.7 psi, microgravity. Source: Challenge statement, sea level pressure. Evidence Coverage near this atmosphere is 100 out of 100: prevention 100, detection 100, suppression 100. Tests within one unit of distance: 1093 (119 aerosol, 618 gas, 127 liquid, 229 solid). The score counts nearby flight tests. It is not a safety rating.",
+   "href": "/?h=iss"
+  },
+  "H-shuttle-eva": {
+   "id": "H-shuttle-eva",
+   "kind": "habitat",
+   "title": "Shuttle EVA preparation",
+   "text": "Shuttle EVA preparation: 26.5% oxygen at 10.2 psi, microgravity. Source: NASA exploration atmosphere reports, NTRS 20130013505. Evidence Coverage near this atmosphere is 97 out of 100: prevention 98, detection 94, suppression 100. Tests within one unit of distance: 43 (43 liquid). The score counts nearby flight tests. It is not a safety rating.",
+   "href": "/?h=shuttle-eva"
+  },
+  "H-exploration": {
+   "id": "H-exploration",
+   "kind": "habitat",
+   "title": "Exploration atmosphere",
+   "text": "Exploration atmosphere: 34% oxygen at 8.2 psi, Moon gravity 0.166 g. Source: NASA Exploration Atmospheres Working Group, NTRS 20130013505 and NTRS 20150021491. Evidence Coverage near this atmosphere is 67 out of 100: prevention 60, detection 58, suppression 84. Tests within one unit of distance: 24 (15 gas, 9 liquid). The score counts nearby flight tests. It is not a safety rating.",
+   "href": "/?h=exploration"
+  },
+  "H-moon-bound": {
+   "id": "H-moon-bound",
+   "kind": "habitat",
+   "title": "Moon Base bound",
+   "text": "Moon Base bound: 30% oxygen at 10.2 psi, Moon gravity 0.166 g. Source: Challenge statement: 30% or greater at 10.2 psi or less. Evidence Coverage near this atmosphere is 82 out of 100: prevention 80, detection 69, suppression 98. Tests within one unit of distance: 14 (6 gas, 8 liquid). The score counts nearby flight tests. It is not a safety rating.",
+   "href": "/?h=moon-bound"
+  },
+  "H-mars": {
+   "id": "H-mars",
+   "kind": "habitat",
+   "title": "Mars surface habitat",
+   "text": "Mars surface habitat: 34% oxygen at 8.2 psi, Mars gravity 0.38 g. Source: The same exploration atmosphere, with Mars gravity. Evidence Coverage near this atmosphere is 67 out of 100: prevention 60, detection 58, suppression 84. Tests within one unit of distance: 24 (15 gas, 9 liquid). The score counts nearby flight tests. It is not a safety rating.",
+   "href": "/?h=mars"
+  },
+  "H-suit": {
+   "id": "H-suit",
+   "kind": "habitat",
+   "title": "Spacesuit",
+   "text": "Spacesuit: 100% oxygen at 4.3 psi, any gravity. Source: Challenge statement. Evidence Coverage near this atmosphere is 0 out of 100: prevention 0, detection 0, suppression 0. Tests within one unit of distance: 0. The score counts nearby flight tests. It is not a safety rating.",
+   "href": "/?h=suit"
+  },
+  "M-coverage": {
+   "id": "M-coverage",
+   "title": "What the Evidence Coverage score means",
+   "text": "Evidence Coverage measures how much real flight evidence sits close to a chosen habitat atmosphere, on a scale of 0 to 100. It is not a safety rating. Each test gets a weight that falls with its distance from the habitat: 4 points of oxygen is one unit of distance and about 25 percent in pressure is one unit. A test whose oxygen or pressure is assumed counts at half weight. For each pillar the weights are summed into an effective number of nearby tests N, and coverage is 100 × (1 − exp(−N ÷ 10)). The overall score is 0.4 × prevention plus 0.3 × detection plus 0.3 × suppression. Fundamentals tests count toward each pillar at a weight of 0.3. The constants are design choices by the team.",
+   "href": "/methods?section=formulas",
+   "kind": "method"
+  },
+  "M-ranking": {
+   "id": "M-ranking",
+   "title": "How investigations are ranked",
+   "text": "The relevance ranking is a transparent heuristic. Each investigation gets a score out of 100 from four parts: how many of its tests sit near the chosen atmosphere (weight 0.45), its fuel type (0.25, with solid materials highest), whether its pillar matches the focus pillar (0.20), and how much test data it has (0.10). Every ranked card shows the four parts under the heading Why this rank.",
+   "href": "/methods?section=formulas",
+   "kind": "method"
+  },
+  "M-dsquared": {
+   "id": "M-dsquared",
+   "title": "The d-squared law",
+   "text": "The d-squared law says the square of a burning droplet's diameter falls in a straight line with time: d(t)² = d0² − K × t. K is the burning rate constant. The burn time to extinction is (d0² − dExt²) ÷ K. EMBER checks this against the FLEX table. Source: Dietrich and co-authors, Droplet Combustion Experiments Aboard the International Space Station, 2014.",
+   "href": "/lab/droplet",
+   "kind": "method"
+  },
+  "M-assumptions": {
+   "id": "M-assumptions",
+   "title": "Declared assumptions",
+   "text": "Some PSI tables do not state an atmosphere. For 6 investigations EMBER assumes cabin air, 21% oxygen at one atmosphere: PSI-26, PSI-102, PSI-101, PSI-47, PSI-107, PSI-106. That covers 722 tests. Assumed values are drawn as hollow marks, marked as assumed in every table, and counted at half weight in the coverage score. They are never presented as measured.",
+   "href": "/methods?section=assumptions",
+   "kind": "method"
+  },
+  "M-limits": {
+   "id": "M-limits",
+   "title": "Limits of EMBER",
+   "text": "The Evidence Coverage score counts evidence and is not a safety rating. The ranking is a heuristic. The PSI test tables are summaries and not the full datasets. Assumed atmospheres are marked. EMBER does not say that any material, atmosphere or habitat is safe or unsafe. PSI holds no partial-gravity combustion tests, so nothing here describes how a flame behaves on the Moon or Mars.",
+   "href": "/methods?section=limits",
+   "kind": "method"
+  },
+  "HW-cir-acme": {
+   "id": "HW-cir-acme",
+   "kind": "hardware",
+   "title": "Combustion Integrated Rack with the ACME insert",
+   "text": "Hardware family: Combustion Integrated Rack with the ACME insert. Gaseous fuels on the ISS. Six ACME experiments shared this hardware. 6 investigations shared it: ACME Flame Design (PSI-10), ACME BRE (PSI-20), ACME CLD Flame (PSI-21), ACME E-FIELD Flames (PSI-22), ACME s-Flame (PSI-23), ACME CFI-G (PSI-159).",
+   "href": "/investigations?hw=cir-acme"
+  },
+  "HW-cir-mdca": {
+   "id": "HW-cir-mdca",
+   "kind": "hardware",
+   "title": "Combustion Integrated Rack with the Multi-user Droplet Combustion Apparatus",
+   "text": "Hardware family: Combustion Integrated Rack with the Multi-user Droplet Combustion Apparatus. Liquid fuel droplets on the ISS. 3 investigations shared it: CFI (PSI-39), FLEX-2 (PSI-68), FLEX (PSI-69).",
+   "href": "/investigations?hw=cir-mdca"
+  },
+  "HW-msg-spice": {
+   "id": "HW-msg-spice",
+   "kind": "hardware",
+   "title": "Microgravity Science Glovebox with the SPICE flow duct",
+   "text": "Hardware family: Microgravity Science Glovebox with the SPICE flow duct. Solid and gaseous fuels in a small flow duct on the ISS. 4 investigations shared it: BASS-II (PSI-25), BASS (PSI-26), SLICE (PSI-106), SPICE (PSI-107).",
+   "href": "/investigations?hw=msg-spice"
+  },
+  "HW-cygnus": {
+   "id": "HW-cygnus",
+   "kind": "hardware",
+   "title": "Cygnus cargo vehicle",
+   "text": "Hardware family: Cygnus cargo vehicle. Large solid samples burned in an uncrewed cargo vehicle after it left the ISS. 3 investigations shared it: Saffire-I (PSI-98), Saffire-II (PSI-99), Saffire-III (PSI-100).",
+   "href": "/investigations?hw=cygnus"
+  },
+  "HW-smoke-aerosol": {
+   "id": "HW-smoke-aerosol",
+   "kind": "hardware",
+   "title": "Smoke and aerosol instruments",
+   "text": "Hardware family: Smoke and aerosol instruments. Smoke and dust particle measurements on the ISS. 3 investigations shared it: DAFT and DAFT-2 (PSI-47), SAME-R (PSI-101), SAME (PSI-102).",
+   "href": "/investigations?hw=smoke-aerosol"
+  },
+  "HW-ground": {
+   "id": "HW-ground",
+   "kind": "hardware",
+   "title": "Ground and modelling studies",
+   "text": "Hardware family: Ground and modelling studies. Analysis, simulation or laboratory work on the ground that uses PSI flight data. 5 investigations shared it: SPICE data analysis (PSI-60), BASS flame spread modelling (PSI-62), SAME smoke simulation (PSI-115), Cool flame CFD analysis (PSI-117), Cool flame counterflow study (PSI-142).",
+   "href": "/investigations?hw=ground"
+  },
+  "C-apollo-1": {
+   "id": "C-apollo-1",
+   "kind": "context",
+   "title": "Apollo 1, 1967",
+   "text": "Apollo 1, 1967. On 27 January 1967 three astronauts lost their lives when a fire swept through the Apollo 1 command module during a preflight test. NASA's review found that the pure oxygen atmosphere let the fire spread quickly, and NASA then restricted combustible materials in the spacecraft and replaced the hatch with one that opens in three seconds. This is context from a NASA page (NASA Office of Safety and Mission Assurance, Apollo 1). It is not test data.",
+   "href": "/"
+  },
+  "C-apollo-13": {
+   "id": "C-apollo-13",
+   "kind": "context",
+   "title": "Apollo 13, 1970",
+   "text": "Apollo 13, 1970. On the third day of the mission, oxygen tank number two blew up, which led to the failure of tank number one and ended the plan to land on the Moon. For later missions engineers redesigned the oxygen tank system and sheathed all electrical wiring in stainless steel. This is context from a NASA page (NASA Office of Safety and Mission Assurance, Apollo 13). It is not test data.",
+   "href": "/"
+  },
+  "C-mir-fire": {
+   "id": "C-mir-fire",
+   "kind": "context",
+   "title": "Fire aboard Mir, 1997",
+   "text": "Fire aboard Mir, 1997. On 24 February 1997 a fire ignited in an oxygen generating system aboard the space station Mir, with six crew members aboard. The flame lasted several minutes, cut off access to one of the two Soyuz escape vehicles and filled the modules with smoke before the crew put it out. This is context from a NASA page (NASA History, 25 Years Ago: Fire Aboard Space Station Mir). It is not test data.",
+   "href": "/"
+  },
+  "C-air-tanks": {
+   "id": "C-air-tanks",
+   "kind": "context",
+   "title": "Lighter air tanks for firefighters",
+   "text": "Lighter air tanks for firefighters. NASA's Johnson Space Center and Scott Aviation developed lightweight air tanks for firefighters. The backpack system weighs 20 pounds for a 30 minute air supply, which is 13 pounds less than conventional firefighting tanks. This is context from a NASA page (NASA Spinoff, Fireman's Air Tanks). It is not test data.",
+   "href": "/earth"
+  },
+  "C-fire-detector": {
+   "id": "C-fire-detector",
+   "kind": "context",
+   "title": "A detector that tells smoke from dust",
+   "text": "A detector that tells smoke from dust. A fire detector first used in space shuttle orbiters samples the air for combustion particles and can tell them apart from other matter such as dust. That makes it less susceptible to false alarms. This is context from a NASA page (NASA Spinoff, Fire Detector). It is not test data.",
+   "href": "/earth"
+  },
+  "C-fire-attire": {
+   "id": "C-fire-attire",
+   "kind": "context",
+   "title": "Better protective gear for firefighters",
+   "text": "Better protective gear for firefighters. Project FIRES, sponsored by NASA and the U.S. Fire Administration, applied lightweight, fire-resistant and heat-protective materials first developed for astronauts' space suits to firefighter gear. Its goal was to curb injuries and fatalities among firefighters. This is context from a NASA page (NASA Spinoff, New Technology for the Fire Attire). It is not test data.",
+   "href": "/earth"
+  }
+ }
+}

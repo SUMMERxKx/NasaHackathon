@@ -1,0 +1,37 @@
+{
+  "generatedBy": "Drafted by SI from the PSI records and the challenge statement. Every entry needs a human check by the team.",
+  "hardwareFamilies": [
+    { "id": "cir-acme", "name": "Combustion Integrated Rack with the ACME insert", "note": "Gaseous fuels on the ISS. Six ACME experiments shared this hardware." },
+    { "id": "cir-mdca", "name": "Combustion Integrated Rack with the Multi-user Droplet Combustion Apparatus", "note": "Liquid fuel droplets on the ISS." },
+    { "id": "msg-spice", "name": "Microgravity Science Glovebox with the SPICE flow duct", "note": "Solid and gaseous fuels in a small flow duct on the ISS." },
+    { "id": "cygnus", "name": "Cygnus cargo vehicle", "note": "Large solid samples burned in an uncrewed cargo vehicle after it left the ISS." },
+    { "id": "smoke-aerosol", "name": "Smoke and aerosol instruments", "note": "Smoke and dust particle measurements on the ISS." },
+    { "id": "ground", "name": "Ground and modelling studies", "note": "Analysis, simulation or laboratory work on the ground that uses PSI flight data." }
+  ],
+  "investigations": [
+    { "accession": "PSI-10", "displayName": "ACME Flame Design", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "cir-acme", "status": "needs human check" },
+    { "accession": "PSI-20", "displayName": "ACME BRE", "pillar": "prevention", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "cir-acme", "status": "needs human check" },
+    { "accession": "PSI-21", "displayName": "ACME CLD Flame", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "cir-acme", "status": "needs human check" },
+    { "accession": "PSI-22", "displayName": "ACME E-FIELD Flames", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "cir-acme", "status": "needs human check" },
+    { "accession": "PSI-23", "displayName": "ACME s-Flame", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "cir-acme", "status": "needs human check" },
+    { "accession": "PSI-25", "displayName": "BASS-II", "pillar": "prevention", "secondaryPillars": [], "fuelClass": "solid", "hardwareFamily": "msg-spice", "status": "needs human check" },
+    { "accession": "PSI-26", "displayName": "BASS", "pillar": "prevention", "secondaryPillars": ["suppression"], "fuelClass": "solid", "hardwareFamily": "msg-spice", "status": "needs human check" },
+    { "accession": "PSI-39", "displayName": "CFI", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "liquid", "hardwareFamily": "cir-mdca", "status": "needs human check" },
+    { "accession": "PSI-47", "displayName": "DAFT and DAFT-2", "pillar": "detection", "secondaryPillars": [], "fuelClass": "aerosol", "hardwareFamily": "smoke-aerosol", "status": "needs human check" },
+    { "accession": "PSI-60", "displayName": "SPICE data analysis", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "ground", "status": "needs human check" },
+    { "accession": "PSI-62", "displayName": "BASS flame spread modelling", "pillar": "prevention", "secondaryPillars": [], "fuelClass": "solid", "hardwareFamily": "ground", "status": "needs human check" },
+    { "accession": "PSI-68", "displayName": "FLEX-2", "pillar": "suppression", "secondaryPillars": [], "fuelClass": "liquid", "hardwareFamily": "cir-mdca", "status": "needs human check" },
+    { "accession": "PSI-69", "displayName": "FLEX", "pillar": "suppression", "secondaryPillars": [], "fuelClass": "liquid", "hardwareFamily": "cir-mdca", "status": "needs human check" },
+    { "accession": "PSI-98", "displayName": "Saffire-I", "pillar": "prevention", "secondaryPillars": [], "fuelClass": "solid", "hardwareFamily": "cygnus", "status": "needs human check" },
+    { "accession": "PSI-99", "displayName": "Saffire-II", "pillar": "prevention", "secondaryPillars": [], "fuelClass": "solid", "hardwareFamily": "cygnus", "status": "needs human check" },
+    { "accession": "PSI-100", "displayName": "Saffire-III", "pillar": "prevention", "secondaryPillars": [], "fuelClass": "solid", "hardwareFamily": "cygnus", "status": "needs human check" },
+    { "accession": "PSI-101", "displayName": "SAME-R", "pillar": "detection", "secondaryPillars": [], "fuelClass": "aerosol", "hardwareFamily": "smoke-aerosol", "status": "needs human check" },
+    { "accession": "PSI-102", "displayName": "SAME", "pillar": "detection", "secondaryPillars": [], "fuelClass": "aerosol", "hardwareFamily": "smoke-aerosol", "status": "needs human check" },
+    { "accession": "PSI-106", "displayName": "SLICE", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "msg-spice", "status": "needs human check" },
+    { "accession": "PSI-107", "displayName": "SPICE", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "msg-spice", "status": "needs human check" },
+    { "accession": "PSI-115", "displayName": "SAME smoke simulation", "pillar": "detection", "secondaryPillars": [], "fuelClass": "aerosol", "hardwareFamily": "ground", "status": "needs human check" },
+    { "accession": "PSI-117", "displayName": "Cool flame CFD analysis", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "liquid", "hardwareFamily": "ground", "status": "needs human check" },
+    { "accession": "PSI-142", "displayName": "Cool flame counterflow study", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "ground", "status": "needs human check" },
+    { "accession": "PSI-159", "displayName": "ACME CFI-G", "pillar": "fundamentals", "secondaryPillars": [], "fuelClass": "gas", "hardwareFamily": "cir-acme", "status": "needs human check" }
+  ]
+}
