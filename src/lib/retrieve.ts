@@ -88,8 +88,11 @@ export function namedInvestigations(question: string, investigations: Investigat
 
 // Looks for an oxygen percentage, a pressure, a material and an investigation name in the question.
 export function parseQuestion(question: string, ctx: RetrieveContext) {
-  const o2Match = question.match(/(\d{1,3}(?:\.\d+)?)\s*(?:%|percent)(?:\s+(?:oxygen|o2))?/i)
-  const o2 = o2Match && /oxygen|o2|%|percent/i.test(question) ? Number(o2Match[1]) / 100 : null
+  // A percentage counts as oxygen only when the word oxygen or O2 sits right next to it, so
+  // "20% carbon dioxide" or "a 50% heptane mix" does not set the oxygen level.
+  const o2Match = question.match(/(\d{1,3}(?:\.\d+)?)\s*(?:%|percent)\s*(?:of\s+)?(?:oxygen|o2)\b|\b(?:oxygen|o2)\D{0,12}?(\d{1,3}(?:\.\d+)?)\s*(?:%|percent)/i)
+  const o2Text = o2Match ? (o2Match[1] ?? o2Match[2]) : null
+  const o2 = o2Text != null ? Number(o2Text) / 100 : null
   const pMatch = question.match(/(\d{1,2}(?:\.\d+)?)\s*psi/i)
   const pressurePsi = pMatch ? Number(pMatch[1]) : null
   const lower = question.toLowerCase()
@@ -97,6 +100,9 @@ export function parseQuestion(question: string, ctx: RetrieveContext) {
   const material = materials.find((m) => lower.includes(m)) ?? null
   return { o2: o2 != null && o2 >= 0.1 && o2 <= 1 ? o2 : null, pressurePsi: pressurePsi != null && pressurePsi >= 3 && pressurePsi <= 80 ? pressurePsi : null, material, named: namedInvestigations(question, ctx.investigations) }
 }
+
+// At most this many matching rows are listed in the chat. The count shown is always the full one.
+export const MAX_ROWS = 300
 
 function structuredRows(question: string, ctx: RetrieveContext): { rows: RetrievalResult['rows']; scenarioChange: RetrievalResult['scenarioChange'] } {
   const q = parseQuestion(question, ctx)
@@ -119,13 +125,21 @@ function structuredRows(question: string, ctx: RetrieveContext): { rows: Retriev
   }
   if (q.named.length > 0 && list) {
     const named = list.filter((t) => q.named.includes(t.accession))
-    if (named.length > 0) list = named
+    // The question names an investigation. Its rows only, and when none match, say so and leave the
+    // habitat alone, instead of listing other investigations' rows.
+    const names = q.named.map((a) => ctx.investigations.find((i) => i.accession === a)?.displayName ?? a).join(' or ')
+    parts.push(`${names} only`)
+    if (named.length === 0) {
+      return { rows: { filter: `${parts.join(', ')}. None of ${names}'s tests match.`, testIds: [], total: 0 }, scenarioChange: null }
+    }
+    list = named
   }
   const change: Partial<Scenario> = {}
   if (q.o2 != null && q.o2 >= 0.12) change.o2 = q.o2
   if (q.pressurePsi != null && q.pressurePsi <= 15) change.pressurePsi = q.pressurePsi
   return {
-    rows: list && parts.length > 0 ? { filter: parts.join(', '), testIds: list.slice(0, 300).map((t) => t.id) } : null,
+    // The count is taken before the list is cut, so the chat shows the true number of matches.
+    rows: list && parts.length > 0 ? { filter: parts.join(', '), testIds: list.slice(0, MAX_ROWS).map((t) => t.id), total: list.length } : null,
     scenarioChange: Object.keys(change).length > 0 ? change : null,
   }
 }

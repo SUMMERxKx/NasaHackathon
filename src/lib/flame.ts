@@ -23,6 +23,9 @@ export type FlameLookup = {
 }
 
 const near = (t: Test, o2: number, window: number): boolean => t.o2 != null && Math.abs(t.o2 - o2) <= window + 1e-9
+const isInverse = (t: Test): boolean => t.flags?.includes('oxidizer-stream') ?? false
+// CFI-G marks its cool flames in the column "Cool flame?" with a value that starts with yes.
+export const isCoolFlame = (t: Test): boolean => /^yes/i.test(String(t.extra.coolFlame ?? ''))
 const hasK = (t: Test): boolean => typeof t.extra.K === 'number' && (t.extra.K as number) > 0
 
 // The median burning rate of nitrogen-diluted FLEX tests at each tested oxygen level.
@@ -39,7 +42,8 @@ function rateByLevel(flex: Test[]): { o2: number; value: number }[] {
 export function flameLookup(tests: Test[], point: Point): FlameLookup {
   const flex = tests.filter((t) => t.accession === FLEX)
   const flexNear = flex.filter((t) => near(t, point.o2, FLEX_O2_WINDOW))
-  const rateTests = flexNear.filter((t) => hasK(t) && diluentFamily(t) === 'nitrogen only')
+  const outcomeTests = flexNear.filter((t) => diluentFamily(t) === 'nitrogen only')
+  const rateTests = outcomeTests.filter(hasK)
   let rate = median(rateTests.map((t) => t.extra.K as number))
   let interpolated = false
   if (rate == null) {
@@ -53,8 +57,16 @@ export function flameLookup(tests: Test[], point: Point): FlameLookup {
       interpolated = true
     }
   }
+  // Tad is a calculated adiabatic flame temperature. Inverse flames are left out, because their
+  // oxygen value is the burner stream and not the surrounding gas, and so are cool flames, because
+  // for them the column describes a hot flame that never happened.
   const tadTests = tests.filter(
-    (t) => ACME_TAD_TABLES.includes(t.accession) && typeof t.extra.tad === 'number' && near(t, point.o2, TAD_O2_WINDOW),
+    (t) =>
+      ACME_TAD_TABLES.includes(t.accession) &&
+      typeof t.extra.tad === 'number' &&
+      !isInverse(t) &&
+      !isCoolFlame(t) &&
+      near(t, point.o2, TAD_O2_WINDOW),
   )
   const droplets = tests.filter((t) => t.fuelClass === 'liquid')
   const ranged = droplets
@@ -64,7 +76,8 @@ export function flameLookup(tests: Test[], point: Point): FlameLookup {
   return {
     flexNear,
     burningRate: { value: rate, tests: rateTests, interpolated },
-    extinction: { ended: flexNear.filter((t) => t.outcome === 'Extinction'), of: flexNear },
+    // The same nitrogen-only tests as the burn rate, so the two tiles count the same kind of row.
+    extinction: { ended: outcomeTests.filter((t) => t.outcome === 'Extinction'), of: outcomeTests },
     flameTemperature: { value: median(tadTests.map((t) => t.extra.tad as number)), tests: tadTests },
     dropletsInRange: ranged.filter((d) => d.distance <= 1).map((d) => d.test),
     nearestDroplet: ranged[0] ?? null,

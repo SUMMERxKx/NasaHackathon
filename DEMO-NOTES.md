@@ -13,10 +13,10 @@ Record at 1920 by 1080. Keep the small "SI" mark in the corner of the fireball a
 | Seconds | What to do | What to say |
 |---|---|---|
 | 0 to 3 | Open `https://ember-two-eta.vercel.app/`. Hold on the start page: the sky, the round flame in freefall and the name. Press "Open the dashboard". | "On Earth a flame streams upward. In freefall it becomes a sphere." |
-| 3 to 9 | On the dashboard, open the habitat picker at the top right and pick the Exploration atmosphere. The count of nearby NASA test records falls from 1,093 to 24, the solid and smoke rows read "No nearby rows", the gap statement changes and the three investigations reorder. | "Pick your habitat. A Moon Base runs richer in oxygen. The fire burns harder, and the evidence thins out." |
-| 9 to 16 | Scroll down to the map and press "Moon zoom". Click the region caption. In the panel, click ACME CFI-G, then one test. The raw NASA row is on screen. | "Every mark is a real NASA test, one click away. Here there are 66, all gas flames. Solid material tests stop at 22.2 percent oxygen." |
-| 16 to 19 | Open Lab. Show the droplet model with FLEX test 20CAL10: 4.29 seconds from the model beside 5 seconds measured. | "Simple models, checked against 196 real burns." |
-| 19 to 27 | Press the robot at the bottom right. Tap "What is missing for the Moon?". Then type one short question and let the live answer stream in with its source chips. | "Ask in plain words. Every sentence is checked against its source." |
+| 3 to 9 | On the dashboard, open the habitat picker at the top right and pick the Exploration atmosphere. The count of nearby NASA test records falls from 1,087 to 24, the solid and smoke rows read "No nearby rows", the gap statement changes and the three investigations reorder. | "Pick your habitat. A Moon Base runs richer in oxygen. The fire burns harder, and the evidence thins out." |
+| 9 to 16 | Scroll down to the map and press "Moon zoom". Click the region caption. In the panel, click ACME CFI-G, then one test. The raw NASA row is on screen. | "Every mark is a row of a NASA test table, one click away. Here there are 66, all gas flames. Solid material tests stop at 22.2 percent oxygen." |
+| 16 to 19 | Open Lab. Show the droplet model with FLEX test 20CAL10: 4.29 seconds from the model beside 5 seconds measured. | "Simple models, checked against 195 real burns." |
+| 19 to 27 | Press the robot at the bottom right. Tap "What is missing for the Moon?". Then type one short question and let the live answer stream in with its source chips. | "Ask in plain words. Every sentence must cite a source and use only its numbers." |
 | 27 to 30 | End card: the name, the tagline, the link. | "EMBER. Know what we know before we light the Moon." |
 
 Rules for the recording:
@@ -26,7 +26,7 @@ Rules for the recording:
 - Never stage or edit in an answer the app did not produce.
 - The numbers spoken must be the numbers on screen.
 - No NASA logo, patch or footage.
-- The droplet in the Lab is still until the science lead confirms the burning rate unit. See `SETUP.md`, step 8.
+- The droplet in the Lab is animated. The team reviewed the burning rate unit on 15 November 2026.
 - The live answer needs the OpenRouter key in Vercel. Until then the chat panel shows the evidence as the answer, which is also a fair thing to record.
 
 ## Three deep links that are good for screenshots
@@ -45,25 +45,25 @@ Copied from `public/data/insights.json`. The build recomputes them, and four are
 |---|---|---|
 | Highest oxygen in any solid material test | 22.2%, in BASS-II, over 129 tests | I1 |
 | Tests inside the Moon Base region | 66, all gas flames. 0 solid, 0 liquid. 17 droplet tests on its edge. | I2 |
-| The d-squared law against FLEX | Median of predicted over measured 0.951, over 196 tests | I4 |
+| The d-squared law against FLEX | Median of predicted over measured 0.951, over 195 tests | I4 |
 | Highest oxygen tested anywhere | 85%, in 131 inverse gas flame tests. It is the oxidizer stream, not a cabin. | I10 |
-| Evidence Coverage | 100 near the ISS cabin, 67 near the Exploration atmosphere, 0 near the spacesuit atmosphere | I12 |
+| Evidence Coverage | 100 near the ISS cabin, 66 near the Exploration atmosphere, 0 near the spacesuit atmosphere | I12 |
 
-The nearby counts on the dashboard, from the same data: 1,093 test records near the ISS cabin, of which 849 rest on assumed coordinates, 43 near the Shuttle EVA preparation atmosphere, all liquid fuels, 24 near the Exploration and the Mars atmospheres, 14 near the Moon Base bound and 0 near the spacesuit atmosphere. Only the ISS cabin has a solid-material or a smoke test nearby.
+The nearby counts on the dashboard, from the same data: 1,087 test records near the ISS cabin, of which 843 rest on assumed coordinates, 43 near the Shuttle EVA preparation atmosphere, all liquid fuels, 24 near the Exploration and the Mars atmospheres, 14 near the Moon Base bound and 0 near the spacesuit atmosphere. Only the ISS cabin has a solid-material or a smoke test nearby.
 
-The fireball's readout in the Lab, also from the data: at the ISS cabin, burning rate 0.51 over 39 FLEX tests and 111 of 165 nearby tests ended in extinction. At the Exploration atmosphere, 0.715 over 8 tests and 0 of 9.
+The fireball's readout in the Lab, also from the data: at the ISS cabin, burning rate 0.51 over 39 FLEX tests and 23 of 41 nitrogen-only tests ended in extinction. At the Exploration atmosphere, 0.715 over 8 tests and 0 of 9.
 
 ## Known limitations
 
 - The Evidence Coverage score counts evidence. It is not a safety rating.
 - The ranking is a heuristic with weights chosen by the team.
-- 722 tests rest on an assumed cabin air atmosphere. They are hollow on the map and count at half weight.
+- 721 tests have an assumed oxygen value and 886 have at least one assumed value. They are hollow on the map and count at half weight.
 - PSI holds no partial-gravity combustion tests, so nothing describes a flame on the Moon or Mars.
 - The six pinned answers are written but not yet reviewed, so an example question in the chat still makes a live call. See `REVIEW-CHECKLIST.md`.
 - The evaluation counts are measured. The Meaning measure is still open: the science lead has not yet read the answers against their sources.
 - In the evaluation, the first choice refused "What is missing for the Moon?" in 2 of 3 rounds and answered it well in the third. If the example gives the refusal sentence during a recording, tap it again, or record the evidence answer.
 - Search by meaning needs a download of about 51 MB the first time a question is typed in the chat. Until it is ready, search is by keyword with alias expansion, with no message.
-- The pillar mapping, the equipment tags, the plain summaries and the assumptions are SI drafts that wait on a human check.
+- The pillar mapping, the equipment tags and the plain summaries are SI drafts that wait on a human check. The assumptions and the two flame readings were reviewed by the EMBER team on 15 November 2026. A combustion researcher should confirm before this is used for design.
 
 ## Checks run on the counts-first dashboard
 

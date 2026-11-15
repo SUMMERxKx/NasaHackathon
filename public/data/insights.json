@@ -1,13 +1,13 @@
 {
  "schemaVersion": 1,
- "buildId": "14278e63",
+ "buildId": "b85833d3",
  "generatedBy": "Numbers computed from the PSI snapshot. Wording drafted by SI and reviewed by the team.",
  "insights": [
   {
    "id": "I1",
    "pillar": "gap",
    "headline": "Solid material tests in PSI that state their oxygen stop at 22.2%. A Moon Base is planned at 30% or more.",
-   "detail": "The highest oxygen level in any solid material test whose table states oxygen is 22.2%, in BASS-II, over 129 tests. 140 solid material tests state their oxygen. The other 124, in BASS and Saffire-III, have no oxygen in their tables. PSI holds 0 solid material tests at or above 30% oxygen. The challenge statement names two planned experiments that could close this gap: the Lunar-g Combustion Investigation (LUCI) and Flammability of Materials on the Moon (FM2).",
+   "detail": "The highest oxygen level in any solid material test whose table states oxygen is 22.2%, in BASS-II, over 129 tests. 140 solid material tests state their oxygen. The other 123, in BASS and Saffire-III, have no oxygen in their tables. PSI holds 0 solid material tests at or above 30% oxygen. The challenge statement names two planned experiments that could close this gap: the Lunar-g Combustion Investigation (LUCI) and Flammability of Materials on the Moon (FM2).",
    "numbers": {
     "maxSolidO2Pct": 22.2,
     "solidTestsWithTableOxygen": 140,
@@ -2536,19 +2536,19 @@
   {
    "id": "I4",
    "pillar": "method",
-   "headline": "The d-squared law's predicted FLEX burn time has a median of 0.951 times the measured one, across 196 tests. That is a median ratio, not an error bound.",
-   "detail": "For the 196 FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of 0.951. Half of the tests fall between 0.916 and 0.975. The median shows where the middle of the tests sits and says nothing about the error of any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.",
+   "headline": "The d-squared law's predicted FLEX burn time has a median of 0.951 times the measured one, across 195 tests. That is a median ratio, not an error bound.",
+   "detail": "For the 195 FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of 0.951. Half of the tests fall between 0.919 and 0.975. The median shows where the middle of the tests sits and says nothing about the error of any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.",
    "numbers": {
     "medianRatio": 0.951,
-    "q1": 0.916,
+    "q1": 0.919,
     "q3": 0.975,
-    "tests": 196
+    "tests": 195
    },
    "display": {
     "medianRatio": "0.951",
-    "q1": "0.916",
+    "q1": "0.919",
     "q3": "0.975",
-    "tests": "196"
+    "tests": "195"
    },
    "primary": "medianRatio",
    "evidence": [
@@ -2635,7 +2635,6 @@
       "PSI-69:0:125",
       "PSI-69:0:126",
       "PSI-69:0:127",
-      "PSI-69:0:129",
       "PSI-69:0:130",
       "PSI-69:0:131",
       "PSI-69:0:132",
@@ -2766,7 +2765,7 @@
    "id": "I5",
    "pillar": "suppression",
    "headline": "In FLEX, flames went out in 27 of 28 droplet tests at 10 to 15% oxygen and in 2 of 24 at 28 to 36%.",
-   "detail": "Tests that ended in extinction by oxygen band: 27 of 28 at 10 to 15%, 76 of 87 at 15 to 19%, 63 of 91 at 19 to 23%, 2 of 24 at 28 to 36%. The median extinction ratio, the flame-out diameter divided by the starting diameter, is 0.8 at 10 to 15% oxygen and 0.23 at 28 to 36%. These counts mix fuels, pressures and added gases, so they show a direction and not a limit.",
+   "detail": "Tests that ended in extinction by oxygen band: 27 of 28 at 10 to 15%, 76 of 87 at 15 to 19%, 63 of 91 at 19 to 23%, 2 of 24 at 28 to 36%. Where the flame went out, the median extinction ratio, the flame-out diameter divided by the starting diameter, is 0.82 at 10 to 15% oxygen (22 tests) and 0.41 at 28 to 36% (2 tests). Tests that ended in disruption or burned to completion are left out of the ratio. These counts mix fuels, pressures and added gases, so they show a direction and not a limit.",
    "numbers": {
     "tests10to15": 28,
     "extinction10to15": 27,
@@ -2776,8 +2775,10 @@
     "extinction19to23": 63,
     "tests28to36": 24,
     "extinction28to36": 2,
-    "medianRatioLow": 0.8,
-    "medianRatioHigh": 0.23
+    "medianRatioLow": 0.82,
+    "medianRatioHigh": 0.41,
+    "ratioTestsLow": 22,
+    "ratioTestsHigh": 2
    },
    "display": {
     "tests10to15": "28",
@@ -2788,8 +2789,10 @@
     "extinction19to23": "63",
     "tests28to36": "24",
     "extinction28to36": "2 of 24",
-    "medianRatioLow": "0.8",
-    "medianRatioHigh": "0.23"
+    "medianRatioLow": "0.82",
+    "medianRatioHigh": "0.41",
+    "ratioTestsLow": "22",
+    "ratioTestsHigh": "2"
    },
    "primary": "extinction28to36",
    "evidence": [
@@ -3443,6 +3446,62 @@
      "PSI-69:0:52"
     ],
     "extinction28to36": [
+     "PSI-69:0:30",
+     "PSI-69:0:45"
+    ],
+    "medianRatioLow": [
+     "PSI-69:0:75",
+     "PSI-69:0:76",
+     "PSI-69:0:77",
+     "PSI-69:0:78",
+     "PSI-69:0:79",
+     "PSI-69:0:82",
+     "PSI-69:0:84",
+     "PSI-69:0:85",
+     "PSI-69:0:86",
+     "PSI-69:0:87",
+     "PSI-69:0:166",
+     "PSI-69:0:167",
+     "PSI-69:0:213",
+     "PSI-69:0:216",
+     "PSI-69:0:217",
+     "PSI-69:0:218",
+     "PSI-69:0:219",
+     "PSI-69:0:220",
+     "PSI-69:0:221",
+     "PSI-69:0:246",
+     "PSI-69:0:247",
+     "PSI-69:0:248"
+    ],
+    "medianRatioHigh": [
+     "PSI-69:0:30",
+     "PSI-69:0:45"
+    ],
+    "ratioTestsLow": [
+     "PSI-69:0:75",
+     "PSI-69:0:76",
+     "PSI-69:0:77",
+     "PSI-69:0:78",
+     "PSI-69:0:79",
+     "PSI-69:0:82",
+     "PSI-69:0:84",
+     "PSI-69:0:85",
+     "PSI-69:0:86",
+     "PSI-69:0:87",
+     "PSI-69:0:166",
+     "PSI-69:0:167",
+     "PSI-69:0:213",
+     "PSI-69:0:216",
+     "PSI-69:0:217",
+     "PSI-69:0:218",
+     "PSI-69:0:219",
+     "PSI-69:0:220",
+     "PSI-69:0:221",
+     "PSI-69:0:246",
+     "PSI-69:0:247",
+     "PSI-69:0:248"
+    ],
+    "ratioTestsHigh": [
      "PSI-69:0:30",
      "PSI-69:0:45"
     ]
@@ -4804,12 +4863,14 @@
    "id": "I7",
    "pillar": "prevention",
    "headline": "In Saffire-II, 5 of 8 single-material samples burned a shorter length in microgravity than in normal gravity. 0 burned longer.",
-   "detail": "3 samples burned the same length in both. 3 of the shorter ones were silicone samples that burned in normal gravity and barely burned in microgravity. The table gives lengths as text such as \"Complete\" and \"~ 10 cm\", which EMBER reads as the full sample length and 10 cm. This is 9 samples at one flow speed and about 22% oxygen, so it bounds the question and does not settle it.",
+   "detail": "2 samples burned the full length in both, and 1 barely burned in either. 3 of the shorter ones were silicone samples that burned in normal gravity and barely burned in microgravity. The table gives lengths as text such as \"Complete\" and \"~ 10 cm\", which EMBER reads as the full sample length and 10 cm. This is 9 samples at one flow speed and about 22% oxygen, so it bounds the question and does not settle it.",
    "numbers": {
     "samples": 9,
     "compared": 8,
     "shorterInMicrogravity": 5,
     "sameLength": 3,
+    "sameFullLength": 2,
+    "sameBarelyBurned": 1,
     "longerInMicrogravity": 0,
     "siliconeShorter": 3
    },
@@ -4818,6 +4879,8 @@
     "compared": "8",
     "shorterInMicrogravity": "5 of 8",
     "sameLength": "3",
+    "sameFullLength": "2",
+    "sameBarelyBurned": "1",
     "longerInMicrogravity": "0",
     "siliconeShorter": "3"
    },
@@ -4873,6 +4936,13 @@
      "PSI-99:0:3",
      "PSI-99:0:5",
      "PSI-99:0:6"
+    ],
+    "sameFullLength": [
+     "PSI-99:0:5",
+     "PSI-99:0:6"
+    ],
+    "sameBarelyBurned": [
+     "PSI-99:0:3"
     ],
     "longerInMicrogravity": [],
     "siliconeShorter": [
@@ -6118,22 +6188,22 @@
   {
    "id": "I12",
    "pillar": "method",
-   "headline": "Evidence Coverage is 100 out of 100 near the ISS cabin and 67 near the Exploration atmosphere.",
-   "detail": "Evidence Coverage by habitat: ISS cabin 100, Shuttle EVA preparation 97, Exploration atmosphere 67, Moon Base bound 82, Mars surface habitat 67, Spacesuit 0. The score counts real flight tests near each atmosphere, with tests that rest on an assumed value at half weight. It is not a safety rating.",
+   "headline": "Evidence Coverage is 100 out of 100 near the ISS cabin and 66 near the Exploration atmosphere.",
+   "detail": "Evidence Coverage by habitat: ISS cabin 100, Shuttle EVA preparation 97, Exploration atmosphere 66, Moon Base bound 79, Mars surface habitat 66, Spacesuit 0. The score weights every flight test by how close it is to each atmosphere, with tests that rest on an assumed value at half weight. It is not a safety rating.",
    "numbers": {
     "iss": 100,
     "shuttleEva": 97,
-    "exploration": 67,
-    "moonBound": 82,
-    "mars": 67,
+    "exploration": 66,
+    "moonBound": 79,
+    "mars": 66,
     "suit": 0
    },
    "display": {
     "iss": "100",
     "shuttleEva": "97",
-    "exploration": "67",
-    "moonBound": "82",
-    "mars": "67",
+    "exploration": "66",
+    "moonBound": "79",
+    "mars": "66",
     "suit": "0"
    },
    "primary": "exploration",

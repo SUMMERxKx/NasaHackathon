@@ -132,6 +132,8 @@ export type Assumption = {
   o2: number | null
   pressureAtm: number | null
   reason: string
+  // The record or paper the value was checked against.
+  source?: string
   status: 'needs human check' | 'confirmed' | 'changed'
 }
 
@@ -169,6 +171,10 @@ export type Snapshot = {
   tableProfiles: TableProfile[]
   habitats: Habitat[]
   assumptions: Assumption[]
+  // One sentence on who reviewed the assumptions and when. Null while they are unreviewed.
+  assumptionsReview: string | null
+  // Table rows that record no test, left out of the tests and listed on About.
+  droppedRows: { accession: string; table: string; rowIndex: number; label: string; reason: string; raw: Record<string, string> }[]
   labelCorrections: { accession: string; table: string; original: string; corrected: string; reason: string }[]
   glossary: GlossaryTerm[]
   hardwareFamilies: HardwareFamily[]
@@ -332,7 +338,8 @@ export type RetrievalResult = {
   mode: 'keyword' | 'keyword+meaning'
   hasEvidence: boolean
   pack: { evidenceId: string; score: number; matchedDocIds: string[] }[]
-  rows: { filter: string; testIds: string[] } | null
+  // total is the full number of matching tests. testIds lists at most the first 300.
+  rows: { filter: string; testIds: string[]; total: number } | null
   scenarioChange: Partial<Scenario> | null
 }
 

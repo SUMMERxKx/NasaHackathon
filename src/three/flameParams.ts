@@ -9,21 +9,24 @@ import type { FlameLookup } from '../lib/flame.ts'
 import { atmToPsi } from '../lib/units.ts'
 import { kelvinToT } from './ramp.ts'
 
-// Two gates wait on a human check by the science lead. Flip each to true once it is confirmed.
+// Two gates. Both were reviewed by the EMBER team on 15 November 2026. A combustion researcher
+// should confirm before this is used for design.
 export const GATES = {
-  // The ACME column headed "Tad (K)" is the adiabatic flame temperature. Until this is confirmed
-  // from the PSI record or its publication, the mark on the temperature scale does not move.
-  tadConfirmed: false,
-  // The FLEX burning rate column is in mm² per second. Until this is confirmed from the
-  // publication, the droplet in the Lab is not animated.
-  burningRateUnitConfirmed: false,
+  // The ACME column headed "Tad (K)" is the calculated adiabatic flame temperature. Irace and
+  // co-authors, Combustion and Flame 2021, vary the "adiabatic flame temperature" by the gas mix,
+  // and the CFI-G investigator thesis (Kim, University of Maryland 2022, Table E.2) lists the same
+  // value as the PSI table for test 21088A1. With the gate on, the mark on the temperature scale moves.
+  tadConfirmed: true,
+  // The FLEX burning rate column is in mm² per second. NASA/TP-2015-216046, Table IX, heads the
+  // same values "Burning rate, mm2/s". With the gate on, the droplet in the Lab is animated.
+  burningRateUnitConfirmed: true,
 }
 
 export type Steadiness = 'steady' | 'struggling' | 'failing'
 
 export type FlameInputs = {
   vigor: number // how fast it seethes, from the median FLEX burning rate. 0.3 is calm, 0.75 is fierce.
-  tempTop: number // how hot the brightest part is, 0 to 1 on the ramp, from the listed ACME flame temperature
+  tempTop: number // how hot the brightest part is, 0 to 1 on the ramp, from the calculated adiabatic flame temperature of normal ACME flames
   stability: number // 1 holds, 0 goes out, from the share of nearby FLEX tests that ended in extinction
   soot: number // camera view only: how yellow against how blue. A direction from NASA's guide.
   density: number // the haze of gas, in proportion to pressure. By definition.

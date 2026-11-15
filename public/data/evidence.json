@@ -1,13 +1,13 @@
 {
  "schemaVersion": 1,
- "bundleId": "eb16087c",
+ "bundleId": "69a206e4",
  "generatedBy": "Built from the PSI snapshot and the insight cards. Wording drafted by SI and reviewed by the team.",
  "items": {
   "I1": {
    "id": "I1",
    "kind": "insight",
    "title": "Solid material tests in PSI that state their oxygen stop at 22.2%. A Moon Base is planned at 30% or more.",
-   "text": "Solid material tests in PSI that state their oxygen stop at 22.2%. A Moon Base is planned at 30% or more. The highest oxygen level in any solid material test whose table states oxygen is 22.2%, in BASS-II, over 129 tests. 140 solid material tests state their oxygen. The other 124, in BASS and Saffire-III, have no oxygen in their tables. PSI holds 0 solid material tests at or above 30% oxygen. The challenge statement names two planned experiments that could close this gap: the Lunar-g Combustion Investigation (LUCI) and Flammability of Materials on the Moon (FM2).",
+   "text": "Solid material tests in PSI that state their oxygen stop at 22.2%. A Moon Base is planned at 30% or more. The highest oxygen level in any solid material test whose table states oxygen is 22.2%, in BASS-II, over 129 tests. 140 solid material tests state their oxygen. The other 123, in BASS and Saffire-III, have no oxygen in their tables. PSI holds 0 solid material tests at or above 30% oxygen. The challenge statement names two planned experiments that could close this gap: the Lunar-g Combustion Investigation (LUCI) and Flammability of Materials on the Moon (FM2).",
    "href": "/?drill=insight.I1.maxSolidO2Pct"
   },
   "I2": {
@@ -27,15 +27,15 @@
   "I4": {
    "id": "I4",
    "kind": "insight",
-   "title": "The d-squared law's predicted FLEX burn time has a median of 0.951 times the measured one, across 196 tests. That is a median ratio, not an error bound.",
-   "text": "The d-squared law's predicted FLEX burn time has a median of 0.951 times the measured one, across 196 tests. That is a median ratio, not an error bound. For the 196 FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of 0.951. Half of the tests fall between 0.916 and 0.975. The median shows where the middle of the tests sits and says nothing about the error of any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.",
+   "title": "The d-squared law's predicted FLEX burn time has a median of 0.951 times the measured one, across 195 tests. That is a median ratio, not an error bound.",
+   "text": "The d-squared law's predicted FLEX burn time has a median of 0.951 times the measured one, across 195 tests. That is a median ratio, not an error bound. For the 195 FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of 0.951. Half of the tests fall between 0.919 and 0.975. The median shows where the middle of the tests sits and says nothing about the error of any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.",
    "href": "/?drill=insight.I4.medianRatio"
   },
   "I5": {
    "id": "I5",
    "kind": "insight",
    "title": "In FLEX, flames went out in 27 of 28 droplet tests at 10 to 15% oxygen and in 2 of 24 at 28 to 36%.",
-   "text": "In FLEX, flames went out in 27 of 28 droplet tests at 10 to 15% oxygen and in 2 of 24 at 28 to 36%. Tests that ended in extinction by oxygen band: 27 of 28 at 10 to 15%, 76 of 87 at 15 to 19%, 63 of 91 at 19 to 23%, 2 of 24 at 28 to 36%. The median extinction ratio, the flame-out diameter divided by the starting diameter, is 0.8 at 10 to 15% oxygen and 0.23 at 28 to 36%. These counts mix fuels, pressures and added gases, so they show a direction and not a limit.",
+   "text": "In FLEX, flames went out in 27 of 28 droplet tests at 10 to 15% oxygen and in 2 of 24 at 28 to 36%. Tests that ended in extinction by oxygen band: 27 of 28 at 10 to 15%, 76 of 87 at 15 to 19%, 63 of 91 at 19 to 23%, 2 of 24 at 28 to 36%. Where the flame went out, the median extinction ratio, the flame-out diameter divided by the starting diameter, is 0.82 at 10 to 15% oxygen (22 tests) and 0.41 at 28 to 36% (2 tests). Tests that ended in disruption or burned to completion are left out of the ratio. These counts mix fuels, pressures and added gases, so they show a direction and not a limit.",
    "href": "/?drill=insight.I5.extinction28to36"
   },
   "I6": {
@@ -49,7 +49,7 @@
    "id": "I7",
    "kind": "insight",
    "title": "In Saffire-II, 5 of 8 single-material samples burned a shorter length in microgravity than in normal gravity. 0 burned longer.",
-   "text": "In Saffire-II, 5 of 8 single-material samples burned a shorter length in microgravity than in normal gravity. 0 burned longer. 3 samples burned the same length in both. 3 of the shorter ones were silicone samples that burned in normal gravity and barely burned in microgravity. The table gives lengths as text such as \"Complete\" and \"~ 10 cm\", which EMBER reads as the full sample length and 10 cm. This is 9 samples at one flow speed and about 22% oxygen, so it bounds the question and does not settle it.",
+   "text": "In Saffire-II, 5 of 8 single-material samples burned a shorter length in microgravity than in normal gravity. 0 burned longer. 2 samples burned the full length in both, and 1 barely burned in either. 3 of the shorter ones were silicone samples that burned in normal gravity and barely burned in microgravity. The table gives lengths as text such as \"Complete\" and \"~ 10 cm\", which EMBER reads as the full sample length and 10 cm. This is 9 samples at one flow speed and about 22% oxygen, so it bounds the question and does not settle it.",
    "href": "/?drill=insight.I7.shorterInMicrogravity"
   },
   "I8": {
@@ -83,8 +83,8 @@
   "I12": {
    "id": "I12",
    "kind": "insight",
-   "title": "Evidence Coverage is 100 out of 100 near the ISS cabin and 67 near the Exploration atmosphere.",
-   "text": "Evidence Coverage is 100 out of 100 near the ISS cabin and 67 near the Exploration atmosphere. Evidence Coverage by habitat: ISS cabin 100, Shuttle EVA preparation 97, Exploration atmosphere 67, Moon Base bound 82, Mars surface habitat 67, Spacesuit 0. The score counts real flight tests near each atmosphere, with tests that rest on an assumed value at half weight. It is not a safety rating.",
+   "title": "Evidence Coverage is 100 out of 100 near the ISS cabin and 66 near the Exploration atmosphere.",
+   "text": "Evidence Coverage is 100 out of 100 near the ISS cabin and 66 near the Exploration atmosphere. Evidence Coverage by habitat: ISS cabin 100, Shuttle EVA preparation 97, Exploration atmosphere 66, Moon Base bound 79, Mars surface habitat 66, Spacesuit 0. The score weights every flight test by how close it is to each atmosphere, with tests that rest on an assumed value at half weight. It is not a safety rating.",
    "href": "/?drill=insight.I12.exploration"
   },
   "PSI-10": {
@@ -98,7 +98,7 @@
    "id": "PSI-20",
    "kind": "investigation",
    "title": "ACME BRE: Advanced Combustion via Microgravity Experiments - Burning Rate Emulator",
-   "text": "ACME BRE (PSI-20) is the investigation \"Advanced Combustion via Microgravity Experiments - Burning Rate Emulator\". It is a microgravity investigation in the pillar prevention. Hardware: Combustion Integrated Rack with the ACME insert. It ran from 2010 to 2025. What was burned: Methane and ethylene gas mixtures fed through porous flat burners of 25 and 50 mm, standing in for burning solids and liquids. What was varied: The surrounding oxygen level, the burner size and the fuel mixture. Why it matters: The record says burning like that of materials such as PMMA and Nylon carried on in microgravity with no air flow, which matters because stopping ventilation is a standard step in fighting a spacecraft fire. It informs material selection and flammability screening and habitat atmosphere and ventilation design. Its PSI table lists 43 tests. Fuels or materials: 100% C2H4 (27), 50% C2H4 (11), 100% CH4 (5). Oxygen from 21% to 40%. Pressure 14.7 psi, assumed.",
+   "text": "ACME BRE (PSI-20) is the investigation \"Advanced Combustion via Microgravity Experiments - Burning Rate Emulator\". It is a microgravity investigation in the pillar prevention. Hardware: Combustion Integrated Rack with the ACME insert. It ran from 2010 to 2025. What was burned: Methane and ethylene gas mixtures fed through porous flat burners of 25 and 50 mm, standing in for burning solids and liquids. What was varied: The surrounding oxygen level, the burner size and the fuel mixture. Why it matters: The record says burning like that of materials such as PMMA and Nylon carried on in microgravity with no air flow, which matters because stopping ventilation is a standard step in fighting a spacecraft fire. It informs material selection and flammability screening and habitat atmosphere and ventilation design. Its PSI table lists 42 tests. Fuels or materials: 100% C2H4 (26), 50% C2H4 (11), 100% CH4 (5). Oxygen from 21% to 40%.",
    "href": "/investigations/PSI-20"
   },
   "PSI-21": {
@@ -133,7 +133,7 @@
    "id": "PSI-26",
    "kind": "investigation",
    "title": "BASS: Burning and Suppression of Solids",
-   "text": "BASS (PSI-26) is the investigation \"Burning and Suppression of Solids\". It is a microgravity investigation in the pillar prevention. Hardware: Microgravity Science Glovebox with the SPICE flow duct. It ran from 2009 to 2013. What was burned: Solid samples including cotton and fiberglass fabric, Nomex and PMMA spheres in a small wind tunnel in the glovebox. What was varied: Material, sample shape and air flow. Some tests used nitrogen to put the flame out. Why it matters: It begins to bridge NASA's normal gravity screening test (NASA-STD-6001 Test 1) and real flammability in microgravity. It informs extinguishers and suppressants and material selection and flammability screening. Its PSI table lists 122 tests. Fuels or materials: PMMA spheres (50), PMMA sheets and slabs (28), Candle wax (23), Cotton and fiberglass fabric (SIBAL) (12), Nomex (6), Other materials (3). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
+   "text": "BASS (PSI-26) is the investigation \"Burning and Suppression of Solids\". It is a microgravity investigation in the pillar prevention. Hardware: Microgravity Science Glovebox with the SPICE flow duct. It ran from 2009 to 2013. What was burned: Solid samples including cotton and fiberglass fabric, Nomex and PMMA spheres in a small wind tunnel in the glovebox. What was varied: Material, sample shape and air flow. Some tests used nitrogen to put the flame out. Why it matters: It begins to bridge NASA's normal gravity screening test (NASA-STD-6001 Test 1) and real flammability in microgravity. It informs extinguishers and suppressants and material selection and flammability screening. Its PSI table lists 121 tests. Fuels or materials: PMMA spheres (50), PMMA sheets and slabs (28), Candle wax (23), Cotton and fiberglass fabric (SIBAL) (12), Nomex (6), Other materials (2). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
    "href": "/investigations/PSI-26"
   },
   "PSI-39": {
@@ -147,7 +147,7 @@
    "id": "PSI-47",
    "kind": "investigation",
    "title": "DAFT and DAFT-2: Dust and Aerosol Measurement Feasibility Test / Dust and Aerosol Measurement Feasibility Test-2",
-   "text": "DAFT and DAFT-2 (PSI-47) is the investigation \"Dust and Aerosol Measurement Feasibility Test / Dust and Aerosol Measurement Feasibility Test-2\". It is a microgravity investigation in the pillar detection. Hardware: Smoke and aerosol instruments. It ran from 2003 to 2009. What was burned: Nothing was burned. It sampled dust and aerosol particles in ISS cabin air. What was varied: The instrument used and the place sampled. Why it matters: It proved a particle counter could work in microgravity before the SAME smoke experiment relied on it, which supports better smoke detectors. It informs smoke and fire detectors. Its PSI table lists 2 tests. Fuels or materials: Arizona Road Dust (ARD Fine) (2). Oxygen 21%, assumed. Pressure 14.7 psi, assumed.",
+   "text": "DAFT and DAFT-2 (PSI-47) is the investigation \"Dust and Aerosol Measurement Feasibility Test / Dust and Aerosol Measurement Feasibility Test-2\". It is a microgravity investigation in the pillar detection. Hardware: Smoke and aerosol instruments. It ran from 2003 to 2009. What was burned: Nothing was burned. It sampled dust and aerosol particles in ISS cabin air. What was varied: The instrument used and the place sampled. Why it matters: It proved a particle counter could work in microgravity before the SAME smoke experiment relied on it, which supports better smoke detectors. It informs smoke and fire detectors. Its PSI table lists 2 tests. Fuels or materials: Arizona Road Dust (ARD Fine) (2). The table states no oxygen value. Pressure 14.7 psi, assumed.",
    "href": "/investigations/PSI-47"
   },
   "PSI-60": {
@@ -196,7 +196,7 @@
    "id": "PSI-100",
    "kind": "investigation",
    "title": "Saffire-III: Spacecraft Fire Experiment-III",
-   "text": "Saffire-III (PSI-100) is the investigation \"Spacecraft Fire Experiment-III\". It is a microgravity investigation in the pillar prevention. Hardware: Cygnus cargo vehicle. What was burned: A large sheet of cotton and fiberglass fabric inside an uncrewed Cygnus cargo vehicle, at a higher air flow than Saffire-I. What was varied: The direction of the air flow relative to the flame. Why it matters: It adds a second large scale fire test in low gravity, to see how flow speed changes fire growth. It informs material selection and flammability screening. Its PSI table lists 2 tests. Fuels or materials: Cotton and fiberglass fabric (SIBAL) (2). The table states no oxygen value. Pressure 14.7 psi, assumed.",
+   "text": "Saffire-III (PSI-100) is the investigation \"Spacecraft Fire Experiment-III\". It is a microgravity investigation in the pillar prevention. Hardware: Cygnus cargo vehicle. What was burned: A large sheet of cotton and fiberglass fabric inside an uncrewed Cygnus cargo vehicle, at a higher air flow than Saffire-I. What was varied: The direction of the air flow relative to the flame. Why it matters: It adds a second large scale fire test in low gravity, to see how flow speed changes fire growth. It informs material selection and flammability screening. Its PSI table lists 2 tests. Fuels or materials: Cotton and fiberglass fabric (SIBAL) (2). Oxygen 21.2%, assumed. Pressure 14.7 psi, assumed.",
    "href": "/investigations/PSI-100"
   },
   "PSI-101": {
@@ -322,7 +322,7 @@
    "id": "G-normoxic",
    "kind": "glossary",
    "title": "Normoxic atmosphere",
-   "text": "Normoxic atmosphere: An atmosphere that gives the same oxygen partial pressure as sea level air, about 0.21 atm. Lower pressure with more oxygen can keep breathing normal and still make materials easier to burn.",
+   "text": "Normoxic atmosphere: An atmosphere that gives the same oxygen partial pressure as sea level air, about 0.21 atm. It uses the dry gas. NASA's breathing standard also takes away water vapour in the lungs, so it rates 34 percent oxygen at 8.2 psi as mild hypoxia. More oxygen at lower pressure also makes most materials easier to burn.",
    "href": "/methods?section=glossary"
   },
   "G-diluent": {
@@ -392,7 +392,7 @@
    "id": "G-evidence-coverage",
    "kind": "glossary",
    "title": "Evidence Coverage",
-   "text": "Evidence Coverage: EMBER's count of real flight tests near a chosen habitat atmosphere, on a scale of 0 to 100. It is not a safety rating.",
+   "text": "Evidence Coverage: EMBER's score of how much flight test evidence sits close to a chosen habitat atmosphere, on a scale of 0 to 100. Every plotted test counts, weighted by how close it is. It is not a safety rating.",
    "href": "/methods?section=glossary"
   },
   "G-nearby": {
@@ -455,35 +455,35 @@
    "id": "H-iss",
    "kind": "habitat",
    "title": "ISS cabin",
-   "text": "ISS cabin: 21% oxygen at 14.7 psi, microgravity. Source: Challenge statement, sea level pressure. Evidence Coverage near this atmosphere is 100 out of 100: prevention 100, detection 100, suppression 100. Tests within one unit of distance: 1093 (119 aerosol, 618 gas, 127 liquid, 229 solid). The score counts nearby flight tests. It is not a safety rating.",
+   "text": "ISS cabin: 21% oxygen at 14.7 psi, microgravity. Source: Challenge statement, sea level pressure. Evidence Coverage near this atmosphere is 100 out of 100: prevention 100, detection 100, suppression 100. Tests within one unit of distance: 1087 (117 aerosol, 613 gas, 127 liquid, 230 solid). The score counts nearby flight tests. It is not a safety rating.",
    "href": "/?h=iss"
   },
   "H-shuttle-eva": {
    "id": "H-shuttle-eva",
    "kind": "habitat",
    "title": "Shuttle EVA preparation",
-   "text": "Shuttle EVA preparation: 26.5% oxygen at 10.2 psi, microgravity. Source: NASA exploration atmosphere reports, NTRS 20130013505. Evidence Coverage near this atmosphere is 97 out of 100: prevention 98, detection 94, suppression 100. Tests within one unit of distance: 43 (43 liquid). The score counts nearby flight tests. It is not a safety rating.",
+   "text": "Shuttle EVA preparation: 26.5% oxygen at 10.2 psi, microgravity. Source: NASA exploration atmosphere reports, NTRS 20130013505. Evidence Coverage near this atmosphere is 97 out of 100: prevention 97, detection 94, suppression 100. Tests within one unit of distance: 43 (43 liquid). The score counts nearby flight tests. It is not a safety rating.",
    "href": "/?h=shuttle-eva"
   },
   "H-exploration": {
    "id": "H-exploration",
    "kind": "habitat",
    "title": "Exploration atmosphere",
-   "text": "Exploration atmosphere: 34% oxygen at 8.2 psi, Moon gravity 0.166 g. Source: NASA Exploration Atmospheres Working Group, NTRS 20130013505 and NTRS 20150021491. Evidence Coverage near this atmosphere is 67 out of 100: prevention 60, detection 58, suppression 84. Tests within one unit of distance: 24 (15 gas, 9 liquid). The score counts nearby flight tests. It is not a safety rating.",
+   "text": "Exploration atmosphere: 34% oxygen at 8.2 psi, Moon gravity 0.166 g. Source: NASA Exploration Atmospheres Working Group, NTRS 20130013505 and NTRS 20150021491. Evidence Coverage near this atmosphere is 66 out of 100: prevention 58, detection 58, suppression 84. Tests within one unit of distance: 24 (15 gas, 9 liquid). The score counts nearby flight tests. It is not a safety rating.",
    "href": "/?h=exploration"
   },
   "H-moon-bound": {
    "id": "H-moon-bound",
    "kind": "habitat",
    "title": "Moon Base bound",
-   "text": "Moon Base bound: 30% oxygen at 10.2 psi, Moon gravity 0.166 g. Source: Challenge statement: 30% or greater at 10.2 psi or less. Evidence Coverage near this atmosphere is 82 out of 100: prevention 80, detection 69, suppression 98. Tests within one unit of distance: 14 (6 gas, 8 liquid). The score counts nearby flight tests. It is not a safety rating.",
+   "text": "Moon Base bound: 30% oxygen at 10.2 psi, Moon gravity 0.166 g. Source: Challenge statement: 30% or greater at 10.2 psi or less. Evidence Coverage near this atmosphere is 79 out of 100: prevention 73, detection 69, suppression 98. Tests within one unit of distance: 14 (6 gas, 8 liquid). The score counts nearby flight tests. It is not a safety rating.",
    "href": "/?h=moon-bound"
   },
   "H-mars": {
    "id": "H-mars",
    "kind": "habitat",
    "title": "Mars surface habitat",
-   "text": "Mars surface habitat: 34% oxygen at 8.2 psi, Mars gravity 0.38 g. Source: The same exploration atmosphere, with Mars gravity. Evidence Coverage near this atmosphere is 67 out of 100: prevention 60, detection 58, suppression 84. Tests within one unit of distance: 24 (15 gas, 9 liquid). The score counts nearby flight tests. It is not a safety rating.",
+   "text": "Mars surface habitat: 34% oxygen at 8.2 psi, Mars gravity 0.38 g. Source: The same exploration atmosphere, with Mars gravity. Evidence Coverage near this atmosphere is 66 out of 100: prevention 58, detection 58, suppression 84. Tests within one unit of distance: 24 (15 gas, 9 liquid). The score counts nearby flight tests. It is not a safety rating.",
    "href": "/?h=mars"
   },
   "H-suit": {
@@ -496,7 +496,7 @@
   "M-coverage": {
    "id": "M-coverage",
    "title": "What the Evidence Coverage score means",
-   "text": "Evidence Coverage measures how much real flight evidence sits close to a chosen habitat atmosphere, on a scale of 0 to 100. It is not a safety rating. Each test gets a weight that falls with its distance from the habitat: 4 points of oxygen is one unit of distance and about 25 percent in pressure is one unit. A test whose oxygen or pressure is assumed counts at half weight. For each pillar the weights are summed into an effective number of nearby tests N, and coverage is 100 × (1 − exp(−N ÷ 10)). The overall score is 0.4 × prevention plus 0.3 × detection plus 0.3 × suppression. Fundamentals tests count toward each pillar at a weight of 0.3. The constants are design choices by the team.",
+   "text": "Evidence Coverage measures how much real flight evidence sits close to a chosen habitat atmosphere, on a scale of 0 to 100. It is not a safety rating. Each test gets a weight that falls with its distance from the habitat: 4 points of oxygen is one unit of distance and about 25 percent in pressure is one unit. A test whose oxygen or pressure is assumed counts at half weight. For each pillar the weights of every plotted test, near or far, are summed into an effective number of tests N, and coverage is 100 × (1 − exp(−N ÷ 10)). The overall score is 0.4 × prevention plus 0.3 × detection plus 0.3 × suppression. Fundamentals tests count toward each pillar at a weight of 0.3. The constants are design choices by the team.",
    "href": "/methods?section=formulas",
    "kind": "method"
   },
@@ -510,14 +510,14 @@
   "M-dsquared": {
    "id": "M-dsquared",
    "title": "The d-squared law",
-   "text": "The d-squared law says the square of a burning droplet's diameter falls in a straight line with time: d(t)² = d0² − K × t. K is the burning rate constant. The burn time to extinction is (d0² − dExt²) ÷ K. EMBER checks this against the FLEX table. Source: Dietrich and co-authors, Droplet Combustion Experiments Aboard the International Space Station, 2014.",
+   "text": "The d-squared law says the square of a burning droplet's diameter falls in a straight line with time: d(t)² = d0² − K × t. K is the burning rate constant. The burn time to extinction is (d0² − dExt²) ÷ K. EMBER checks this against the FLEX table. The law is a classical result (Godsave 1953, Spalding 1953). The FLEX data: Dietrich and co-authors, Droplet Combustion Experiments Aboard the International Space Station, 2014.",
    "href": "/lab/droplet",
    "kind": "method"
   },
   "M-assumptions": {
    "id": "M-assumptions",
    "title": "Declared assumptions",
-   "text": "Some PSI tables do not state an atmosphere. For 6 investigations EMBER assumes cabin air, 21% oxygen at one atmosphere: PSI-26, PSI-102, PSI-101, PSI-47, PSI-107, PSI-106. That covers 722 tests. Assumed values are drawn as hollow marks, marked as assumed in every table, and counted at half weight in the coverage score. They are never presented as measured.",
+   "text": "Some PSI tables do not state an atmosphere. For 6 investigations EMBER assumes an oxygen value from cabin air: PSI-26 at 21%, PSI-102 at 21%, PSI-101 at 21%, PSI-107 at 21%, PSI-106 at 21%, PSI-100 at 21.2%. 721 tests have an assumed oxygen value and 165 more have only an assumed pressure, about one atmosphere. The team reviewed every assumption on 15 November 2026 against the PSI records and published papers. Assumed values are drawn as hollow marks, marked as assumed in every table, and counted at half weight in the coverage score. They are never presented as measured.",
    "href": "/methods?section=assumptions",
    "kind": "method"
   },

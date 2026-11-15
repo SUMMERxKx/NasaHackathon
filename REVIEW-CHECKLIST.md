@@ -1,8 +1,8 @@
 # Review checklist for the science lead
 
-Everything below was drafted by SI or written by a live model. None of it has been approved by a person. Each item says what to read, where it lives, and what to set once you agree with it.
+Everything below was drafted by SI or written by a live model. Items 3 and 4 were reviewed by the EMBER team on 15 November 2026. A combustion researcher should confirm them before they are used for design. The other items have not been approved by a person. Each item says what to read, where it lives, and what to set once you agree with it.
 
-The site is at https://ember-two-eta.vercel.app. Nothing here blocks the site from working. Until an item is approved, the About screen keeps listing it as "needs human check" or "SI drafted", or the app holds the feature back.
+The site is at https://ember-two-eta.vercel.app. Nothing here blocks the site from working. Until an item is approved, the About screen keeps listing it as "needs human check" or "SI drafted".
 
 ## How to record an approval
 
@@ -54,27 +54,31 @@ Two sentences to look at with extra care, because each joins two facts:
 
 No data rebuild is needed for these two. Run `npm run ci`.
 
+**Done on 15 November 2026.** Both gates are `true`. Sources: NASA/TP-2015-216046, Table IX, "Burning rate, mm2/s", whose first row matches the first FLEX row. Irace and co-authors, Combustion and Flame 2021, and the CFI-G investigator thesis (Kim, University of Maryland 2022, Table E.2), whose test 21088A1 lists the same Tad as the PSI table. The Lab labels the value "calculated adiabatic flame temperature" and leaves out inverse flames and cool flames.
+
 ## 4. Assumed atmospheres
 
 - **File:** `data/manual/atmosphere-defaults.json`, 12 entries.
-- **What it is:** for each investigation whose table does not state oxygen or pressure, the value EMBER assumes and one sentence saying why. 930 tests rest on at least one of these values, and 722 of them rest on the assumed cabin air oxygen. They are hollow on the map and count at half weight.
+- **What it is:** for each investigation whose table does not state oxygen or pressure, the value EMBER assumes, one sentence saying why and the source it was checked against. 886 tests rest on at least one of these values, and 721 of them rest on an assumed oxygen value. They are hollow on the map and count at half weight.
 - **What to read:** each `reason` against the PSI record of that investigation.
 - **What to set when approved:** `"status": "confirmed"` on the entry. If you correct `o2` or `pressureAtm`, set `"status": "changed"`.
 
-| Record | Assumed oxygen | Assumed pressure |
-|---|---|---|
-| PSI-26 BASS | 21% | 1 atm |
-| PSI-102 SAME | 21% | 1 atm |
-| PSI-101 SAME-R | 21% | 1 atm |
-| PSI-47 DAFT | 21% | 1 atm |
-| PSI-107 SPICE | 21% | 1 atm |
-| PSI-106 SLICE | 21% | 1 atm |
-| PSI-98 Saffire-I | from the table | 1 atm |
-| PSI-99 Saffire-II | from the table | 1 atm |
-| PSI-100 Saffire-III | none stated | 1 atm |
-| PSI-25 BASS-II | from the table | 1 atm |
-| PSI-20 ACME BRE | from the table | 1 atm |
-| PSI-23 ACME s-Flame | from the table | 1 atm |
+| Record | Assumed oxygen | Assumed pressure | Status after the review |
+|---|---|---|---|
+| PSI-26 BASS | 21% | 1 atm | confirmed, with the 17 percent caveat |
+| PSI-102 SAME | 21% | 1 atm | confirmed, smoke test |
+| PSI-101 SAME-R | 21% | 1 atm | confirmed, nothing burned |
+| PSI-47 DAFT | none, off the map | 1 atm | changed |
+| PSI-107 SPICE | 21% | 1 atm | confirmed |
+| PSI-106 SLICE | 21% | 1 atm | confirmed |
+| PSI-98 Saffire-I | from the table | 1 atm | confirmed, 102 kPa |
+| PSI-99 Saffire-II | from the table | 1 atm | confirmed, 100 to 103 kPa |
+| PSI-100 Saffire-III | 21.2%, Olson Table 1 | 1 atm | changed |
+| PSI-25 BASS-II | from the table | 1 atm | confirmed |
+| PSI-20 ACME BRE | from the table | none, off the map | changed |
+| PSI-23 ACME s-Flame | from the table | 1 atm | confirmed, helium days recorded |
+
+**Done on 15 November 2026.** Every entry is `confirmed` or `changed`, with its source. Also applied from the same review: the two rows that record no test are dropped and listed on About, the SPICE day under SLICE is listed under "Source text kept as written", and About says that EMBER uses 21.0 percent for cabin air.
 
 ## 5. Pillars, fuel classes and hardware families
 
@@ -129,8 +133,8 @@ Fill in a row when the item is done. This table is the record for the items that
 |---|---|---|---|
 | 1. Pinned answers | | | |
 | 2. Evaluation answers | | | |
-| 3. Two gates | | | |
-| 4. Assumed atmospheres | | | |
+| 3. Two gates | The EMBER team | 15 November 2026 | Both set to true. A combustion researcher should confirm before this is used for design. |
+| 4. Assumed atmospheres | The EMBER team | 15 November 2026 | All 12 confirmed or changed, every recommended option applied. A combustion researcher should confirm before this is used for design. |
 | 5. Pillars | | | |
 | 6. What each investigation informs | | | |
 | 7. Plain summaries | | | |

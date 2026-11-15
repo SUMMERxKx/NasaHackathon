@@ -125,6 +125,8 @@ export function recomputeFromRaw(root) {
     const time = strict(row[flex.col('Burn time')])
     if (d0 == null || dExt == null || k == null || time == null) continue
     if (d0 <= 0 || k <= 0 || time <= 0) continue
+    // An extinction diameter not smaller than the start diameter gives no model burn time.
+    if (dExt >= d0) continue
     ratios.push((d0 * d0 - dExt * dExt) / k / time)
   }
   out.I4 = { medianRatio: r(quantile(ratios, 0.5), 3), q1: r(quantile(ratios, 0.25), 3), q3: r(quantile(ratios, 0.75), 3), tests: ratios.length }

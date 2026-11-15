@@ -1,16 +1,16 @@
 {
  "schemaVersion": 1,
- "buildId": "14278e63",
+ "buildId": "b85833d3",
  "fetchedAt": "2026-11-14T22:26:52Z",
  "generatedBy": "Built from the NASA PSI repository by the EMBER pipeline. Code and plain summaries were SI drafted and reviewed by the team.",
  "counts": {
   "investigations": 24,
   "tables": 22,
   "rows": 2009,
-  "tests": 2031,
-  "testsWithOxygen": 1938,
-  "testsWithAssumedOxygen": 722,
-  "testsWithAssumedValue": 930,
+  "tests": 2029,
+  "testsWithOxygen": 1936,
+  "testsWithAssumedOxygen": 721,
+  "testsWithAssumedValue": 886,
   "projectTypes": {
    "Microgravity Investigation": 19,
    "Ground Investigation": 5
@@ -436,7 +436,7 @@
    "tables": [
     {
      "file": "PSI-20_Experimental table_ACME BRE.csv",
-     "rows": 18
+     "rows": 17
     }
    ],
    "files": {
@@ -465,7 +465,7 @@
     "generatedBy": "SI drafted, checked against PSI data",
     "reviewed": false
    },
-   "testCount": 43,
+   "testCount": 42,
    "psiUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-20"
   },
   {
@@ -1473,7 +1473,7 @@
    "tables": [
     {
      "file": "PSI-26_Experimental table_BASS.csv",
-     "rows": 122
+     "rows": 121
     }
    ],
    "files": {
@@ -1514,7 +1514,7 @@
     "generatedBy": "SI drafted, checked against PSI data",
     "reviewed": false
    },
-   "testCount": 122,
+   "testCount": 121,
    "psiUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-26"
   },
   {
@@ -16253,8 +16253,8 @@
    "fuelClass": "gas",
    "o2": 0.21,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16287,8 +16287,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16321,8 +16321,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16355,8 +16355,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16389,8 +16389,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16423,8 +16423,8 @@
    "fuelClass": "gas",
    "o2": 0.21,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16457,8 +16457,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16491,8 +16491,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16525,8 +16525,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16559,8 +16559,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16593,8 +16593,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16627,8 +16627,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16662,8 +16662,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16696,8 +16696,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16730,8 +16730,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16764,8 +16764,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16789,41 +16789,6 @@
    ]
   },
   {
-   "id": "PSI-20:0:8",
-   "accession": "PSI-20",
-   "table": "PSI-20_Experimental table_ACME BRE.csv",
-   "rowIndex": 8,
-   "label": "2019 April 1",
-   "fuel": "100% C2H4",
-   "fuelClass": "gas",
-   "o2": 0.21,
-   "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
-   "flowCmS": null,
-   "diluent": null,
-   "outcome": null,
-   "extra": {
-    "burnerMm": 25,
-    "flamesIgnited": 0,
-    "dayLevel": true
-   },
-   "raw": {
-    "Year": "2019",
-    "Month": "April",
-    "Date": "1",
-    "Burner Size (mm)": "25",
-    "Fuel Bottle": "100%C2H4",
-    "Oxygen Conc (percent)": "2100%",
-    "Flames Ignited": "0",
-    "Notes": ""
-   },
-   "flags": [
-    "day-level",
-    "typo-fixed"
-   ]
-  },
-  {
    "id": "PSI-20:0:9a",
    "accession": "PSI-20",
    "table": "PSI-20_Experimental table_ACME BRE.csv",
@@ -16833,8 +16798,8 @@
    "fuelClass": "gas",
    "o2": 0.21,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16867,8 +16832,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16901,8 +16866,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16935,8 +16900,8 @@
    "fuelClass": "gas",
    "o2": 0.25,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -16969,8 +16934,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17003,8 +16968,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17037,8 +17002,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17071,8 +17036,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17105,8 +17070,8 @@
    "fuelClass": "gas",
    "o2": 0.25,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17139,8 +17104,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17173,8 +17138,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17207,8 +17172,8 @@
    "fuelClass": "gas",
    "o2": 0.25,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17241,8 +17206,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17275,8 +17240,8 @@
    "fuelClass": "gas",
    "o2": 0.25,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17309,8 +17274,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17343,8 +17308,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17377,8 +17342,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17411,8 +17376,8 @@
    "fuelClass": "gas",
    "o2": 0.25,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17445,8 +17410,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17479,8 +17444,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17513,8 +17478,8 @@
    "fuelClass": "gas",
    "o2": 0.21,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17547,8 +17512,8 @@
    "fuelClass": "gas",
    "o2": 0.265,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17581,8 +17546,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17615,8 +17580,8 @@
    "fuelClass": "gas",
    "o2": 0.25,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17649,8 +17614,8 @@
    "fuelClass": "gas",
    "o2": 0.34,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -17683,8 +17648,8 @@
    "fuelClass": "gas",
    "o2": 0.4,
    "o2Source": "table",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
+   "pressureAtm": null,
+   "pressureSource": null,
    "flowCmS": null,
    "diluent": null,
    "outcome": null,
@@ -20018,7 +19983,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.79
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~21% O2 with He",
@@ -20038,7 +20007,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20054,7 +20024,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.79
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~21% O2 with He",
@@ -20074,7 +20048,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20090,7 +20065,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.7
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% O2 with He",
@@ -20110,7 +20089,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20126,7 +20106,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.7
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20146,7 +20130,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20162,7 +20147,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.79
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20182,7 +20171,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20198,7 +20188,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.7
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20218,7 +20212,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20234,7 +20229,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.79
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20254,7 +20253,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20270,7 +20270,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.7
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% O2 with He",
@@ -20290,7 +20294,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20306,7 +20311,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.7
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20326,7 +20335,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20342,7 +20352,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.79
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20362,7 +20376,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20378,7 +20393,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.7
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20398,7 +20417,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20414,7 +20434,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.79
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20434,7 +20458,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20450,7 +20475,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.7
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20470,7 +20499,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -20486,7 +20516,11 @@
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
-   "diluent": null,
+   "diluent": {
+    "n2": 0,
+    "co2": 0,
+    "he": 0.79
+   },
    "outcome": null,
    "extra": {
     "atmosphere": "~30% and ~21% O2 with He",
@@ -20506,7 +20540,8 @@
    },
    "flags": [
     "approximate",
-    "day-level"
+    "day-level",
+    "helium-balance"
    ]
   },
   {
@@ -27424,31 +27459,6 @@
    }
   },
   {
-   "id": "PSI-26:0:66",
-   "accession": "PSI-26",
-   "table": "PSI-26_Experimental table_BASS.csv",
-   "rowIndex": 66,
-   "label": "row 66",
-   "fuel": "SOOT Cleaning",
-   "fuelClass": "solid",
-   "o2": 0.21,
-   "o2Source": "assumed",
-   "pressureAtm": 1,
-   "pressureSource": "assumed",
-   "flowCmS": null,
-   "diluent": null,
-   "outcome": null,
-   "extra": {},
-   "raw": {
-    "Date": "8/3/2012",
-    "GMT": "216",
-    "As Run Test #": "",
-    "Test #": "",
-    "Sample #": "",
-    "Fuel Sample Material": "SOOT Cleaning"
-   }
-  },
-  {
    "id": "PSI-26:0:67",
    "accession": "PSI-26",
    "table": "PSI-26_Experimental table_BASS.csv",
@@ -31814,8 +31824,8 @@
    "label": "D1",
    "fuel": "Arizona Road Dust (ARD Fine)",
    "fuelClass": "aerosol",
-   "o2": 0.21,
-   "o2Source": "assumed",
+   "o2": null,
+   "o2Source": null,
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
@@ -31838,8 +31848,8 @@
    "label": "D2",
    "fuel": "Arizona Road Dust (ARD Fine)",
    "fuelClass": "aerosol",
-   "o2": 0.21,
-   "o2Source": "assumed",
+   "o2": null,
+   "o2Source": null,
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": null,
@@ -45476,8 +45486,8 @@
    "label": "S1",
    "fuel": "SIBAL Fabric",
    "fuelClass": "solid",
-   "o2": null,
-   "o2Source": null,
+   "o2": 0.212,
+   "o2Source": "assumed",
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": 30,
@@ -45506,8 +45516,8 @@
    "label": "S2",
    "fuel": "SIBAL Fabric",
    "fuelClass": "solid",
-   "o2": null,
-   "o2Source": null,
+   "o2": 0.212,
+   "o2Source": "assumed",
    "pressureAtm": 1,
    "pressureSource": "assumed",
    "flowCmS": 30,
@@ -79540,24 +79550,24 @@
   {
    "accession": "PSI-20",
    "table": "PSI-20_Experimental table_ACME BRE.csv",
-   "rows": 18,
+   "rows": 17,
    "columns": [
     {
      "header": "Year",
      "displayHeader": "Year",
      "corrected": false,
-     "nonEmpty": 18,
+     "nonEmpty": 17,
      "distinct": 3,
      "numeric": true,
      "min": 2019,
-     "median": 2019.5,
+     "median": 2020,
      "max": 2021,
      "unit": null,
      "klass": "factor",
      "topValues": [
       {
        "value": "2019",
-       "count": 9
+       "count": 8
       },
       {
        "value": "2020",
@@ -79573,7 +79583,7 @@
      "header": "Month",
      "displayHeader": "Month",
      "corrected": false,
-     "nonEmpty": 18,
+     "nonEmpty": 17,
      "distinct": 7,
      "numeric": false,
      "min": null,
@@ -79595,12 +79605,12 @@
        "count": 3
       },
       {
-       "value": "April",
+       "value": "Jan",
        "count": 2
       },
       {
-       "value": "Jan",
-       "count": 2
+       "value": "April",
+       "count": 1
       },
       {
        "value": "Oct",
@@ -79616,10 +79626,10 @@
      "header": "Date",
      "displayHeader": "Date",
      "corrected": false,
-     "nonEmpty": 18,
-     "distinct": 12,
+     "nonEmpty": 17,
+     "distinct": 11,
      "numeric": true,
-     "min": 1,
+     "min": 3,
      "median": 11,
      "max": 28,
      "unit": null,
@@ -79644,10 +79654,6 @@
       {
        "value": "28",
        "count": 2
-      },
-      {
-       "value": "1",
-       "count": 1
       },
       {
        "value": "23",
@@ -79679,7 +79685,7 @@
      "header": "Burner Size (mm)",
      "displayHeader": "Burner Size (mm)",
      "corrected": false,
-     "nonEmpty": 18,
+     "nonEmpty": 17,
      "distinct": 2,
      "numeric": true,
      "min": 25,
@@ -79690,7 +79696,7 @@
      "topValues": [
       {
        "value": "25",
-       "count": 16
+       "count": 15
       },
       {
        "value": "50",
@@ -79702,7 +79708,7 @@
      "header": "Fuel Bottle",
      "displayHeader": "Fuel Bottle",
      "corrected": false,
-     "nonEmpty": 18,
+     "nonEmpty": 17,
      "distinct": 4,
      "numeric": false,
      "min": null,
@@ -79720,11 +79726,11 @@
        "count": 5
       },
       {
-       "value": "100%C2H4",
-       "count": 3
+       "value": "100% CH4",
+       "count": 2
       },
       {
-       "value": "100% CH4",
+       "value": "100%C2H4",
        "count": 2
       }
      ]
@@ -79733,8 +79739,8 @@
      "header": "Oxygen Conc (percent)",
      "displayHeader": "Oxygen Conc (percent)",
      "corrected": false,
-     "nonEmpty": 18,
-     "distinct": 10,
+     "nonEmpty": 17,
+     "distinct": 9,
      "numeric": false,
      "min": null,
      "median": null,
@@ -79757,10 +79763,6 @@
       {
        "value": "25; 40",
        "count": 2
-      },
-      {
-       "value": "2100%",
-       "count": 1
       },
       {
        "value": "21; 26.5; 34; 40",
@@ -79788,10 +79790,10 @@
      "header": "Flames Ignited",
      "displayHeader": "Flames Ignited",
      "corrected": false,
-     "nonEmpty": 18,
-     "distinct": 12,
+     "nonEmpty": 17,
+     "distinct": 11,
      "numeric": true,
-     "min": 0,
+     "min": 6,
      "median": 10,
      "max": 21,
      "unit": null,
@@ -79812,10 +79814,6 @@
       {
        "value": "6",
        "count": 2
-      },
-      {
-       "value": "0",
-       "count": 1
       },
       {
        "value": "12",
@@ -82072,14 +82070,14 @@
   {
    "accession": "PSI-26",
    "table": "PSI-26_Experimental table_BASS.csv",
-   "rows": 122,
+   "rows": 121,
    "columns": [
     {
      "header": "Date",
      "displayHeader": "Date",
      "corrected": false,
-     "nonEmpty": 122,
-     "distinct": 33,
+     "nonEmpty": 121,
+     "distinct": 32,
      "numeric": false,
      "min": null,
      "median": null,
@@ -82141,8 +82139,8 @@
      "header": "GMT",
      "displayHeader": "GMT",
      "corrected": false,
-     "nonEmpty": 122,
-     "distinct": 31,
+     "nonEmpty": 121,
+     "distinct": 30,
      "numeric": true,
      "min": 90,
      "median": 157,
@@ -82393,8 +82391,8 @@
      "header": "Fuel Sample Material",
      "displayHeader": "Fuel Sample Material",
      "corrected": false,
-     "nonEmpty": 122,
-     "distinct": 34,
+     "nonEmpty": 121,
+     "distinct": 33,
      "numeric": false,
      "min": null,
      "median": null,
@@ -88711,85 +88709,132 @@
    "accession": "PSI-26",
    "o2": 0.21,
    "pressureAtm": 1,
-   "reason": "BASS ran in the Microgravity Science Glovebox in cabin air. Some tests used nitrogen to suppress the flame.",
-   "status": "needs human check"
+   "reason": "BASS ran in the Microgravity Science Glovebox at about 1 atm. Most burns used cabin air at about 21 to 22 percent oxygen. A NASA presentation shows some burns at about 17 percent after nitrogen was added, and the table does not say which. A nitrogen jet was also tested as an extinguisher.",
+   "source": "Ferkul and co-authors, BASS, ASGSR 2013, NTRS 20140011099: \"Ambient oxygen atmospheres 17% to 21.5% (cabin air).\" NASA, A Researcher's Guide to Combustion Science, 2015, page 19: tests \"as low as 17 percent oxygen\".",
+   "status": "confirmed"
   },
   {
    "accession": "PSI-102",
    "o2": 0.21,
    "pressureAtm": 1,
-   "reason": "SAME generated and measured smoke in cabin air on the ISS.",
-   "status": "needs human check"
+   "reason": "SAME overheated spacecraft materials to make smoke for fire detector tests, in the Microgravity Science Glovebox in cabin air at about 1 atm. It is a smoke test, not a fire test. No source states the oxygen or the pressure as a number.",
+   "source": "NASA SAME fact sheet: conducted in the Microgravity Science Glovebox on the ISS. Spivey and co-authors, MSG overview, NTRS 20080013594: the work volume is held at least 1.3 mbar below the cabin. Meyer and co-authors, Fire Safety Journal 2018: smoke from oxidative pyrolysis with air flow past the samples.",
+   "status": "confirmed"
   },
   {
    "accession": "PSI-101",
    "o2": 0.21,
    "pressureAtm": 1,
-   "reason": "SAME-R used the SAME hardware in cabin air on the ISS.",
-   "status": "needs human check"
+   "reason": "SAME-R reused the SAME hardware in the Microgravity Science Glovebox, in cabin air at about 1 atm. Samples were heated below their ignition point, so nothing burned. It is a smoke test for fire detectors.",
+   "source": "Urban and co-authors, AIAA 2012-3536, NTRS 20130000422: materials \"were heated to temperatures below the ignition point\" in the Microgravity Science Glovebox.",
+   "status": "confirmed"
   },
   {
    "accession": "PSI-47",
-   "o2": 0.21,
+   "o2": null,
    "pressureAtm": 1,
-   "reason": "DAFT sampled ISS cabin air. Nothing was burned.",
-   "status": "needs human check"
+   "reason": "DAFT tested dust counters on a test dust carried in bags filled with nitrogen from the station supply, and on cabin air. Nothing burned. No source gives the oxygen in the bags, so EMBER states no oxygen for these rows and does not plot them.",
+   "source": "PSI-47 table, both rows: \"Arizona Road Dust (ARD Fine) in combination with ISS GN2\". NASA Glenn article, NTRS 20050215648: nitrogen \"will be used to fill 15-liter sample bags\".",
+   "status": "changed"
   },
   {
    "accession": "PSI-107",
    "o2": 0.21,
    "pressureAtm": 1,
    "reason": "SPICE burned gas jet flames in a coflow of cabin air in the glovebox.",
-   "status": "needs human check"
+   "source": "Dotson and co-authors, Fire Safety Journal 2011: cabin oxygen \"within an estimated range of 20–23%\". Stocker and co-authors 2014, NTRS 20140009169: \"The pressure was consistently ~100 kPa\" with \"~21% oxygen\".",
+   "status": "confirmed"
   },
   {
    "accession": "PSI-106",
    "o2": 0.21,
    "pressureAtm": 1,
    "reason": "SLICE used the same flow duct as SPICE, in cabin air.",
-   "status": "needs human check"
+   "source": "Stocker and co-authors 2014, NTRS 20140009169: SPICE and SLICE ran in the Microgravity Science Glovebox \"using common hardware\", at about 100 kPa and 21 percent oxygen.",
+   "status": "confirmed"
   },
   {
    "accession": "PSI-98",
    "o2": null,
    "pressureAtm": 1,
-   "reason": "Saffire-I ran in a Cygnus cargo vehicle cabin, near one atmosphere. Oxygen comes from the table.",
-   "status": "needs human check"
+   "reason": "Saffire-I ran in the Cygnus cargo vehicle cabin, filled with station air at hatch closing. Olson and co-authors, Table 1, record 102 kPa. Oxygen comes from the table.",
+   "source": "Olson and co-authors, Combustion and Flame 2023, doi 10.1016/j.combustflame.2022.112559, Table 1, Flight I: 21.7 percent oxygen at 102 kPa.",
+   "status": "confirmed"
   },
   {
    "accession": "PSI-99",
    "o2": null,
    "pressureAtm": 1,
-   "reason": "Saffire-II ran in a Cygnus cargo vehicle cabin, near one atmosphere. Oxygen comes from the table.",
-   "status": "needs human check"
+   "reason": "Saffire-II ran in the Cygnus cargo vehicle cabin, filled with station air at hatch closing. Olson and co-authors, Table 1, record 103 kPa, and the Saffire-II PMMA paper gives 100 kPa. Oxygen comes from the table.",
+   "source": "Olson and co-authors, Combustion and Flame 2023, doi 10.1016/j.combustflame.2022.112559, Table 1, Flight II samples 5 and 6: 22.1 percent oxygen at 103 kPa.",
+   "status": "confirmed"
   },
   {
    "accession": "PSI-100",
-   "o2": null,
+   "o2": 0.212,
    "pressureAtm": 1,
-   "reason": "Saffire-III ran in a Cygnus cargo vehicle cabin, near one atmosphere. Its table has no oxygen column.",
-   "status": "needs human check"
+   "reason": "Saffire-III ran in the Cygnus cargo vehicle cabin, filled with station air at hatch closing. Olson and co-authors, Table 1, record 21.2 percent oxygen at 99 kPa. The second sample burned after the first, so its oxygen was likely a little lower. The PSI table has no oxygen column.",
+   "source": "Olson and co-authors, Combustion and Flame 2023, doi 10.1016/j.combustflame.2022.112559, Table 1, Flight III: 21.2 percent oxygen at 99 kPa.",
+   "status": "changed"
   },
   {
    "accession": "PSI-25",
    "o2": null,
    "pressureAtm": 1,
    "reason": "BASS-II ran in the Microgravity Science Glovebox at cabin pressure. Oxygen comes from the table.",
-   "status": "needs human check"
+   "source": "Zhao and co-authors 2015, NTRS 20150008962: \"Ambient pressure was 1 atm.\"",
+   "status": "confirmed"
   },
   {
    "accession": "PSI-20",
    "o2": null,
-   "pressureAtm": 1,
-   "reason": "The ACME BRE table lists oxygen levels for each test day and no pressure. Its own note says: \"The chamber pressures were also varied but are not identified in this summary table.\" One atmosphere is assumed only to place the tests on the map, so a plotted BRE pressure may not be the pressure that test ran at.",
-   "status": "needs human check"
+   "pressureAtm": null,
+   "reason": "The ACME BRE chamber was filled to a chosen pressure for each test, from about 0.56 to 1.07 atm. Tests at 26.5 percent oxygen ran near 0.7 atm and many at 34 percent near 0.56 to 0.6 atm. NASA's table note says: \"The chamber pressures were also varied but are not identified in this summary table.\" So EMBER does not plot these tests.",
+   "source": "Dehghani and co-authors, Combustion and Flame 2021, doi 10.1016/j.combustflame.2021.01.035: \"pressures of 1 to about 0.56 bar\". Dehghani, PhD thesis, University of Maryland 2022, Tables 6.1, E.1 and F.1: 0.565 to 1.08 bar.",
+   "status": "changed"
   },
   {
    "accession": "PSI-23",
    "o2": null,
    "pressureAtm": 1,
-   "reason": "A note in the ACME s-Flame table says the atmosphere is about 1 atm. Oxygen comes from the table.",
-   "status": "needs human check"
+   "reason": "A note in the ACME s-Flame table says the atmosphere is about 1 atm at the start. Pressure rises and oxygen falls during a test day as the sealed chamber fills with products. Oxygen comes from the table. Some days used helium instead of nitrogen.",
+   "source": "PSI-23 table note: \"Atmosphere is ~1 atm but pressure increases and O2% drops with vitiation.\"",
+   "status": "confirmed"
+  }
+ ],
+ "assumptionsReview": "Reviewed by the EMBER team on 15 November 2026. A combustion researcher should confirm before this is used for design.",
+ "droppedRows": [
+  {
+   "accession": "PSI-20",
+   "table": "PSI-20_Experimental table_ACME BRE.csv",
+   "rowIndex": 8,
+   "label": "2019 April 1",
+   "reason": "The row lists 0 flames ignited on that day, so no flame was tested.",
+   "raw": {
+    "Year": "2019",
+    "Month": "April",
+    "Date": "1",
+    "Burner Size (mm)": "25",
+    "Fuel Bottle": "100%C2H4",
+    "Oxygen Conc (percent)": "2100%",
+    "Flames Ignited": "0",
+    "Notes": ""
+   }
+  },
+  {
+   "accession": "PSI-26",
+   "table": "PSI-26_Experimental table_BASS.csv",
+   "rowIndex": 66,
+   "label": "row 66",
+   "reason": "The row reads \"SOOT Cleaning\". It records maintenance of the hardware, not a burn.",
+   "raw": {
+    "Date": "8/3/2012",
+    "GMT": "216",
+    "As Run Test #": "",
+    "Test #": "",
+    "Sample #": "",
+    "Fuel Sample Material": "SOOT Cleaning"
+   }
   }
  ],
  "labelCorrections": [
@@ -88944,7 +88989,7 @@
   {
    "id": "normoxic",
    "term": "Normoxic atmosphere",
-   "definition": "An atmosphere that gives the same oxygen partial pressure as sea level air, about 0.21 atm. Lower pressure with more oxygen can keep breathing normal and still make materials easier to burn.",
+   "definition": "An atmosphere that gives the same oxygen partial pressure as sea level air, about 0.21 atm. It uses the dry gas. NASA's breathing standard also takes away water vapour in the lungs, so it rates 34 percent oxygen at 8.2 psi as mild hypoxia. More oxygen at lower pressure also makes most materials easier to burn.",
    "aliases": [
     "normoxic",
     "partial pressure",
@@ -89066,7 +89111,7 @@
   {
    "id": "evidence-coverage",
    "term": "Evidence Coverage",
-   "definition": "EMBER's count of real flight tests near a chosen habitat atmosphere, on a scale of 0 to 100. It is not a safety rating.",
+   "definition": "EMBER's score of how much flight test evidence sits close to a chosen habitat atmosphere, on a scale of 0 to 100. Every plotted test counts, weighted by how close it is. It is not a safety rating.",
    "aliases": [
     "coverage",
     "coverage score",

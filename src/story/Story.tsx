@@ -17,11 +17,11 @@ export type StoryStep = {
 }
 
 export const STORY_STEPS: StoryStep[] = [
-  { path: '/dashboard', habitat: 'iss', params: {}, template: 'NASA has burned things in orbit for decades. Near the ISS cabin, the evidence is deep.' },
+  { path: '/dashboard', habitat: 'iss', params: {}, template: 'NASA has burned things in orbit for decades. Near the ISS cabin there are over a thousand test rows, most placed at assumed cabin air.' },
   { path: '/dashboard', habitat: 'exploration', params: {}, template: 'A Moon Base will run richer in oxygen at lower pressure. Watch the evidence thin out.' },
-  { path: '/dashboard', habitat: 'exploration', params: { zoom: 'moon' }, template: 'Every mark is a real test. In this region there are {moonTests}, and {moonGas} of them are gas flames{moonInverse}.' },
+  { path: '/dashboard', habitat: 'exploration', params: { zoom: 'moon' }, template: 'Every mark is a row of a NASA test table. In this region there are {moonTests}, and {moonGas} of them are gas flames{moonInverse}.' },
   { path: '/dashboard', habitat: 'exploration', params: { drill: 'insight.I1.maxSolidO2Pct' }, template: 'Solid material tests that state their oxygen stop at {maxSolid}%. That gap is the finding.' },
-  { path: '/dashboard', habitat: 'exploration', params: { ask: 'What is missing for the Moon?' }, template: 'Ask in plain words. Every sentence is checked against its source.' },
+  { path: '/dashboard', habitat: 'exploration', params: { ask: 'What is missing for the Moon?' }, template: 'Ask in plain words. Every sentence must cite a source and use only that source\'s numbers.' },
 ]
 
 export function storyCaption(step: StoryStep, data: Data): string {

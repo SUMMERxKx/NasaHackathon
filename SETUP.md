@@ -84,13 +84,10 @@ Each run posts 12 real questions and 5 trick questions three times, and costs un
 
 ## 8. Checks that wait on the science lead
 
-These are drafts by SI and carry the status "needs human check".
+The two flame gates in `src/three/flameParams.ts` and the assumed atmospheres in `data/manual/atmosphere-defaults.json` were reviewed by the EMBER team on 15 November 2026. A combustion researcher should confirm before this is used for design. The rest are drafts by SI and carry the status "needs human check".
 
 | What | Where | What to do |
 |---|---|---|
-| The burning rate unit of the FLEX table | `src/three/flameParams.ts`, `GATES.burningRateUnitConfirmed` | Confirm from the publication that it is mm² per second. Then set it to `true`. This turns on the animated droplet in the Lab. |
-| The ACME column headed `Tad (K)` | the same file, `GATES.tadConfirmed` | Confirm it is the adiabatic flame temperature. Then set it to `true`. This lets the mark on the temperature scale move. |
-| Assumed atmospheres | `data/manual/atmosphere-defaults.json` | Confirm or correct each entry from the PSI record. Change its status. |
 | Pillars, fuel classes and hardware families | `data/manual/pillars.json` | Confirm each entry. |
 | What each investigation informs | `data/manual/equipment.json` | Confirm each entry with a sentence from the PSI record. |
 | Plain summaries | `data/manual/summaries.json` | Read each against the PSI record. |

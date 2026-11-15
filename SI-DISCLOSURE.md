@@ -32,7 +32,7 @@ The question, the habitat and EMBER's own evidence text. The browser sends evide
 
 - Numbers are computed from the NASA tables by code, not written by SI. A build step recomputes every number on an insight card and fails on any difference. Four headline cards are recomputed a second time straight from the raw CSV files with separate code.
 - The browser checks every live answer sentence by sentence. A sentence with no valid source, with a number that is not in its source, or with a verdict of safe or unsafe is removed. The check cannot prove that a sentence means what its source means, so the sources are listed under every answer.
-- The hand-made mappings and the assumed atmospheres carry the status "needs human check" until the team confirms them. The About screen shows that status.
+- The hand-made mappings carry the status "needs human check" until the team confirms them. The assumed atmospheres were reviewed by the EMBER team on 15 November 2026 and carry the status "confirmed" or "changed". A combustion researcher should confirm before this is used for design. The About screen shows each status.
 
 ## What the team did themselves
 

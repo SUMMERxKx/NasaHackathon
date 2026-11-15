@@ -1,5 +1,5 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The Evidence Coverage score. It counts real flight tests near a habitat. It is not a safety rating.
+// The Evidence Coverage score. It weights every flight test by how close it is to a habitat. It is not a safety rating.
 import type { CoverageResult, Investigation, MethodConstants, Pillar, Test } from '../types.ts'
 import { psiToAtm } from './units.ts'
 

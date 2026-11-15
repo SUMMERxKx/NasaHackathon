@@ -31,7 +31,7 @@ The challenge asks teams "to build an SI-powered, web-based dashboard that summa
 All data comes from NASA's Physical Sciences Informatics (PSI) repository at psi.nasa.gov. It needs no key and no login.
 
 - 24 combustion investigations, out of 133 investigations in PSI.
-- 22 experimental tables with 2,009 rows, one row per real flight test. They become 2,031 normalized tests, because a row that lists several oxygen levels for one test day becomes one test per level, and note rows are kept apart.
+- 22 experimental tables with 2,009 rows, one row per real flight test. They become 2,029 normalized tests, because a row that lists several oxygen levels for one test day becomes one test per level, note rows are kept apart, and 2 rows that record no test (a maintenance entry and a day with no flame lit) are left out.
 - Three endpoints: the investigation search listing, the investigation record, and the experimental table download.
 
 The PSI service does not allow calls from a browser on another site. So `npm run fetch` downloads everything once, and the snapshot is committed. The site reads only the committed snapshot and never depends on PSI being up. The raw cell is kept beside every value EMBER read from it.
@@ -44,8 +44,8 @@ Numbers the story rests on, all recomputed from the NASA files by the build:
 | Tests inside the Moon Base region, 30 percent oxygen or more at 10.2 psi or less | 66, all gas flames. 0 solid. 0 liquid. |
 | Droplet tests just outside that region | 17 FLEX tests at 10.3 to 10.5 psi |
 | Highest oxygen tested anywhere | 85 percent, in inverse gas flames, where it is the oxidizer stream and not a cabin |
-| The d-squared law against FLEX | Median of predicted over measured burn time 0.951, over 196 tests |
-| Tests with an assumed atmosphere at the cabin air point | 722 |
+| The d-squared law against FLEX | Median of predicted over measured burn time 0.951, over 195 tests |
+| Tests with an assumed oxygen value | 721, of 886 tests with at least one assumed value |
 
 ## The score and the ranking, in brief
 
@@ -129,7 +129,7 @@ plan.html            the build plan. Not part of the site.
 - The PSI test tables are summaries, not the full datasets.
 - Some atmospheres are assumed, because the table does not state them. They are marked and count at half weight.
 - PSI holds no partial-gravity combustion tests. Nothing here describes a flame on the Moon or Mars.
-- The pillar mapping, the equipment tags, the plain summaries and the declared assumptions are SI drafts that carry the status "needs human check" until the team confirms them.
+- The pillar mapping, the equipment tags and the plain summaries are SI drafts that carry the status "needs human check" until the team confirms them. The declared assumptions and the two flame readings were reviewed by the EMBER team on 15 November 2026. A combustion researcher should confirm before this is used for design.
 - The answer checker proves that ids and numbers match the evidence. It cannot prove that a sentence means what its source means.
 
 ## SI disclosure

@@ -1,6 +1,7 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The d-squared law for a burning droplet: d(t)² = d0² − K × t.
-// Source: Dietrich and co-authors, Microgravity Science and Technology, 2014, doi 10.1007/s12217-014-9372-2.
+// A classical result (Godsave 1953, Spalding 1953). FLEX data: Dietrich and co-authors, Microgravity
+// Science and Technology, 2014, doi 10.1007/s12217-014-9372-2.
 import type { Test } from '../types.ts'
 import { median, quantile } from './stats.ts'
 
@@ -44,7 +45,9 @@ export function dropletValues(test: Test): DropletValues | null {
 
 export type ValidationPoint = { testId: string; predicted: number; measured: number; ratio: number }
 
-// Predicted against measured burn time for every FLEX test that has all four values.
+// Predicted against measured burn time for every FLEX test that has all four values and a
+// defined model end. A test whose extinction diameter is not smaller than its start diameter has
+// no model burn time (modelEndTime), so it is left out instead of counted with a negative time.
 export function validateDSquared(tests: Test[]): {
   points: ValidationPoint[]
   median: number | null
@@ -55,7 +58,8 @@ export function validateDSquared(tests: Test[]): {
   for (const test of tests) {
     const v = dropletValues(test)
     if (!v) continue
-    const predicted = burnTimeToExtinction(v.d0, v.dExt, v.k)
+    const predicted = modelEndTime(v.d0, v.dExt, v.k)
+    if (predicted == null) continue
     points.push({ testId: test.id, predicted, measured: v.burnTime, ratio: predicted / v.burnTime })
   }
   const ratios = points.map((p) => p.ratio)
