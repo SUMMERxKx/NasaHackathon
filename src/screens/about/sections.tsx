@@ -3,22 +3,26 @@
 // every assumption, the limits, the visuals, the live answer, the SI disclosure and the sources.
 import type { ReactNode } from 'react'
 import { Download, ExternalLink, Play } from 'lucide-react'
-import { COVERAGE_FORMULA, DEFAULT_METHOD } from '../../lib/coverage.ts'
+import { COVERAGE_FORMULA, DEFAULT_METHOD, PILLARS } from '../../lib/coverage.ts'
 import { D_SQUARED_FORMULA } from '../../lib/droplet.ts'
 import { plottable } from '../../lib/mapLayout.ts'
+import { NEARBY_RULE, NOT_PROOF } from '../../lib/nearby.ts'
 import { RANK_FORMULAS, RANK_WEIGHTS } from '../../lib/ranking.ts'
 import { byAccession, groupBy } from '../../lib/stats.ts'
+import { formatNumber, formatPercent } from '../../lib/units.ts'
 import { useData } from '../../state/data.tsx'
+import { useCoverage, useScenario } from '../../state/hooks.ts'
 import { EVALUATION_NOTE, LAST_EVALUATION, MEANING_CHECK, PASS_BARS } from '../../config/evaluation.ts'
 import { GATES } from '../../three/flameParams.ts'
 import { SCALE_NOTE } from '../../three/ramp.ts'
 import { BASIS, DRIVERS } from '../../components/FireballStage.tsx'
+import { CoverageDial, PILLAR_LABEL, PillarMini } from '../../components/Coverage.tsx'
 import { ContextCardView, InsightCard } from '../../components/cards.tsx'
-import { ScenarioLink } from '../../components/ui.tsx'
+import { NotASafetyRating, ScenarioLink } from '../../components/ui.tsx'
 
 const CHALLENGE: { asks: string; does: ReactNode }[] = [
   { asks: 'Summarize, rank and interpret the investigations', does: <>Plain summaries on every <ScenarioLink to="/investigations">investigation page</ScenarioLink>. A ranking with "Why this rank". <ScenarioLink to="/about?section=findings">Findings</ScenarioLink> with every number sourced.</> },
-  { asks: '"Identify investigations most relevant to the fire safety needs of habitable crew environments, including spacecraft, space stations, bases on the lunar and Martian surfaces, and pressurized rovers"', does: <>Pick a habitat on the <ScenarioLink to="/dashboard">dashboard</ScenarioLink>. The presets are those environments. The map, the coverage score and the ranking all answer for the one chosen.</> },
+  { asks: '"Identify investigations most relevant to the fire safety needs of habitable crew environments, including spacecraft, space stations, bases on the lunar and Martian surfaces, and pressurized rovers"', does: <>Pick a habitat on the <ScenarioLink to="/dashboard">dashboard</ScenarioLink>. The presets are those environments. The nearby counts, the map and the ranking all answer for the one chosen.</> },
   { asks: '"Extract data that supports predictive modeling of flammability and fire scenarios in space exploration"', does: <>The whole normalized dataset as <a href="/data/tests.csv" download>one CSV</a>. The <ScenarioLink to="/lab">Lab</ScenarioLink> models, each checked against the real tests.</> },
   { asks: '"Highlight research that informs the development of next-generation fire safety controls and equipment"', does: <>"Informs" chips on every investigation, and a filter by equipment on <ScenarioLink to="/investigations">Investigations</ScenarioLink>.</> },
   { asks: '"Your dashboard could also address potential applications of the PSI data to fire safety on Earth"', does: <>The <ScenarioLink to="/about?section=earth">Back on Earth</ScenarioLink> section here, led by three NASA spinoffs.</> },
@@ -58,7 +62,7 @@ export function OverviewSection() {
           EMBER answers one question. For the crew habitat you care about, what does NASA's microgravity fire evidence cover, what does it tell us, and where are the gaps? On Earth, hot gas rises and a flame streams upward. In freefall nothing rises, so a flame becomes a slow sphere that feeds on whatever oxygen drifts in.
         </p>
         <p>
-          Pick a habitat on the dashboard. EMBER scores the evidence near it, maps every real flight test, ranks the investigations and answers questions from that evidence. Every number opens the NASA rows it came from. The Evidence Coverage score counts evidence. It is not a safety rating.
+          Pick a habitat on the dashboard. EMBER counts the NASA test records near it, says what is missing, maps every real flight test, ranks the investigations and answers questions from that evidence. Every number opens the NASA rows it came from. The counts and the Evidence Coverage score describe evidence. Neither is a safety rating.
         </p>
         <p>
           <ScenarioLink to="/dashboard" extra={{ story: '1' }} className="btn btn-secondary btn-sm">
@@ -140,6 +144,45 @@ export function FindingsSection() {
   )
 }
 
+// The coverage score for the chosen habitat: the dial, the three pillars and what the dim part
+// of each bar means. It moved here from the dashboard, with every row link intact.
+function CoverageDetails() {
+  const { scenario, name } = useScenario()
+  const coverage = useCoverage()
+  return (
+    <div className="card flex flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6 md:p-5" role="group" aria-label={`Evidence Coverage for ${name}`}>
+      <div className="flex shrink-0 flex-col items-center gap-1">
+        <CoverageDial coverage={coverage} size={160} label={name} />
+        <NotASafetyRating />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="!max-w-none text-[15px] font-semibold">
+          {name}{' '}
+          <span className="num text-[13px] font-normal text-muted">
+            {formatPercent(scenario.o2)} oxygen · {formatNumber(scenario.pressurePsi, 1)} psi
+          </span>
+        </p>
+        <div className="mt-2 max-w-[420px]">
+          <PillarMini coverage={coverage} />
+        </div>
+        <ul className="m-0 mt-3 flex list-none flex-col gap-1 p-0 text-[13px] text-muted">
+          {PILLARS.map((pillar) => {
+            const p = coverage.byPillar[pillar]
+            return (
+              <li key={pillar}>
+                {PILLAR_LABEL[pillar]}: <span className="num text-ink">{Math.round(p.score)}</span> out of 100, from <span className="num text-ink">{formatNumber(p.effectiveTests, 1)}</span> effective tests. <span className="num text-ink">{formatPercent(p.assumedShare, 0)}</span> of that rests on assumed values.
+              </li>
+            )
+          })}
+        </ul>
+        <p className="mt-3 !max-w-none text-[13px] text-muted">
+          The bright part of a bar and the solid part of the dial come from values stated in the tables. The dim and hatched part is the share that rests on an assumed oxygen or pressure value. Choose the dial or a bar to open the rows behind it. This is the score for the habitat chosen on the <ScenarioLink to="/dashboard">dashboard</ScenarioLink>.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function MethodsSection() {
   const { snapshot, insights, tests, invByAcc } = useData()
   const c = snapshot.counts
@@ -182,8 +225,15 @@ export function MethodsSection() {
       <h3 className="text-[18px]">Atmospheres and units</h3>
       <Formula>1 atm = 101.325 kPa = 14.696 psi = 760 mmHg. 1 bar = 0.98692 atm. ppO2 = xO2 × P.</Formula>
       <p>The normoxic line on the map is every atmosphere with the same oxygen partial pressure as sea level air: xO2 × P = 0.2095 atm. Flammability does not follow this line. Lower pressure with more oxygen keeps breathing normal and makes most materials easier to burn.</p>
-      <h3 className="text-[18px]">Evidence Coverage</h3>
-      <p>The score measures how much real flight evidence sits close to the chosen atmosphere. It is not a safety rating.</p>
+      <h3 id="nearby" className="scroll-mt-24 text-[18px]">Nearby test records</h3>
+      <p>The dashboard leads with counts of nearby test records. {NEARBY_RULE}</p>
+      <Formula>nearby when √(dx² + dp²) ≤ 1, dx = Δoxygen ÷ {m.o2Scale}, dp = Δln(pressure) ÷ {m.pressureScale}</Formula>
+      <p>
+        The counts describe the snapshot. They are rows of NASA test tables, not unique experiments, and many rows can share one condition. {NOT_PROOF} A row with an assumed oxygen or pressure value counts as nearby at its assumed position, and the dashboard states how many such rows there are. Rows of inverse gas flames count too, and their oxygen value is the oxidizer stream. A count is not a probability, a risk score or a prediction.
+      </p>
+      <h3 id="coverage" className="scroll-mt-24 text-[18px]">Evidence Coverage</h3>
+      <p>The score measures how much real flight evidence sits close to the chosen atmosphere. It is not a safety rating. It is a heuristic of the team and it lives here, with its formula, and not on the dashboard. It sums a weight over every usable row, not only the nearby ones, so a large table can fill the score while a material or gravity gap remains.</p>
+      <CoverageDetails />
       <Formula>{COVERAGE_FORMULA}</Formula>
       <Formula>
         overall = {m.pillarWeights.prevention} × prevention + {m.pillarWeights.detection} × detection + {m.pillarWeights.suppression} × suppression. Fundamentals tests, and tests of an investigation's secondary pillar, count at a weight of {m.fundamentalsWeight}.
@@ -301,7 +351,7 @@ export function VisualsSection() {
     <>
     <Section id="fireball" title="The fireball">
       <p>
-        The fireball on the dashboard is an SI-generated illustration, drawn by shader code in the browser with three.js. Every view of it carries a small SI mark in its corner. There are no model files. It is driven by the NASA tests near the chosen atmosphere: the burning rate and the outcomes come from the FLEX table, and the listed flame temperature comes from the ACME gas flame tables. The three numbers beside it each open their rows.
+        The fireball in the <ScenarioLink to="/lab/flame">Lab</ScenarioLink> is an SI-generated illustration, drawn by shader code in the browser with three.js. Every view of it carries a small SI mark in its corner. There are no model files. It is driven by the NASA tests near the chosen atmosphere: the burning rate and the outcomes come from the FLEX table, and the listed flame temperature comes from the ACME gas flame tables. The three numbers beside it each open their rows.
       </p>
       <p>
         The temperature scale has two labelled ends, about 300 K for cabin air and about 2,300 K for a typical flame, from page 8 of NASA's Researcher's Guide to Combustion Science. The pattern between them is drawn, not computed. No pressure effect on the flame is drawn, because the tables do not show one. No shape between the Earth flame and the fireball is drawn, because no partial-gravity test exists.
@@ -538,7 +588,7 @@ export function SourcesSection() {
             </a>
           </li>
         ))}
-        <li>Open source libraries: React, React Router, Vite, TypeScript, Tailwind CSS, d3 modules, MiniSearch, three.js, Motion, Lucide, clsx, tailwind-merge, and the Inter, Space Grotesk and JetBrains Mono typefaces. Versions and licences are in SOURCES.md in the repository.</li>
+        <li>Open source libraries: React, React Router, Vite, TypeScript, Tailwind CSS, d3 modules, Recharts, MiniSearch, three.js, Motion, Lucide, clsx, tailwind-merge, class-variance-authority, and the Inter, Space Grotesk and JetBrains Mono typefaces. Versions and licences are in SOURCES.md in the repository.</li>
       </ul>
     </Section>
 

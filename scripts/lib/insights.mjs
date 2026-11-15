@@ -118,8 +118,8 @@ export function buildInsightList(snapshot) {
     out.push(card({
       id: 'I4',
       pillar: 'method',
-      headline: `The d-squared law predicts FLEX burn times to within about ${formatNumber(Math.abs(1 - v.median) * 100, 0)}%: the median of predicted over measured is ${formatNumber(v.median, 3)}.`,
-      detail: `For the ${v.points.length} FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of ${formatNumber(v.median, 3)}. Half of the tests fall between ${formatNumber(v.q1, 3)} and ${formatNumber(v.q3, 3)}. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.`,
+      headline: `The d-squared law's predicted FLEX burn time has a median of ${formatNumber(v.median, 3)} times the measured one, across ${v.points.length} tests. That is a median ratio, not an error bound.`,
+      detail: `For the ${v.points.length} FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of ${formatNumber(v.median, 3)}. Half of the tests fall between ${formatNumber(v.q1, 3)} and ${formatNumber(v.q3, 3)}. The median shows where the middle of the tests sits and says nothing about the error of any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.`,
       numbers: { medianRatio: round(v.median, 3), q1: round(v.q1, 3), q3: round(v.q3, 3), tests: v.points.length },
       display: { medianRatio: formatNumber(v.median, 3), q1: formatNumber(v.q1, 3), q3: formatNumber(v.q3, 3), tests: String(v.points.length) },
       primary: 'medianRatio',

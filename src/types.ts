@@ -250,10 +250,14 @@ export type SearchIndexFile = {
   } | null
 }
 
+// The rows of the nearby subset that carry one caveat.
+export type NearbySubset = 'assumed' | 'inverse'
+
 export type DrillStep =
   | { kind: 'coverage'; pillar: Pillar | 'overall' }
   | { kind: 'region'; id: 'moon' }
-  | { kind: 'near'; o2: number; pressureAtm: number }
+  // The nearby rule around one point. A fuel class or a subset narrows it to those rows only.
+  | { kind: 'near'; o2: number; pressureAtm: number; fuel?: FuelClass; only?: NearbySubset }
   | { kind: 'stack'; o2: number; pressureAtm: number }
   | { kind: 'rank'; accession: string; part: 'A' | 'F' | 'P' | 'D' }
   | { kind: 'insight'; id: string; number: string }
@@ -285,6 +289,8 @@ export type DrillResult = {
   highlightTestId: string | null
   test: Test | null
   crumbs: { label: string; path: DrillPath }[]
+  // Where to go next when a mark has no rows behind it.
+  links: { label: string; to: string }[]
 }
 
 export type RemovalReason = 'no_citation' | 'unknown_id' | 'number_not_in_source' | 'verdict_language' | 'low_overlap'

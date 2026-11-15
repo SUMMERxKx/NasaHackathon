@@ -1,28 +1,32 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The dashboard: one screen around the map. The habitat picker in the top bar changes all of it:
-// the ring on the map, the coverage score, the fireball and the most relevant investigations.
-import { useCallback, useMemo, useState } from 'react'
+// The dashboard. It leads with counts: how many NASA test records sit near the chosen habitat, in
+// all and by fuel class, with one statement of what is missing and the caveats beside it. Then the
+// three investigations to read first, and the atmosphere map for anyone who wants to explore.
+// The coverage score, the flame picture and the general findings live in About and the Lab.
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowRight, Focus, Play, SlidersHorizontal, Sun, Table2 } from 'lucide-react'
-import type { FuelClass, Test } from '../types.ts'
+import { ArrowRight, Flame, Focus, Gauge, Lightbulb, Play, SlidersHorizontal, Sun, Table2 } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardToolbar } from '@/components/ui/card.tsx'
+import type { Test } from '../types.ts'
 import { distance } from '../lib/coverage.ts'
 import { FUEL_CLASSES, plottable } from '../lib/mapLayout.ts'
+import { NEARBY_FUELS, gapStatement, nearbyReason, summarizeNearby } from '../lib/nearby.ts'
+import type { NearbySummary } from '../lib/nearby.ts'
+import { isFlightInvestigation } from '../lib/ranking.ts'
+import { formatNumber, formatPercent } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
-import { useCoverage, useDrill, useRanking, useScenario } from '../state/hooks.ts'
+import { useDrill, useRanking, useScenario } from '../state/hooks.ts'
 import { gravityLabel, isPartialGravity } from '../state/scenario.ts'
 import { AtmosphereMap, MapLegend } from '../components/AtmosphereMap.tsx'
-import { CoverageDial, PillarMini, bar } from '../components/Coverage.tsx'
 import { DataTable } from '../components/DataTable.tsx'
 import type { Column } from '../components/DataTable.tsx'
 import { oxygenText, pressureText } from '../components/DrillPanel.tsx'
-import { FireballStage } from '../components/FireballStage.tsx'
-import { habitatFacts } from '../components/Habitat.tsx'
-import { PILLAR_NAME, Thumb, surfaceInsights } from '../components/cards.tsx'
-import { Chip, NotASafetyRating, ScenarioLink, SourcedNumber } from '../components/ui.tsx'
+import { NearbyCounts } from '../components/NearbyCounts.tsx'
+import { PILLAR_NAME } from '../components/cards.tsx'
+import { Chip, ScenarioLink, SourcedNumber } from '../components/ui.tsx'
 
 const PILLAR_FILTERS = ['prevention', 'detection', 'suppression', 'fundamentals']
 const NEAR_CLASSES = FUEL_CLASSES.filter((c) => c.id !== 'unknown')
-export const NO_PARTIAL_GRAVITY = 'PSI holds no partial-gravity tests'
 
 function MapCard() {
   const data = useData()
@@ -93,7 +97,7 @@ function MapCard() {
     </div>
   )
   return (
-    <section className="card p-3 md:p-4 lg:col-span-8" aria-label="Atmosphere map">
+    <section id="atmosphere-map" className="card scroll-mt-24 p-3 md:p-4 lg:col-span-12" aria-label="Atmosphere map">
       {showFilters ? (
         <div className="mb-3 flex flex-col gap-2 border-b border-line pb-3" role="group" aria-label="Map filters">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -169,108 +173,116 @@ function MapCard() {
   )
 }
 
-function CoverageCard() {
-  const { scenario, point, name } = useScenario()
-  const coverage = useCoverage()
-  return (
-    <section className="card p-4" aria-label="Evidence coverage">
-      <div className="flex items-center gap-4">
-        <CoverageDial coverage={coverage} size={120} label={name} />
-        <div className="min-w-0 flex-1">
-          <p className="stat-label">Evidence coverage</p>
-          <NotASafetyRating className="mt-0.5 !text-[10px]" />
-          <p className="mt-2 text-[13px] text-muted">
-            <SourcedNumber path={[{ kind: 'near', o2: scenario.o2, pressureAtm: point.pressureAtm }]} label={`${coverage.nearbyTotal} tests within one unit of this habitat`} className="text-[20px] text-ink">
-              {coverage.nearbyTotal}
-            </SourcedNumber>{' '}
-            tests nearby
-          </p>
-          <ul className="m-0 mt-1 flex list-none flex-wrap gap-x-3 gap-y-0.5 p-0 text-[12px]" aria-label="Nearby tests by fuel class">
-            {NEAR_CLASSES.map((c) => {
-              const n = coverage.nearbyByFuelClass[c.id as FuelClass] ?? 0
-              return (
-                <li key={c.id} className="inline-flex items-center gap-1" title={`${c.label}: ${n} nearby`}>
-                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: `var(--fuel-${c.id})` }} aria-hidden="true" />
-                  <span className="sr-only">{c.label}</span>
-                  <span className={`num ${n === 0 ? 'text-gap' : ''}`}>{n}</span>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      </div>
-      <div className="mt-3">
-        <PillarMini coverage={coverage} />
-      </div>
-    </section>
-  )
-}
-
-function TopInvestigations() {
-  const { invByAcc, snapshot } = useData()
-  const ranking = useRanking()
-  return (
-    <section className="card p-4 lg:col-span-7" aria-labelledby="top-title">
-      <div className="panel-head !mb-2">
-        <h2 id="top-title" className="stat-label">
-          Most relevant investigations
-        </h2>
-        <ScenarioLink to="/investigations" className="inline-flex items-center gap-1 text-[13px]">
-          All {snapshot.investigations.length} <ArrowRight size={13} aria-hidden="true" />
-        </ScenarioLink>
-      </div>
-      <ol className="m-0 flex list-none flex-col p-0">
-        {ranking.slice(0, 5).map((r, i) => {
-          const inv = invByAcc[r.accession]
-          return (
-            <li key={r.accession}>
-              <ScenarioLink to={`/investigations/${inv.accession}`} className="row-link">
-                <span className="num w-4 shrink-0 text-[12px] text-faint">{i + 1}</span>
-                <Thumb inv={inv} size={32} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[14px] font-semibold text-ink">{inv.displayName}</span>
-                  <span className="block truncate text-[12px] text-muted">
-                    {PILLAR_NAME[inv.pillar]} · {inv.testCount} tests
-                  </span>
-                </span>
-                <span className="hidden h-1.5 w-20 overflow-hidden bg-line sm:block" aria-hidden="true">
-                  <span className="block h-full bg-ember" style={bar(r.score)} />
-                </span>
-                <span className="num w-7 shrink-0 text-right text-[15px] text-ink" title="Relevance, out of 100">
-                  {Math.round(r.score)}
-                </span>
-              </ScenarioLink>
-            </li>
-          )
-        })}
-      </ol>
-    </section>
-  )
-}
-
-function Findings() {
-  const data = useData()
+// The one statement of what sits near the habitat and what is missing, built from the counts.
+function GapStatement({ summary }: { summary: NearbySummary }) {
   const { scenario } = useScenario()
-  const cards = useMemo(() => surfaceInsights(data.insights, scenario).slice(0, 3), [data.insights, scenario])
+  const lines = gapStatement(summary, isPartialGravity(scenario.gravity))
+  const gap = summary.total === 0 || NEARBY_FUELS.some((fuel) => summary.byFuel[fuel] === 0) || isPartialGravity(scenario.gravity)
   return (
-    <section className="grid gap-3 sm:grid-cols-3 lg:col-span-5 lg:grid-cols-1 xl:grid-cols-3" aria-label="Key findings">
-      {cards.map((card) => (
-        <article key={card.id} className={`card flex flex-col gap-1.5 p-4 ${card.pillar === 'gap' ? 'border-l-2 border-l-gap' : ''}`}>
-          <span className="stat-label">{PILLAR_NAME[card.pillar]}</span>
-          <p className="text-[28px] leading-none">
-            <SourcedNumber path={[{ kind: 'insight', id: card.id, number: card.primary }]} label={`${card.display[card.primary]}. ${card.headline}`}>
-              {card.display[card.primary]}
-            </SourcedNumber>
-          </p>
-          <p className="text-[13px] leading-snug text-muted">{card.headline}</p>
-        </article>
-      ))}
+    <section className={`card border-l-2 p-4 md:p-5 lg:col-span-12 ${gap ? 'border-l-gap' : 'border-l-line'}`} aria-labelledby="gap-title">
+      <p className="stat-label">What is near this habitat, and what is missing</p>
+      <h2 id="gap-title" className="mt-1.5 max-w-[46ch] text-[20px] leading-snug md:text-[24px]">
+        {lines.join(' ')}
+      </h2>
+      <p className="mt-2 text-[13px] text-muted">
+        Evidence is matched on oxygen and pressure only. Gravity does not change these counts.{' '}
+        {isPartialGravity(scenario.gravity) ? <ScenarioLink to="/about?section=limits">What the snapshot cannot say about Moon or Mars gravity</ScenarioLink> : null}
+      </p>
     </section>
+  )
+}
+
+// The three investigations to read first. Each shows how many of its rows are nearby, and an
+// investigation with none is named as background evidence.
+function TopInvestigations({ summary }: { summary: NearbySummary }) {
+  const { invByAcc, snapshot } = useData()
+  const { point } = useScenario()
+  const ranking = useRanking()
+  const none = summary.total === 0
+  return (
+    <Card className="lg:col-span-5" role="region" aria-labelledby="top-title">
+      <CardHeader className="min-h-auto border-0 pb-0 pt-5">
+        <CardTitle id="top-title" className="stat-label !font-medium">
+          {none ? 'Background investigations' : 'Start with these investigations'}
+        </CardTitle>
+        <CardToolbar>
+          <ScenarioLink to="/investigations" className="inline-flex items-center gap-1 text-[13px]">
+            All {snapshot.investigations.length} <ArrowRight size={13} aria-hidden="true" />
+          </ScenarioLink>
+        </CardToolbar>
+      </CardHeader>
+      <CardContent className="px-5 pb-4 pt-3">
+        {none ? <p className="mb-2 text-[14px]">No nearby test records. Background investigations below.</p> : null}
+        <ol className="m-0 flex list-none flex-col p-0">
+          {ranking.slice(0, 3).map((r, i) => {
+            const inv = invByAcc[r.accession]
+            return (
+              <li key={r.accession} className="flex items-center gap-2 border-b border-line last:border-b-0">
+                <ScenarioLink to={`/investigations/${inv.accession}`} className="row-link min-w-0 flex-1 !items-start">
+                  <span className="num w-4 shrink-0 pt-0.5 text-[12px] text-faint" aria-label={`Rank ${i + 1}`}>
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-semibold text-ink">{inv.displayName}</span>
+                    <span className="block text-[13px] text-muted">{nearbyReason(r.nearbyCount, inv.testCount, inv.fuelClass, isFlightInvestigation(inv))}</span>
+                  </span>
+                </ScenarioLink>
+                {r.nearbyCount > 0 ? (
+                  <span className="shrink-0 text-right text-[12px] text-muted">
+                    <SourcedNumber
+                      path={[{ kind: 'near', o2: point.o2, pressureAtm: point.pressureAtm }, { kind: 'investigation', accession: inv.accession }]}
+                      label={`${r.nearbyCount} nearby ${r.nearbyCount === 1 ? 'row' : 'rows'} of ${inv.displayName}`}
+                      className="block text-[18px] text-ink"
+                    >
+                      {r.nearbyCount}
+                    </SourcedNumber>
+                    nearby {r.nearbyCount === 1 ? 'row' : 'rows'}
+                  </span>
+                ) : (
+                  <span className="chip shrink-0">Background</span>
+                )}
+              </li>
+            )
+          })}
+        </ol>
+        <p className="mt-3 text-[12px] text-muted">
+          The order is EMBER's relevance ranking. It is a heuristic, not a measure of confidence. <ScenarioLink to="/about?section=formulas">How it ranks</ScenarioLink>
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
+// What used to sit on this screen and where it lives now. Nothing was removed.
+function MoreLinks() {
+  return (
+    <nav className="card flex flex-wrap items-center gap-2 px-4 py-3 lg:col-span-12" aria-label="More for this habitat">
+      <ScenarioLink to="/lab/flame" className="btn btn-secondary btn-sm">
+        <Flame size={14} aria-hidden="true" /> Explore flame behaviour
+      </ScenarioLink>
+      <ScenarioLink to="/about?section=coverage" className="btn btn-secondary btn-sm">
+        <Gauge size={14} aria-hidden="true" /> Coverage score and method
+      </ScenarioLink>
+      <ScenarioLink to="/about?section=findings" className="btn btn-secondary btn-sm">
+        <Lightbulb size={14} aria-hidden="true" /> All findings
+      </ScenarioLink>
+    </nav>
   )
 }
 
 export default function Dashboard() {
-  const { scenario, name } = useScenario()
+  const { tests } = useData()
+  const { scenario, point, name } = useScenario()
+  const [params] = useSearchParams()
+  const summary = useMemo(() => summarizeNearby(tests, point), [tests, point])
+  // A tour step that is about the map brings the map into view. Every other step starts at the top.
+  const story = params.get('story')
+  const onMap = params.get('zoom') === 'moon'
+  useEffect(() => {
+    if (!story) return
+    if (onMap) document.getElementById('atmosphere-map')?.scrollIntoView({ block: 'center' })
+    else window.scrollTo({ top: 0 })
+  }, [story, onMap])
   return (
     <div className="page">
       <header className="page-head !flex-row flex-wrap items-end justify-between">
@@ -279,15 +291,8 @@ export default function Dashboard() {
           <h1 id="page-title" tabIndex={-1} className="text-[26px] outline-none md:text-[32px]">
             {name}
           </h1>
-          <p className="num mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
-            <span>
-              {habitatFacts(scenario)} · {gravityLabel(scenario.gravity)}
-            </span>
-            {isPartialGravity(scenario.gravity) ? (
-              <span className="chip chip-warn" title="Microgravity and normal gravity results bound what happens in between.">
-                {NO_PARTIAL_GRAVITY}
-              </span>
-            ) : null}
+          <p className="num mt-1 text-[13px] text-muted">
+            {formatPercent(scenario.o2)} oxygen · {formatNumber(scenario.pressurePsi, 1)} psi · {gravityLabel(scenario.gravity)}
           </p>
         </div>
         <ScenarioLink to="/dashboard" extra={{ story: '1' }} className="btn btn-secondary btn-sm">
@@ -295,15 +300,13 @@ export default function Dashboard() {
         </ScenarioLink>
       </header>
       <div className="grid gap-4 lg:grid-cols-12">
-        <MapCard />
-        <div className="flex flex-col gap-4 lg:col-span-4">
-          <CoverageCard />
-          <section className="card p-4" aria-label="The fireball for this habitat">
-            <FireballStage />
-          </section>
+        <GapStatement summary={summary} />
+        <div className="lg:col-span-7">
+          <NearbyCounts summary={summary} point={point} name={name} />
         </div>
-        <TopInvestigations />
-        <Findings />
+        <TopInvestigations summary={summary} />
+        <MoreLinks />
+        <MapCard />
       </div>
     </div>
   )

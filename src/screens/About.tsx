@@ -28,6 +28,8 @@ const TAB_OF: Record<string, string> = {
   data: 'methods',
   pipeline: 'methods',
   formulas: 'methods',
+  nearby: 'methods',
+  coverage: 'methods',
   assumptions: 'methods',
   corrections: 'methods',
   unplotted: 'methods',
