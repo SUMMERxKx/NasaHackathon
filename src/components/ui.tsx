@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ButtonHTMLAttributes, KeyboardEvent, ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
-import { Check, Monitor, Moon, Sparkles, Sun } from 'lucide-react'
+import { Check, Moon, Sun } from 'lucide-react'
 import type { DrillPath } from '../types.ts'
 import { encodeDrill } from '../lib/drill.ts'
 import { scenarioQuery } from '../state/scenario.ts'
@@ -56,7 +56,7 @@ export function ScenarioLink({ to, children, extra, ...rest }: Omit<LinkProps, '
   if (extra) for (const [key, value] of Object.entries(extra)) query.set(key, value)
   const text = query.toString()
   return (
-    <Link to={`${base}${text ? `?${text}` : ''}${hash ? `#${hash}` : ''}`} viewTransition {...rest}>
+    <Link to={`${base}${text ? `?${text}` : ''}${hash ? `#${hash}` : ''}`} {...rest}>
       {children}
     </Link>
   )
@@ -143,16 +143,6 @@ export function Banner({ children, icon }: { children: ReactNode; icon?: ReactNo
   )
 }
 
-// Marks every area of SI drafted text. Links to the SI disclosure on Methods.
-export function SiTag({ label = 'SI drafted, checked against PSI data' }: { label?: string }) {
-  return (
-    <ScenarioLink to="/methods?section=si" className="chip" title="How SI was used in EMBER">
-      <Sparkles size={12} aria-hidden="true" />
-      {label}
-    </ScenarioLink>
-  )
-}
-
 export function VerifiedMark({ level }: { level: 'snapshot' | 'snapshot and raw files' }) {
   const twice = level === 'snapshot and raw files'
   return (
@@ -185,26 +175,16 @@ export function NotASafetyRating({ className = '' }: { className?: string }) {
 }
 
 const THEME_KEY = 'ember-theme'
-type ThemeChoice = 'light' | 'dark' | 'system'
+type ThemeChoice = 'light' | 'dark'
 
-function applyTheme(choice: ThemeChoice) {
-  const dark = choice === 'dark' || (choice === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-  window.dispatchEvent(new Event('ember-theme'))
-}
-
+// EMBER opens dark, to match the hero. The choice is kept for the next visit.
 export function ThemeToggle() {
-  const [choice, setChoice] = useState<ThemeChoice>('system')
+  const [choice, setChoice] = useState<ThemeChoice>('dark')
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(THEME_KEY) as ThemeChoice | null
-      if (saved === 'light' || saved === 'dark' || saved === 'system') setChoice(saved)
-    } catch {
-      // Storage can be blocked. The system setting is used.
-    }
+    setChoice(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark')
   }, [])
-  const next: ThemeChoice = choice === 'system' ? 'dark' : choice === 'dark' ? 'light' : 'system'
-  const Icon = choice === 'system' ? Monitor : choice === 'dark' ? Moon : Sun
+  const next: ThemeChoice = choice === 'dark' ? 'light' : 'dark'
+  const Icon = choice === 'dark' ? Moon : Sun
   return (
     <button
       type="button"
@@ -218,7 +198,8 @@ export function ThemeToggle() {
         } catch {
           // Storage can be blocked. The choice lasts for this visit.
         }
-        applyTheme(next)
+        document.documentElement.dataset.theme = next
+        window.dispatchEvent(new Event('ember-theme'))
       }}
     >
       <Icon size={18} aria-hidden="true" />
