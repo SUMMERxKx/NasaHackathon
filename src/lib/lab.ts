@@ -1,9 +1,10 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // Selections behind the Lab charts. The charts and the drill panel both call these.
 import type { Test } from '../types.ts'
-import { diluentFamily, extinctionRatio } from './droplet.ts'
+import { diluentFamily, dropletValues, extinctionRatio } from './droplet.ts'
 import type { DiluentFamily } from './droplet.ts'
 import { median } from './stats.ts'
+import { formatPercent } from './units.ts'
 
 export const FLEX = 'PSI-69'
 export const SAFFIRE_2 = 'PSI-99'
@@ -30,6 +31,15 @@ export function dropletSelection(tests: Test[], fuel: string, o2: number, family
     k: median(list.map((t) => t.extra.K as number)),
     d0: median(d0),
   }
+}
+
+// The two lines the droplet chart shows when no FLEX test with all four values matches its inputs.
+// The second line points to the input that can find one: the slider while this fuel and gas have
+// a test at some other oxygen level, and the fuel or gas when they have none.
+export function dropletEmptyState(tests: Test[], fuel: string, o2: number, family: DiluentFamily, matched: number): [string, string] {
+  const first = matched === 0 ? `No FLEX tests at ${formatPercent(o2)} oxygen.` : `No FLEX test at ${formatPercent(o2)} oxygen has all four values.`
+  const elsewhere = flexTests(tests).some((t) => t.fuel === fuel && diluentFamily(t) === family && typeof t.extra.K === 'number' && t.extra.K > 0 && dropletValues(t) != null)
+  return [first, elsewhere ? 'Move the slider to see tests.' : 'Pick another fuel or gas to see tests.']
 }
 
 export const dropletKey = (fuel: string, o2: number, family: DiluentFamily): string =>

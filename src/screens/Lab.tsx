@@ -10,7 +10,7 @@ import type { Test } from '../types.ts'
 import { D_SQUARED_FORMULA, burnTimeToCompletion, diameterAt, dropletValues, modelEndTime, validateDSquared } from '../lib/droplet.ts'
 import type { DiluentFamily } from '../lib/droplet.ts'
 import type { BurnPair } from '../lib/lab.ts'
-import { DILUENT_FAMILIES, EXTINCTION_BINS, LAB_FUELS, ambiguousThickness, burnLengthPairs, dropletKey, dropletSelection, extinctionBins, extinctionPoints, flexTests } from '../lib/lab.ts'
+import { DILUENT_FAMILIES, EXTINCTION_BINS, LAB_FUELS, ambiguousThickness, burnLengthPairs, dropletEmptyState, dropletKey, dropletSelection, extinctionBins, extinctionPoints, flexTests } from '../lib/lab.ts'
 import { groupBy, median } from '../lib/stats.ts'
 import { formatNumber, formatPercent } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
@@ -208,6 +208,8 @@ function DropletCalculator() {
   const ySpan = d0 * d0 * 1.08
   const axes = useMemo<ZoomAxes>(() => ({ x: linearAxis([0, tMax]), y: linearAxis([0, ySpan]) }), [tMax, ySpan])
   const [zoom, setZoom] = useZoomParam('dz', (text) => parseView(text, axes), (view) => encodeView(view, axes))
+  // With no FLEX test here every card keeps its place and size, and says so inside itself.
+  const empty = useMemo(() => dropletEmptyState(data.tests, fuel, o2, family, selection.tests.length), [data.tests, fuel, o2, family, selection.tests.length])
 
   return (
     <div>
@@ -258,14 +260,17 @@ function DropletCalculator() {
                 </span>
               </>
             ) : (
-              <span className="text-[13px]">
-                Not enough tests here. <span className="num">{selection.tests.length}</span> matched, three are needed.
-              </span>
+              <>
+                <span className="text-[20px] leading-tight">Not enough tests</span>
+                <span className="text-[11px] text-muted">
+                  <span className="num">{selection.tests.length}</span> matched, three are needed
+                </span>
+              </>
             )}
           </div>
-          {withAll.length > 0 ? (
-            <label>
-              <span className="field-label">FLEX test</span>
+          <label>
+            <span className="field-label">FLEX test</span>
+            {withAll.length > 0 ? (
               <select className="select" name="test" value={chosen?.id ?? ''} onChange={(e) => set('test', e.target.value)}>
                 {withAll.map((test) => (
                   <option key={test.id} value={test.id}>
@@ -273,8 +278,12 @@ function DropletCalculator() {
                   </option>
                 ))}
               </select>
-            </label>
-          ) : null}
+            ) : (
+              <select className="select text-muted" name="test" value="" disabled>
+                <option value="">None at {formatPercent(o2)} oxygen</option>
+              </select>
+            )}
+          </label>
         </section>
 
         <section className="lg:col-span-4" aria-label="The fireball for this test">
@@ -286,7 +295,7 @@ function DropletCalculator() {
         <section className="card p-4 lg:col-span-5" aria-label="Diameter squared against time">
           <ZoomChart
             title="Diameter squared against time"
-            description={`The d-squared line for ${fuel.toLowerCase()} at ${formatPercent(o2)} oxygen. ${selection.enough ? `The line falls from ${formatNumber(d0 * d0, 2)} square millimetres to zero.` : 'Not enough tests near this condition, so nothing is drawn.'}`}
+            description={`The d-squared line for ${fuel.toLowerCase()} at ${formatPercent(o2)} oxygen. ${selection.enough ? `The line falls from ${formatNumber(d0 * d0, 2)} square millimetres to zero.` : 'Not enough tests near this condition, so nothing is drawn.'}${row ? '' : ` ${empty.join(' ')}`}`}
             aspect={0.62}
             minHeight={240}
             maxHeight={320}
@@ -322,6 +331,16 @@ function DropletCalculator() {
                     </g>
                   ) : null}
                   {row && animated ? <circle cx={x(Math.min(t, end))} cy={cursorY} r={5} fill="var(--bg)" stroke="var(--freefall)" strokeWidth={2} /> : null}
+                  {row ? null : (
+                    <text x={box.left + box.width / 2} y={box.top + box.height / 2} textAnchor="middle" fontSize={13} fill="var(--muted)" data-empty="droplet">
+                      <tspan x={box.left + box.width / 2} fill="var(--ink)">
+                        {empty[0]}
+                      </tspan>
+                      <tspan x={box.left + box.width / 2} dy={18}>
+                        {empty[1]}
+                      </tspan>
+                    </text>
+                  )}
                 </>
               )
             }}
@@ -330,58 +349,72 @@ function DropletCalculator() {
             <LegendItem swatch={<span className="inline-block h-0.5 w-5 bg-freefall" />}>This FLEX row, by the law</LegendItem>
             <LegendItem swatch={<span className="inline-block h-0 w-5 border-t-2 border-dashed border-muted" />}>Median burning rate near this condition</LegendItem>
           </div>
-          {row && chosen ? (
-            <div className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
-              {modelEnd != null ? (
+          {/* The two readouts and the controls are always drawn, so the card never changes height. */}
+          <div className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
+            {row && chosen ? (
+              <>
+                {modelEnd != null ? (
+                  <div className="bg-surface-2 p-3">
+                    <p className="stat-label">Model end</p>
+                    <p className="num mt-1 text-[22px] text-freefall">{formatNumber(modelEnd, 2)} s</p>
+                    <p className="num line-clamp-2 min-h-[2lh] text-muted">
+                      ({formatNumber(row.d0, 2)}² − {formatNumber(row.dExt, 2)}²) ÷ {formatNumber(row.k, 2)}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-surface-2 p-3">
+                    <p className="stat-label">Model end</p>
+                    <p className="mt-1 text-[22px] text-warn">Not defined</p>
+                    <p className="line-clamp-2 min-h-[2lh] text-muted" title={`Model end not defined. NASA lists an extinction diameter of ${formatNumber(row.dExt, 2)} mm, not smaller than the initial ${formatNumber(row.d0, 2)} mm, so the law gives no burn time.`}>
+                      <span className="num">{formatNumber(row.dExt, 2)} mm</span> at extinction, not below <span className="num">{formatNumber(row.d0, 2)} mm</span>
+                    </p>
+                  </div>
+                )}
                 <div className="bg-surface-2 p-3">
-                  <p className="stat-label">Model end</p>
-                  <p className="num mt-1 text-[22px] text-freefall">{formatNumber(modelEnd, 2)} s</p>
-                  <p className="num text-muted">
-                    ({formatNumber(row.d0, 2)}² − {formatNumber(row.dExt, 2)}²) ÷ {formatNumber(row.k, 2)}
+                  <p className="stat-label">Measured</p>
+                  <p className="mt-1 text-[22px]">
+                    <SourcedNumber path={[{ kind: 'test', id: chosen.id }]} label={`FLEX test ${chosen.label} measured burn time ${formatNumber(row.burnTime, 1)} seconds`}>
+                      {formatNumber(row.burnTime, 1)} s
+                    </SourcedNumber>
+                  </p>
+                  <p className="line-clamp-2 min-h-[2lh] text-muted" title={`FLEX test ${chosen.label}, ended in ${String(chosen.outcome).toLowerCase()}`}>
+                    FLEX test {chosen.label}, ended in {String(chosen.outcome).toLowerCase()}
                   </p>
                 </div>
-              ) : (
-                <div className="bg-surface-2 p-3">
-                  <p className="stat-label">Model end</p>
-                  <p className="mt-1 text-[18px] text-warn">Model end not defined</p>
-                  <p className="text-muted">
-                    NASA lists an extinction diameter of <span className="num">{formatNumber(row.dExt, 2)} mm</span>, not smaller than the initial <span className="num">{formatNumber(row.d0, 2)} mm</span>, so the law gives no burn time.
-                  </p>
-                </div>
-              )}
-              <div className="bg-surface-2 p-3">
-                <p className="stat-label">Measured</p>
-                <p className="mt-1 text-[22px]">
-                  <SourcedNumber path={[{ kind: 'test', id: chosen.id }]} label={`FLEX test ${chosen.label} measured burn time ${formatNumber(row.burnTime, 1)} seconds`}>
-                    {formatNumber(row.burnTime, 1)} s
-                  </SourcedNumber>
-                </p>
-                <p className="text-muted">
-                  FLEX test {chosen.label}, ended in {String(chosen.outcome).toLowerCase()}
-                </p>
-              </div>
-            </div>
-          ) : null}
-          {row ? (
-            animated ? (
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <button type="button" className="btn btn-primary btn-sm" onClick={() => (t >= end ? (setT(0), setPlaying(true)) : setPlaying((v) => !v))}>
-                  {playing ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />} {playing ? 'Pause' : 'Play'}
-                </button>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => (setPlaying(false), setT(0))}>
-                  <RotateCcw size={14} aria-hidden="true" /> Reset
-                </button>
-                <input type="range" name="scrub" className="slider max-w-[220px]" min={0} max={end} step={end / 200} value={Math.min(t, end)} onChange={(e) => (setPlaying(false), setT(Number(e.target.value)))} aria-label="Scrub the burn" />
-                <span className="num text-[13px]">
-                  t = {formatNumber(t, 2)} s, d = {formatNumber(diameter, 2)} mm
-                </span>
-              </div>
+              </>
             ) : (
-              <p className="mt-3 text-[12px] text-muted" title="The burning rate column lost its unit in the PSI file. The droplet is animated once the team confirms that unit from the publication.">
-                Shown still until the burning rate unit is confirmed.
-              </p>
-            )
-          ) : null}
+              <>
+                <div className="bg-surface-2 p-3">
+                  <p className="stat-label">Model end</p>
+                  <p className="mt-1 text-[22px] text-muted">No test</p>
+                  <p className="line-clamp-2 min-h-[2lh] text-muted">Nothing to run the law on</p>
+                </div>
+                <div className="bg-surface-2 p-3">
+                  <p className="stat-label">Measured</p>
+                  <p className="mt-1 text-[22px] text-muted">No test</p>
+                  <p className="line-clamp-2 min-h-[2lh] text-muted">None at {formatPercent(o2)} oxygen</p>
+                </div>
+              </>
+            )}
+          </div>
+          {animated ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <button type="button" className="btn btn-primary btn-sm" disabled={!row} onClick={() => (t >= end ? (setT(0), setPlaying(true)) : setPlaying((v) => !v))}>
+                {playing ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />} {playing ? 'Pause' : 'Play'}
+              </button>
+              <button type="button" className="btn btn-ghost btn-sm" disabled={!row} onClick={() => (setPlaying(false), setT(0))}>
+                <RotateCcw size={14} aria-hidden="true" /> Reset
+              </button>
+              <input type="range" name="scrub" className="slider max-w-[220px]" min={0} max={end} step={end / 200} value={Math.min(t, end)} disabled={!row} onChange={(e) => (setPlaying(false), setT(Number(e.target.value)))} aria-label="Scrub the burn" />
+              <span className="num text-[13px]">
+                t = {formatNumber(t, 2)} s, d = {formatNumber(diameter, 2)} mm
+              </span>
+            </div>
+          ) : (
+            <p className="mt-3 text-[12px] text-muted" title="The burning rate column lost its unit in the PSI file. The droplet is animated once the team confirms that unit from the publication.">
+              Shown still until the burning rate unit is confirmed.
+            </p>
+          )}
         </section>
       </div>
 
