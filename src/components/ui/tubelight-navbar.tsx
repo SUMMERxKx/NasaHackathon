@@ -1,6 +1,7 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The tubelight navbar. Adapted from the component the owner supplied (21st.dev style) to
 // React Router: NavLink lights the tab of the current route, and every link keeps the habitat.
+// The lamp is measured only when the route changes, not each time the habitat in the address does.
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { NavLink, useSearchParams } from 'react-router-dom'
@@ -47,7 +48,7 @@ export function NavBar({ items, className }: NavBarProps) {
                     <Icon size={18} strokeWidth={2.5} aria-hidden="true" />
                   </span>
                   {isActive && (
-                    <motion.div layoutId="lamp" className="absolute inset-0 -z-10 w-full rounded-full bg-primary/5" initial={false} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
+                    <motion.div layoutId="lamp" layoutDependency={item.url} className="absolute inset-0 -z-10 w-full rounded-full bg-primary/5" initial={false} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                       <div className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 rounded-t-full bg-primary">
                         <div className="absolute -left-2 -top-2 h-6 w-12 rounded-full bg-primary/20 blur-md" />
                         <div className="absolute -top-1 h-6 w-8 rounded-full bg-primary/20 blur-md" />

@@ -13,7 +13,7 @@ import type { DropletState, FlameView } from '../components/FireballStage.tsx'
 import type { FlameInputs, FlameParams } from './flameParams.ts'
 import { STAGE, CAMERA, SCENE, rampBytes, rampColorAt } from './ramp.ts'
 
-export type FireballProps = { params: FlameParams; view: FlameView; droplet: DropletState; showEarth: boolean; onFail: () => void }
+export type FireballProps = { params: FlameParams; view: FlameView; droplet: DropletState; showEarth: boolean; onFail: () => void; onReady?: () => void }
 
 const NOISE = /* glsl */ `
 float hash(vec3 p) {
@@ -220,10 +220,10 @@ const TRACER_COUNT = 60
 
 type Tier = 'high' | 'medium' | 'low'
 
-export default function Fireball({ params, view, droplet, showEarth, onFail }: FireballProps) {
+export default function Fireball({ params, view, droplet, showEarth, onFail, onReady }: FireballProps) {
   const mount = useRef<HTMLDivElement>(null)
-  const latest = useRef({ params, view, droplet, showEarth, onFail })
-  latest.current = { params, view, droplet, showEarth, onFail }
+  const latest = useRef({ params, view, droplet, showEarth, onFail, onReady })
+  latest.current = { params, view, droplet, showEarth, onFail, onReady }
 
   useEffect(() => {
     const node = mount.current
@@ -467,6 +467,7 @@ export default function Fireball({ params, view, droplet, showEarth, onFail }: F
     let last = performance.now()
     let clock = 0
     let running = true
+    let drawn = false
     let onScreen = true
     const samples: number[] = []
     let lowStrikes = 0
@@ -577,6 +578,10 @@ export default function Fireball({ params, view, droplet, showEarth, onFail }: F
 
       if (composer && tier === 'high') composer.render()
       else renderer.render(scene, camera)
+      if (!drawn) {
+        drawn = true
+        state.onReady?.()
+      }
 
       // Measure the frame time and step down through the tiers to the poster if needed.
       samples.push(dt * 1000)

@@ -234,7 +234,11 @@ function MapBody({
   const reduced = usePrefersReducedMotion()
   const [hover, setHoverState] = useState<Hover>(null)
   const [pinned, setPinned] = useState<Hover>(null)
-  const [drag, setDrag] = useState<{ o2: number; pressurePsi: number } | null>(null)
+  // The ring's place while it is dragged. It is kept outside React state and written straight to
+  // the ring's style, so a pointer move costs no render at all.
+  const dragPos = useRef<{ o2: number; pressurePsi: number } | null>(null)
+  const ringEl = useRef<HTMLDivElement>(null)
+  const [dragging, setDragging] = useState(false)
   const dragState = useRef<{ startX: number; startY: number; moved: boolean } | null>(null)
   // The pointer moves many times a frame. The hover only changes when it lands on something new.
   const hoverKey = useRef('')
@@ -258,7 +262,9 @@ function MapBody({
     if (commit.current.timer) clearTimeout(commit.current.timer)
   }, [])
   useEffect(() => {
-    if (!dragState.current) setDrag(null)
+    if (dragState.current) return
+    dragPos.current = null
+    setDragging(false)
   }, [scenario.o2, scenario.pressurePsi])
   const [intro] = useState(() => !introPlayed && !compact)
   useEffect(() => {
@@ -293,10 +299,11 @@ function MapBody({
   )
   const markColor = useMemo(() => (colorOf ? (mark: MapMark) => colorOf(mark.accession) : null), [colorOf])
 
-  const current = drag ?? scenario
+  const current = dragPos.current ?? scenario
   const ringX = x(current.pressurePsi)
   const ringY = y(current.o2 * 100)
   const { rx, ry } = ringRadii(box, domain)
+  const ringTransform = (px: number, py: number): string => `translate3d(${(px - rx - box.left).toFixed(1)}px, ${(py - ry - box.top).toFixed(1)}px, 0)`
   const region = useMemo(() => {
     const inside = allTests.filter(inMoonRegion)
     const edge = allTests.filter((t) => onMoonEdge(t) && t.fuelClass === 'liquid')
@@ -358,7 +365,9 @@ function MapBody({
         const o2 = Math.min(LIMITS.o2[1], Math.max(LIMITS.o2[0], y.invert(py) / 100))
         const pressurePsi = Math.min(LIMITS.pressurePsi[1], Math.max(LIMITS.pressurePsi[0], x.invert(px)))
         const next = { o2: Math.round(o2 * 200) / 200, pressurePsi: Math.round(pressurePsi * 10) / 10 }
-        setDrag(next)
+        dragPos.current = next
+        if (!dragging) setDragging(true)
+        if (ringEl.current) ringEl.current.style.transform = ringTransform(x(next.pressurePsi), y(next.o2 * 100))
         const merged: Scenario = { ...scenario, ...next, presetId: null }
         commit.current.next = { ...merged, presetId: matchPreset(merged, habitats)?.id ?? null }
         if (!commit.current.timer) commit.current.timer = setTimeout(flush, 160)
@@ -384,7 +393,10 @@ function MapBody({
     // The ring holds its place until the address has caught up, so it never slides back.
     const pending = commit.current.next != null
     flush()
-    if (!pending) setDrag(null)
+    if (!pending) {
+      dragPos.current = null
+      setDragging(false)
+    }
     if (wasDrag) return
     if (grabbed && showRing && Math.hypot(px - ringX, py - ringY) <= 12) return open([{ kind: 'near', o2: scenario.o2, pressureAtm: psiToAtm(scenario.pressurePsi) }])
     const hit = find(px, py)
@@ -588,15 +600,7 @@ function MapBody({
           switching habitat never repaints the two thousand marks under it. */}
       {showRing ? (
         <div aria-hidden="true" className="pointer-events-none absolute overflow-hidden" style={{ left: box.left, top: box.top, width: box.width, height: box.height }}>
-          <div
-            className="map-ring"
-            style={{
-              width: rx * 2,
-              height: ry * 2,
-              transform: `translate3d(${(ringX - rx - box.left).toFixed(1)}px, ${(ringY - ry - box.top).toFixed(1)}px, 0)`,
-              transition: drag || reduced ? 'none' : 'transform var(--t-scene) var(--ease-in-out)',
-            }}
-          >
+          <div ref={ringEl} className="map-ring" style={{ width: rx * 2, height: ry * 2, transform: ringTransform(ringX, ringY), transition: dragging || reduced ? 'none' : 'transform var(--t-scene) var(--ease-in-out)' }}>
             <span className="map-ring-dot" style={{ width: dragRing ? 9 : 5, height: dragRing ? 9 : 5 }} />
           </div>
         </div>
