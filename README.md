@@ -4,9 +4,11 @@
 
 EMBER is a web dashboard that answers one question: for the crew habitat I care about, what does NASA's microgravity fire evidence cover, what does it tell me, and where are the gaps? Pick a habitat. EMBER scores the evidence near it, maps every real flight test, ranks the 24 combustion investigations, and lets a live language model answer questions using only that evidence, with every sentence checked against its source. Every number on screen opens the NASA rows it came from.
 
+The site has a start page and four screens. The **dashboard** is one screen around the map, and a habitat dropdown at the bottom changes all of it. **Investigations** is the ranked list. The **Lab** holds three models. **About** holds everything that explains EMBER: the findings, the methods, the Earth benefits, the SI disclosure and the sources. A small robot at the bottom right opens the chat.
+
 Built by team **Low Cortisol Gng** for the NASA Space Apps Challenge 2026, challenge "Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data". Built with NASA open data from the PSI repository. NASA does not endorse this project.
 
-![The Brief for the Exploration atmosphere, with the fireball and its sourced readout](public/preview.png)
+![The dashboard for the Exploration atmosphere, with the map, the coverage score and the fireball](public/preview.png)
 
 - Live site: https://ember-two-eta.vercel.app
 - What the science lead still has to read and approve: `REVIEW-CHECKLIST.md`.
@@ -18,11 +20,11 @@ The challenge asks teams "to build an SI-powered, web-based dashboard that summa
 
 | The challenge asks for | Where EMBER does it |
 |---|---|
-| Summarize, rank and interpret the investigations | Plain summaries on every investigation page. A ranking with "Why this rank". Insight cards with every number sourced. |
-| "Identify investigations most relevant to the fire safety needs of habitable crew environments, including spacecraft, space stations, bases on the lunar and Martian surfaces, and pressurized rovers" | Pick a habitat. The presets are those environments. The ranking, the coverage score and the map all answer for the one chosen. |
+| Summarize, rank and interpret the investigations | Plain summaries on every investigation page. A ranking with "Why this rank". Twelve findings on the About screen with every number sourced. |
+| "Identify investigations most relevant to the fire safety needs of habitable crew environments, including spacecraft, space stations, bases on the lunar and Martian surfaces, and pressurized rovers" | Pick a habitat on the dashboard. The presets are those environments. The map, the coverage score and the ranking all answer for the one chosen. |
 | "Extract data that supports predictive modeling of flammability and fire scenarios in space exploration" | The whole normalized dataset as one CSV (`public/data/tests.csv`). The Lab's models, each checked against the real tests. |
 | "Highlight research that informs the development of next-generation fire safety controls and equipment" | "What this informs" on every investigation, and a filter by equipment. |
-| "Your dashboard could also address potential applications of the PSI data to fire safety on Earth" | The Earth screen, led by three NASA spinoffs. |
+| "Your dashboard could also address potential applications of the PSI data to fire safety on Earth" | The Back on Earth section of the About screen, led by three NASA spinoffs. |
 
 ## How it uses NASA data
 
@@ -51,7 +53,7 @@ Numbers the story rests on, all recomputed from the NASA files by the build:
 
 The **relevance ranking** is a transparent heuristic with four parts: how many of an investigation's tests sit near the habitat, its fuel type, its pillar, and how much data it has. Every ranked card shows the four parts.
 
-Every formula, constant and assumption is on the Methods screen of the app.
+Every formula, constant and assumption is on the About screen of the app, under Data and methods.
 
 ## Drill-through
 
@@ -59,19 +61,19 @@ Every mark on every chart and every number from data opens a panel with the test
 
 ## The live model
 
-On the Ask screen the evidence answer appears at once, built in the browser with no model. A live language model may then write three to six sentences.
+The chat panel opens from the small robot at the bottom right of every screen. EMBER finds the evidence first, in the browser, with no model. A live language model may then write three to six sentences.
 
 - The model is reached through OpenRouter from one server function on Vercel (`api/ask.ts`). First choice `anthropic/claude-haiku-5.5`, backup `openai/gpt-6-luna`.
 - The browser sends the question, the habitat and a list of evidence ids. The function looks up the evidence text itself, so the model only ever sees text EMBER built from NASA data.
 - The browser checks the answer sentence by sentence. A sentence is removed when it cites no source or an unknown one, holds a number that is not in its source, says safe or unsafe, or shares too few words with its source.
-- If the model fails, is slow, or its answer fails the check, the evidence answer stands. The site is complete without the model.
+- If the model fails, is slow, or its answer fails the check, the evidence itself is shown as the answer. The site is complete without the model. The sources are listed under every answer.
 - Retrieval is keyword search with alias expansion, which always works. On top of it, a small open embedding model (`Xenova/all-MiniLM-L6-v2`) runs in the browser in a Web Worker for search by meaning. Its files and its runtime are served by the site itself, so nothing is fetched from another host.
 - Limits: one firewall rule of 8 requests a minute per address, and a daily dollar limit on the key. An answer costs about $0.0003.
 - The key is typed by the owner into Vercel. It is never in this repository.
 
 ## The fireball
 
-The Brief opens on a fireball: a burning fuel droplet in freefall, drawn by shader code in the browser with three.js. It is an SI-generated illustration and carries a visible label. It changes with the habitat controls, driven by the NASA tests near the chosen atmosphere, and three sourced numbers beside it say so.
+The dashboard shows a fireball: a burning fuel droplet in freefall, drawn by shader code in the browser with three.js. It is an SI-generated illustration and carries a small visible SI mark in its corner. The halftone sky on the start page is a shader too and carries the same mark. It changes with the habitat controls, driven by the NASA tests near the chosen atmosphere, and three sourced numbers beside it say so.
 
 ## How to run it
 
@@ -112,8 +114,9 @@ data/manual/         hand-made files: habitats, assumptions, pillars, glossary, 
 public/data/         the generated files the site reads
 public/models/embed/ the search model files, served by the site itself
 src/lib/             pure functions: parse, units, coverage, ranking, drill, droplet, retrieve, grounding
-src/components/      the component set
-src/screens/         Brief, Map, Investigations, Detail, Compare, Lab, Ask, Earth, Methods
+src/components/      the component set, with the chat panel in chat/
+src/components/ui/   shadcn-style components: the halftone sky and the tubelight navbar
+src/screens/         Hero, Dashboard, Investigations, Detail, Compare, Lab, About
 src/three/           the fireball, its colour ramp and its inputs
 src/styles/theme.css every design token, light and dark
 plan.html            the build plan. Not part of the site.
@@ -135,8 +138,8 @@ Super Intelligence (SI) is the event's word for AI. The organizers confirmed to 
 
 - The code, the build scripts and the tests were drafted with an SI coding assistant (Claude Code with the Fable 5.2 model) during the event and reviewed by the team.
 - The plain summaries, the insight wording, the glossary and the context cards were drafted by SI from PSI text and NASA pages. The numbers in them are computed from the data.
-- Two live language models, reached through OpenRouter, answer questions on the Ask screen from the NASA evidence shown and nothing else.
-- The fireball is drawn by SI-assisted shader code and carries the label "SI-generated illustration".
+- Two live language models, reached through OpenRouter, answer questions in the chat panel from the NASA evidence and nothing else.
+- The fireball and the sky on the start page are drawn by SI-assisted shader code. Each carries a small "SI" mark in its corner, with the words "SI-generated illustration" as its tooltip and accessible name.
 - Every generated data file carries a `generatedBy` field. Source files carry a one-line SI header.
 
 The full statement is in `SI-DISCLOSURE.md`. Sources are in `SOURCES.md`.

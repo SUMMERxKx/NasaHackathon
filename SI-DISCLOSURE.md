@@ -11,27 +11,28 @@ The organizers confirmed to the team on 14 November 2026 that using AI is allowe
 | Research and planning | An SI assistant | Read the challenge, probed the PSI service, and wrote the build plan in `plan.html`. |
 | Code | Claude Code with the Fable 5.2 model | Drafted the application code, the data pipeline, the build checks and the tests during the event. The team reviewed it. |
 | Words | The same assistant | Drafted the plain summaries of each investigation, the wording of the insight cards, the glossary, the method texts and the context cards, from PSI record text and NASA pages. |
-| Live answers in the app | Claude Haiku 5.5 as first choice and GPT-6 Luna as backup, both reached through OpenRouter from one server function on Vercel | Write a short answer on the Ask screen from the NASA evidence shown and nothing else. |
+| Live answers in the app | Claude Haiku 5.5 as first choice and GPT-6 Luna as backup, both reached through OpenRouter from one server function on Vercel | Write a short answer in the chat panel from the NASA evidence and nothing else. |
 | The fireball | SI-assisted shader code, run in the visitor's browser with three.js | Draws the animated fireball and the Earth flame. No image or video generator was used. |
+| The sky on the start page | A halftone shader component published on 21st.dev, adapted and recoloured with SI help, run in the visitor's browser | Draws the animated sky and its round flame. It is decoration and carries no data. |
 
 ## What is sent to the live model
 
-The question, the habitat and EMBER's own evidence text. The browser sends evidence ids and never text. The server function looks up the text from a file built from NASA data. EMBER does not store or log questions. A line under the question box tells visitors not to enter personal information.
+The question, the habitat and EMBER's own evidence text. The browser sends evidence ids and never text. The server function looks up the text from a file built from NASA data. EMBER does not store or log questions. The About screen, under Live answers, tells visitors not to enter personal information. The chat panel itself carries one line: "Answers come from NASA's data. They can make mistakes, so check the sources."
 
 ## How SI output is marked
 
-- Areas of SI drafted text carry the tag "SI drafted, checked against PSI data", which links to the Methods screen.
-- The Live answer panel is labelled "Live model answer, limited to the NASA evidence shown below". A status line under each answer names the path that produced it.
-- Every view of the fireball, and its poster, carries the visible label "SI-generated illustration". The label must stay in frame in any video.
+- The working screens carry no tags, to keep them clean. The About screen, under SI disclosure, lists every area of SI drafted text and everything that still needs a human check.
+- Every answer in the chat panel lists its sources, and the panel says that answers can make mistakes. How an answer is made is on the About screen, under Live answers.
+- Every view of the fireball, its poster, and the sky on the start page carry a small visible "SI" mark in a corner. Its tooltip and accessible name say "SI-generated illustration". The mark must stay in frame in any video.
 - Every generated data file carries a `generatedBy` field. Pinned answers also record the model, the time, the check result and the review note.
 - Source files carry a one-line SI header comment.
-- The README and the Methods screen carry this disclosure in short.
+- The README and the About screen carry this disclosure in short.
 
 ## What keeps SI output honest
 
 - Numbers are computed from the NASA tables by code, not written by SI. A build step recomputes every number on an insight card and fails on any difference. Four headline cards are recomputed a second time straight from the raw CSV files with separate code.
-- The browser checks every live answer sentence by sentence. A sentence with no valid source, with a number that is not in its source, or with a verdict of safe or unsafe is removed. The check cannot prove that a sentence means what its source means, so the evidence always stays on screen.
-- The hand-made mappings and the assumed atmospheres carry the status "needs human check" until the team confirms them.
+- The browser checks every live answer sentence by sentence. A sentence with no valid source, with a number that is not in its source, or with a verdict of safe or unsafe is removed. The check cannot prove that a sentence means what its source means, so the sources are listed under every answer.
+- The hand-made mappings and the assumed atmospheres carry the status "needs human check" until the team confirms them. The About screen shows that status.
 
 ## What the team did themselves
 

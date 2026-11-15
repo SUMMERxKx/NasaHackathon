@@ -51,14 +51,14 @@ From the Resources tab of the challenge page, read on 14 November 2026.
 
 - [PSI Data Repository: Combustion Science](https://psi.nasa.gov/physci/repo/search?q=combustion). The data source. Every number in EMBER comes from it.
 - [NASA Combustion Science](https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/). A More from NASA link on every investigation page and a second source for the plain summaries.
-- [NASA ScienceCasts: The Power of Studying Combustion on the ISS (video, 2018)](https://www.youtube.com/watch?v=W1oXykoz9zg). The Watch first link on the Brief. Linked, never copied.
+- [NASA ScienceCasts: The Power of Studying Combustion on the ISS (video, 2018)](https://www.youtube.com/watch?v=W1oXykoz9zg). The Watch first link on the About screen. Linked, never copied.
 - [A Researcher's Guide to International Space Station Combustion Science (2015)](https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/). The glossary, the science explainers and the two ends of the fireball's temperature scale.
-- [Apollo 1](https://sma.nasa.gov/sma-disciplines/accllp/apollo-1). An incident card on the Brief, written with respect.
-- [Apollo 13](https://sma.nasa.gov/sma-disciplines/accllp/apollo-13). An incident card on the Brief.
-- [25 Years Ago: Fire Aboard Space Station Mir](https://www.nasa.gov/history/25-years-ago-fire-aboard-space-station-mir/). An incident card on the Brief.
-- [Fireman's Air Tanks (1970s spinoff)](https://spinoff.nasa.gov/node/9582). A spinoff card on the Earth screen.
-- [Fire Detector (1970s spinoff)](https://spinoff.nasa.gov/node/9407). A spinoff card on the Earth screen, linked to the SAME and DAFT investigations.
-- [New Technology for the Fire Attire (1980s spinoff)](https://spinoff.nasa.gov/node/9918). A spinoff card on the Earth screen.
+- [Apollo 1](https://sma.nasa.gov/sma-disciplines/accllp/apollo-1). An incident card on the About screen, written with respect.
+- [Apollo 13](https://sma.nasa.gov/sma-disciplines/accllp/apollo-13). An incident card on the About screen.
+- [25 Years Ago: Fire Aboard Space Station Mir](https://www.nasa.gov/history/25-years-ago-fire-aboard-space-station-mir/). An incident card on the About screen.
+- [Fireman's Air Tanks (1970s spinoff)](https://spinoff.nasa.gov/node/9582). A spinoff card in the Back on Earth section of About.
+- [Fire Detector (1970s spinoff)](https://spinoff.nasa.gov/node/9407). A spinoff card in the Back on Earth section of About, linked to the SAME and DAFT investigations.
+- [New Technology for the Fire Attire (1980s spinoff)](https://spinoff.nasa.gov/node/9918). A spinoff card in the Back on Earth section of About.
 
 The Researcher's Guide is also a PDF: https://www.nasa.gov/wp-content/uploads/2016/05/np-2015-10-034-jsc_combustion_in_reduced_gravity-iss-mini-book-011116-508.pdf . Page 8 gives the two ends of the fireball's temperature scale: "Typical flame temperatures are on the order of 2,300 degrees Kelvin, whereas ambient temperatures are approximately 300 degrees Kelvin."
 
@@ -112,13 +112,16 @@ Installed versions, from `package-lock.json`.
 | `d3-dsv` | 3.0.2 | ISC |
 | `d3-interpolate` | 3.0.2 | ISC |
 | `d3-scale` | 4.0.3 | ISC |
+| `clsx` | 2.1.1 | MIT |
 | `d3-shape` | 3.2.1 | ISC |
+| `framer-motion` | 14.14.0 | MIT |
 | `lucide-react` | 1.73.0 | ISC |
 | `minisearch` | 7.2.0 | MIT |
 | `motion` | 14.14.0 | MIT |
 | `react` | 19.3.1 | MIT |
 | `react-dom` | 19.3.1 | MIT |
 | `react-router-dom` | 7.18.5 | MIT |
+| `tailwind-merge` | 3.7.0 | MIT |
 | `three` | 0.187.0 | MIT |
 | `@tailwindcss/vite` | 4.3.5 | MIT |
 | `@types/d3-array` | 3.2.2 | MIT |
@@ -138,10 +141,17 @@ Installed versions, from `package-lock.json`.
 
 The three typefaces are Inter, Space Grotesk and JetBrains Mono, bundled from the Fontsource packages under the SIL Open Font Licence 1.1.
 
+## Interface components
+
+Two components in `src/components/ui` are adapted from components published on 21st.dev.
+
+- Halftone Nebula. The sky on the start page. Its solar preset was recoloured to the flame palette, and its planet is drawn as a flame in freefall.
+- Tubelight Navbar. The navigation. It was moved from Next.js links to React Router.
+
 ## Hosting
 
 Vercel, free Hobby plan. No database.
 
 ## Images
 
-No image or video was made with an SI image generator. The fireball is drawn by shader code in the browser and carries the label "SI-generated illustration". No NASA logo, insignia or mission patch is used.
+No image or video was made with an SI image generator. The fireball and the sky on the start page are drawn by shader code in the browser. Each carries a small "SI" mark, which stands for "SI-generated illustration". No NASA logo, insignia or mission patch is used.
