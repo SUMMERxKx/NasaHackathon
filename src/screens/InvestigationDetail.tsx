@@ -15,6 +15,8 @@ import type { Column } from '../components/DataTable.tsx'
 import { oxygenText, pressureText } from '../components/DrillPanel.tsx'
 import { InformsChips, InvestigationChips, Thumb, years } from '../components/cards.tsx'
 import { ScenarioLink, useDrillDescribed } from '../components/ui.tsx'
+import { useZoomParam } from '../components/zoom.tsx'
+import { encodeZoom, parseZoom } from '../lib/mapLayout.ts'
 
 const CLASS_WORDS: Record<string, string> = { constant: 'Fixed', factor: 'Varied in steps', continuous: 'Varied', identifier: 'Identifier', notes: 'Notes' }
 
@@ -112,6 +114,7 @@ export default function InvestigationDetail() {
   const data = useData()
   const { snapshot, invByAcc, testsByAcc } = data
   const [params, setParams] = useSearchParams()
+  const [zoom, setZoom] = useZoomParam('zoom', parseZoom, encodeZoom)
   const { open } = useDrill()
   const inv = invByAcc[accession]
   const tests = useMemo(() => testsByAcc[accession] ?? [], [testsByAcc, accession])
@@ -229,7 +232,7 @@ export default function InvestigationDetail() {
 
         <section className="card p-4 lg:col-span-5" aria-label="This investigation on the atmosphere map">
           {tests.some((t) => t.o2 != null && t.pressureAtm != null) ? (
-            <AtmosphereMap tests={tests} compact title="Its tests on the map" footer={<div className="mt-2"><MapLegend compact /></div>} />
+            <AtmosphereMap tests={tests} compact zoom={zoom} onZoom={setZoom} title="Its tests on the map" footer={<div className="mt-2"><MapLegend compact /></div>} />
           ) : (
             <div className="flex h-full min-h-[200px] flex-col justify-center text-center">
               <p className="font-display text-[16px] font-semibold">Not on the map</p>

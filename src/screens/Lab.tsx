@@ -5,7 +5,6 @@
 import { memo, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { scaleLinear } from 'd3-scale'
 import { Info, Pause, Play, RotateCcw } from 'lucide-react'
 import type { Test } from '../types.ts'
 import { D_SQUARED_FORMULA, burnTimeToCompletion, burnTimeToExtinction, diameterAt, dropletValues, validateDSquared } from '../lib/droplet.ts'
@@ -19,9 +18,13 @@ import { useScenario } from '../state/hooks.ts'
 import { gravityLabel, scenarioQuery } from '../state/scenario.ts'
 import { GATES } from '../three/flameParams.ts'
 import { PageHeader } from '../components/AppShell.tsx'
-import { ChartFrame, LegendItem } from '../components/ChartFrame.tsx'
+import { LegendItem } from '../components/ChartFrame.tsx'
 import { FireballStage } from '../components/FireballStage.tsx'
 import { ScenarioLink, Segmented, Slider, SourcedNumber, useDrillProps, usePrefersReducedMotion } from '../components/ui.tsx'
+import { ZoomChart, useZoomParam } from '../components/zoom.tsx'
+import type { ZoomView } from '../components/zoom.tsx'
+import { encodeView, linearAxis, parseView, spreadPoints, zoomTicks } from '../lib/zoom.ts'
+import type { ZoomAxes, ZoomBox, ZoomDomain } from '../lib/zoom.ts'
 
 const TOOLS = [
   { value: 'droplet', label: 'Droplet burn' },
@@ -69,35 +72,65 @@ function ToolIntro({ line, children }: { line: string; children: ReactNode }) {
   )
 }
 
-function Axes({ x, y, box, xLabel, yLabel, xTicks, yTicks, xFormat = String, yFormat = String }: { x: (v: number) => number; y: (v: number) => number; box: { l: number; t: number; w: number; h: number }; xLabel: string; yLabel: string; xTicks: number[]; yTicks: number[]; xFormat?: (v: number) => string; yFormat?: (v: number) => string }) {
+type AxisProps = { v: ZoomView; xTicks: number[]; yTicks: number[]; xFormat?: (t: number) => string; yFormat?: (t: number) => string }
+
+// The ticks a chart shows: its own on the whole chart, and round numbers once it is zoomed in far.
+const ticksIn = (own: number[], range: [number, number], count = 5): number[] => zoomTicks(own, range, count)
+
+// The frame, the tick labels and the axis titles. They stay put during a gesture and are laid out
+// again when it rests.
+function AxisLabels({ v, xLabel, yLabel, xTicks, yTicks, xFormat = String, yFormat = String }: AxisProps & { xLabel: string; yLabel: string }) {
+  const { box, x, y, domain } = v
   return (
     <g aria-hidden="true">
-      <rect x={box.l} y={box.t} width={box.w} height={box.h} fill="none" stroke="var(--line)" />
-      {xTicks.map((t) => (
-        <g key={`x${t}`}>
-          <line x1={x(t)} x2={x(t)} y1={box.t} y2={box.t + box.h} stroke="var(--line)" strokeOpacity={0.5} />
-          <text x={x(t)} y={box.t + box.h + 14} textAnchor="middle" fontSize={11} fill="var(--muted)" className="num">
-            {xFormat(t)}
-          </text>
-        </g>
+      <rect x={box.left} y={box.top} width={box.width} height={box.height} fill="none" stroke="var(--line)" />
+      {ticksIn(xTicks, domain.x).map((t) => (
+        <text key={`x${t}`} x={x(t)} y={box.top + box.height + 14} textAnchor="middle" fontSize={11} fill="var(--muted)" className="num">
+          {xFormat(t)}
+        </text>
       ))}
-      {yTicks.map((t) => (
-        <g key={`y${t}`}>
-          <line x1={box.l} x2={box.l + box.w} y1={y(t)} y2={y(t)} stroke="var(--line)" strokeOpacity={0.5} />
-          <text x={box.l - 6} y={y(t) + 4} textAnchor="end" fontSize={11} fill="var(--muted)" className="num">
-            {yFormat(t)}
-          </text>
-        </g>
+      {ticksIn(yTicks, domain.y).map((t) => (
+        <text key={`y${t}`} x={box.left - 6} y={y(t) + 4} textAnchor="end" fontSize={11} fill="var(--muted)" className="num">
+          {yFormat(t)}
+        </text>
       ))}
-      <text x={box.l + box.w / 2} y={box.t + box.h + 32} textAnchor="middle" fontSize={12} fill="var(--muted)">
+      <text x={box.left + box.width / 2} y={box.top + box.height + 32} textAnchor="middle" fontSize={12} fill="var(--muted)">
         {xLabel}
       </text>
-      <text transform={`translate(12,${box.t + box.h / 2}) rotate(-90)`} textAnchor="middle" fontSize={12} fill="var(--muted)">
+      <text transform={`translate(12,${box.top + box.height / 2}) rotate(-90)`} textAnchor="middle" fontSize={12} fill="var(--muted)">
         {yLabel}
       </text>
     </g>
   )
 }
+
+// The grid lines, which move with the plot.
+function AxisGrid({ v, xTicks, yTicks }: AxisProps) {
+  const { box, x, y, domain } = v
+  return (
+    <g aria-hidden="true">
+      {ticksIn(xTicks, domain.x).map((t) => (
+        <line key={`x${t}`} x1={x(t)} x2={x(t)} y1={box.top} y2={box.top + box.height} stroke="var(--line)" strokeOpacity={0.5} />
+      ))}
+      {ticksIn(yTicks, domain.y).map((t) => (
+        <line key={`y${t}`} x1={box.left} x2={box.left + box.width} y1={y(t)} y2={y(t)} stroke="var(--line)" strokeOpacity={0.5} />
+      ))}
+    </g>
+  )
+}
+
+// The plot of a Lab chart, with room for the axis title below. A zoomed y axis can carry longer
+// labels, so the plot moves right far enough for them to clear the axis title, as on the map.
+const labBox =
+  (top: number, below: number, yTicks: number[], yFormat: (t: number) => string = String) =>
+  (size: { width: number; height: number }, domain: ZoomDomain): ZoomBox => {
+    const ticks = ticksIn(yTicks, domain.y)
+    const chars = Math.max(...ticks.map((t) => yFormat(t).length), 1)
+    // While every one of its own labels is in view the chart keeps its 46 pixels, as it always had.
+    const own = ticks.length === yTicks.length && ticks.every((t, i) => t === yTicks[i])
+    const left = own ? 46 : Math.max(46, Math.ceil(17 + chars * 6.6 + 6))
+    return { left, top, width: Math.max(60, size.width - left - 12), height: Math.max(60, size.height - below) }
+  }
 
 const nice = (max: number, count = 5): number[] => {
   const step = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50].find((s) => max / s <= count) ?? 50
@@ -121,6 +154,8 @@ function DropletCalculator() {
         const next = new URLSearchParams(current)
         next.set(key, value)
         if (key !== 'test') next.delete('test')
+        // New inputs draw a new line on new axes, so the chart opens whole again.
+        next.delete('dz')
         return next
       },
       { replace: true, preventScrollReset: true },
@@ -163,6 +198,9 @@ function DropletCalculator() {
   const rate = row?.k ?? k ?? 0
   const diameter = rate > 0 ? diameterAt(d0, rate, t) : d0
   const droplet = animated && row ? { scale: Math.max(0.05, diameter / d0), flameOn: t < end - 1e-6 } : null
+  const ySpan = d0 * d0 * 1.08
+  const axes = useMemo<ZoomAxes>(() => ({ x: linearAxis([0, tMax]), y: linearAxis([0, ySpan]) }), [tMax, ySpan])
+  const [zoom, setZoom] = useZoomParam('dz', (text) => parseView(text, axes), (view) => encodeView(view, axes))
 
   return (
     <div>
@@ -239,15 +277,23 @@ function DropletCalculator() {
         </section>
 
         <section className="card p-4 lg:col-span-5" aria-label="Diameter squared against time">
-          <ChartFrame title="Diameter squared against time" description={`The d-squared line for ${fuel.toLowerCase()} at ${formatPercent(o2)} oxygen. ${selection.enough ? `The line falls from ${formatNumber(d0 * d0, 2)} square millimetres to zero.` : 'Not enough tests near this condition, so nothing is drawn.'}`} aspect={0.62} minHeight={240} maxHeight={320}>
-            {(size) => {
-              const box = { l: 46, t: 10, w: Math.max(60, size.width - 58), h: Math.max(60, size.height - 52) }
-              const x = scaleLinear().domain([0, tMax]).range([box.l, box.l + box.w])
-              const y = scaleLinear().domain([0, d0 * d0 * 1.08]).range([box.t + box.h, box.t])
+          <ZoomChart
+            title="Diameter squared against time"
+            description={`The d-squared line for ${fuel.toLowerCase()} at ${formatPercent(o2)} oxygen. ${selection.enough ? `The line falls from ${formatNumber(d0 * d0, 2)} square millimetres to zero.` : 'Not enough tests near this condition, so nothing is drawn.'}`}
+            aspect={0.62}
+            minHeight={240}
+            maxHeight={320}
+            axes={axes}
+            zoom={zoom}
+            onZoom={setZoom}
+            layout={labBox(10, 52, nice(ySpan))}
+            labels={(v) => <AxisLabels v={v} xLabel="Time, seconds" yLabel="d², mm²" xTicks={nice(tMax)} yTicks={nice(ySpan)} />}
+            grid={(v) => <AxisGrid v={v} xTicks={nice(tMax)} yTicks={nice(ySpan)} />}
+          >
+            {({ x, y, box, inX }) => {
               const cursorY = y(Math.max(0, d0 * d0 - rate * t))
               return (
-                <svg width={size.width} height={size.height} className="absolute inset-0">
-                  <Axes x={x} y={y} box={box} xLabel="Time, seconds" yLabel="d², mm²" xTicks={nice(tMax)} yTicks={nice(d0 * d0 * 1.08)} />
+                <>
                   {selection.enough && k != null ? (
                     <g className="drillable" tabIndex={-1} data-nav="" {...props([{ kind: 'bin', chart: 'dsquared', key: dropletKey(fuel, o2, family) }], `The d-squared line from the median burning rate of ${selection.tests.length} FLEX tests. Press Enter for its rows.`)}>
                       <line x1={x(0)} y1={y(d0 * d0)} x2={x(burnTimeToCompletion(d0, k))} y2={y(0)} stroke="transparent" strokeWidth={14} />
@@ -259,17 +305,20 @@ function DropletCalculator() {
                       <line x1={x(0)} y1={y(row.d0 * row.d0)} x2={x(modelEnd)} y2={y(row.dExt * row.dExt)} stroke="transparent" strokeWidth={14} />
                       <line x1={x(0)} y1={y(row.d0 * row.d0)} x2={x(modelEnd)} y2={y(row.dExt * row.dExt)} stroke="var(--freefall)" strokeWidth={2.5} />
                       <circle cx={x(modelEnd)} cy={y(row.dExt * row.dExt)} r={4} fill="var(--freefall)" />
-                      <line x1={x(row.burnTime)} x2={x(row.burnTime)} y1={box.t} y2={box.t + box.h} stroke="var(--warn)" strokeDasharray="3 3" />
-                      <text x={x(row.burnTime) - 4} y={box.t + 12} textAnchor="end" fontSize={11} fill="var(--warn)">
-                        measured end
-                      </text>
+                      <line x1={x(row.burnTime)} x2={x(row.burnTime)} y1={box.top} y2={box.top + box.height} stroke="var(--warn)" strokeDasharray="3 3" />
+                      {/* The label goes with its line, so it is drawn only while that line is in view. */}
+                      {inX(row.burnTime) ? (
+                        <text x={x(row.burnTime) - 4} y={box.top + 12} textAnchor="end" fontSize={11} fill="var(--warn)">
+                          measured end
+                        </text>
+                      ) : null}
                     </g>
                   ) : null}
                   {row && animated ? <circle cx={x(Math.min(t, end))} cy={cursorY} r={5} fill="var(--bg)" stroke="var(--freefall)" strokeWidth={2} /> : null}
-                </svg>
+                </>
               )
             }}
-          </ChartFrame>
+          </ZoomChart>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
             <LegendItem swatch={<span className="inline-block h-0.5 w-5 bg-freefall" />}>This FLEX row, by the law</LegendItem>
             <LegendItem swatch={<span className="inline-block h-0 w-5 border-t-2 border-dashed border-muted" />}>Median burning rate near this condition</LegendItem>
@@ -331,6 +380,10 @@ const Validation = memo(function Validation() {
   const props = useDrillProps()
   const validation = useMemo(() => validateDSquared(flexTests(data.tests)), [data.tests])
   const i4 = data.insightById.I4
+  const max = Math.max(...validation.points.map((p) => Math.max(p.predicted, p.measured)), 1) * 1.05
+  const axes = useMemo<ZoomAxes>(() => ({ x: linearAxis([0, max]), y: linearAxis([0, max]) }), [max])
+  // Tests with the same two times sit on one point. Zoomed in, they spread apart.
+  const keys = useMemo(() => validation.points.map((p) => `${p.measured}|${p.predicted}`), [validation.points])
   return (
     <section className="card mt-4 p-4" aria-labelledby="validation-title">
       <h3 id="validation-title" className="text-[18px]">
@@ -364,23 +417,30 @@ const Validation = memo(function Validation() {
         The first number is a median ratio, not an error bound for any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model.
       </p>
       <div className="mt-3 max-w-[640px]">
-        <ChartFrame title="Predicted against measured burn time" description={`A scatter of ${validation.points.length} FLEX tests. Most points sit just under the one to one line.`} aspect={0.8} minHeight={280} maxHeight={480}>
-          {(size) => {
-            const box = { l: 46, t: 10, w: Math.max(60, size.width - 58), h: Math.max(60, size.height - 52) }
-            const max = Math.max(...validation.points.map((p) => Math.max(p.predicted, p.measured)), 1) * 1.05
-            const x = scaleLinear().domain([0, max]).range([box.l, box.l + box.w])
-            const y = scaleLinear().domain([0, max]).range([box.t + box.h, box.t])
+        <ZoomChart
+          title="Predicted against measured burn time"
+          description={`A scatter of ${validation.points.length} FLEX tests. Most points sit just under the one to one line.`}
+          aspect={0.8}
+          minHeight={280}
+          maxHeight={480}
+          axes={axes}
+          reset="Reset to all tests"
+          layout={labBox(10, 52, nice(max))}
+          labels={(v) => <AxisLabels v={v} xLabel="Measured burn time, seconds" yLabel="Predicted, seconds" xTicks={nice(max)} yTicks={nice(max)} />}
+          grid={(v) => <AxisGrid v={v} xTicks={nice(max)} yTicks={nice(max)} />}
+        >
+          {({ x, y, zoom }) => {
+            const offsets = spreadPoints(keys, zoom)
             return (
-              <svg width={size.width} height={size.height} className="absolute inset-0">
-                <Axes x={x} y={y} box={box} xLabel="Measured burn time, seconds" yLabel="Predicted, seconds" xTicks={nice(max)} yTicks={nice(max)} />
+              <>
                 <line x1={x(0)} y1={y(0)} x2={x(max)} y2={y(max)} stroke="var(--muted)" strokeDasharray="4 4" aria-hidden="true" />
-                {validation.points.map((p) => {
+                {validation.points.map((p, i) => {
                   const test = data.testById.get(p.testId) as Test
                   return (
                     <circle
                       key={p.testId}
-                      cx={x(p.measured)}
-                      cy={y(p.predicted)}
+                      cx={x(p.measured) + offsets[i].dx}
+                      cy={y(p.predicted) + offsets[i].dy}
                       r={3.4}
                       fill="var(--fuel-liquid)"
                       fillOpacity={0.75}
@@ -393,10 +453,10 @@ const Validation = memo(function Validation() {
                     </circle>
                   )
                 })}
-              </svg>
+              </>
             )
           }}
-        </ChartFrame>
+        </ZoomChart>
       </div>
     </section>
   )
@@ -405,7 +465,6 @@ const Validation = memo(function Validation() {
 // Lab tool 2.
 function ExtinctionExplorer() {
   const data = useData()
-  const props = useDrillProps()
   const i5 = data.insightById.I5
   const compare = useMemo(() => {
     const out: { fuel: string; bin: string; nitrogen: number; nitrogenN: number; co2: number; co2N: number }[] = []
@@ -460,43 +519,9 @@ function ExtinctionExplorer() {
         </Limits>
       </ToolIntro>
       <div className="grid gap-4 lg:grid-cols-2">
-        {LAB_FUELS.map((fuel) => {
-          const points = extinctionPoints(data.tests, fuel)
-          const bins = extinctionBins(data.tests, fuel)
-          return (
-            <section key={fuel} className="card p-4" aria-label={`${fuel} extinction panel`}>
-              <ChartFrame title={`${fuel}, ${points.length} tests`} description={`Extinction ratio against oxygen for ${points.length} ${fuel.toLowerCase()} droplet tests, with a binned median line.`} aspect={0.72} minHeight={280} maxHeight={420}>
-                {(size) => {
-                  const box = { l: 46, t: 22, w: Math.max(60, size.width - 58), h: Math.max(60, size.height - 64) }
-                  const x = scaleLinear().domain([10, 38]).range([box.l, box.l + box.w])
-                  const y = scaleLinear().domain([0, 1.05]).range([box.t + box.h, box.t])
-                  const line = bins.filter((b) => b.median != null).map((b, i) => `${i === 0 ? 'M' : 'L'}${x(((b.min + b.max) / 2) * 100).toFixed(1)},${y(b.median as number).toFixed(1)}`).join('')
-                  return (
-                    <svg width={size.width} height={size.height} className="absolute inset-0">
-                      <Axes x={x} y={y} box={box} xLabel="Oxygen" yLabel="Extinction ratio" xTicks={[10, 14, 18, 22, 26, 30, 34, 38]} yTicks={[0, 0.25, 0.5, 0.75, 1]} xFormat={(v) => `${v}%`} />
-                      {bins.map((b) => (
-                        <g key={b.key} className="drillable" tabIndex={-1} data-nav="" {...props([{ kind: 'bin', chart: 'extinction', key: b.key }], `${b.testIds.length} ${fuel.toLowerCase()} tests at ${formatPercent(b.min, 0)} to ${formatPercent(b.max, 0)} oxygen${b.median != null ? `, median extinction ratio ${formatNumber(b.median, 2)}` : ''}. Press Enter for the rows.`)}>
-                          <rect x={x(b.min * 100)} y={box.t} width={x(b.max * 100) - x(b.min * 100)} height={box.h} fill="var(--freefall)" fillOpacity={b.index % 2 === 0 ? 0.04 : 0.0} />
-                          <text x={(x(b.min * 100) + x(b.max * 100)) / 2} y={box.t - 6} textAnchor="middle" fontSize={11} fill={b.testIds.length === 0 ? 'var(--gap)' : 'var(--ink)'} className="num">
-                            {b.testIds.length}
-                          </text>
-                        </g>
-                      ))}
-                      {points.map((p) => {
-                        const style = FAMILY_STYLE[p.family]
-                        return <path key={p.testId} d={shapePath(style.shape, 3.2)} transform={`translate(${x(p.o2 * 100).toFixed(1)},${y(p.ratio).toFixed(1)})`} fill={style.color} fillOpacity={0.7} data-drill={`test.${p.testId}`} {...{ onClick: props([{ kind: 'test', id: p.testId }], '').onClick }} className="drillable" />
-                      })}
-                      <path d={line} fill="none" stroke="var(--ink)" strokeWidth={2} pointerEvents="none" />
-                      {bins.filter((b) => b.median != null).map((b) => (
-                        <circle key={b.key} cx={x(((b.min + b.max) / 2) * 100)} cy={y(b.median as number)} r={4} fill="var(--ink)" pointerEvents="none" />
-                      ))}
-                    </svg>
-                  )
-                }}
-              </ChartFrame>
-            </section>
-          )
-        })}
+        {LAB_FUELS.map((fuel) => (
+          <ExtinctionPanel key={fuel} fuel={fuel} />
+        ))}
       </div>
       <div className="card mt-4 flex flex-wrap gap-x-4 gap-y-1 px-4 py-2">
         {DILUENT_FAMILIES.map((f) => (
@@ -510,12 +535,77 @@ function ExtinctionExplorer() {
   )
 }
 
+const EXTINCTION_AXES: ZoomAxes = { x: linearAxis([10, 38]), y: linearAxis([0, 1.05]) }
+const EXTINCTION_X_TICKS = [10, 14, 18, 22, 26, 30, 34, 38]
+const EXTINCTION_Y_TICKS = [0, 0.25, 0.5, 0.75, 1]
+
+function ExtinctionPanel({ fuel }: { fuel: string }) {
+  const data = useData()
+  const props = useDrillProps()
+  const points = useMemo(() => extinctionPoints(data.tests, fuel), [data.tests, fuel])
+  const bins = useMemo(() => extinctionBins(data.tests, fuel), [data.tests, fuel])
+  // Tests with the same oxygen and ratio sit on one point. Zoomed in, they spread apart.
+  const keys = useMemo(() => points.map((p) => `${p.o2}|${p.ratio}`), [points])
+  return (
+    <section className="card p-4" aria-label={`${fuel} extinction panel`}>
+      <ZoomChart
+        title={`${fuel}, ${points.length} tests`}
+        description={`Extinction ratio against oxygen for ${points.length} ${fuel.toLowerCase()} droplet tests, with a binned median line.`}
+        aspect={0.72}
+        minHeight={280}
+        maxHeight={420}
+        axes={EXTINCTION_AXES}
+        reset="Reset to all tests"
+        layout={labBox(22, 64, EXTINCTION_Y_TICKS)}
+        labels={(v) => <AxisLabels v={v} xLabel="Oxygen" yLabel="Extinction ratio" xTicks={EXTINCTION_X_TICKS} yTicks={EXTINCTION_Y_TICKS} xFormat={(t) => `${t}%`} />}
+        grid={(v) => <AxisGrid v={v} xTicks={EXTINCTION_X_TICKS} yTicks={EXTINCTION_Y_TICKS} />}
+        band={({ x, box, inX }) =>
+          bins.map((b) => (
+            <g key={b.key} className="drillable" tabIndex={-1} data-nav="" {...props([{ kind: 'bin', chart: 'extinction', key: b.key }], `${b.testIds.length} ${fuel.toLowerCase()} tests at ${formatPercent(b.min, 0)} to ${formatPercent(b.max, 0)} oxygen${b.median != null ? `, median extinction ratio ${formatNumber(b.median, 2)}` : ''}. Press Enter for the rows.`)}>
+              <rect x={x(b.min * 100)} y={box.top} width={x(b.max * 100) - x(b.min * 100)} height={box.height} fill="var(--freefall)" fillOpacity={b.index % 2 === 0 ? 0.04 : 0.0} />
+              {/* Each bin's count sits over its middle, while that middle is in view. */}
+              {inX(((b.min + b.max) / 2) * 100) ? (
+                <text x={(x(b.min * 100) + x(b.max * 100)) / 2} y={box.top - 6} textAnchor="middle" fontSize={11} fill={b.testIds.length === 0 ? 'var(--gap)' : 'var(--ink)'} className="num">
+                  {b.testIds.length}
+                </text>
+              ) : null}
+            </g>
+          ))
+        }
+      >
+        {({ x, y, zoom }) => {
+          const offsets = spreadPoints(keys, zoom)
+          const line = bins.filter((b) => b.median != null).map((b, i) => `${i === 0 ? 'M' : 'L'}${x(((b.min + b.max) / 2) * 100).toFixed(1)},${y(b.median as number).toFixed(1)}`).join('')
+          return (
+            <>
+              {points.map((p, i) => {
+                const style = FAMILY_STYLE[p.family]
+                return (
+                  <path key={p.testId} d={shapePath(style.shape, 3.2)} transform={`translate(${(x(p.o2 * 100) + offsets[i].dx).toFixed(1)},${(y(p.ratio) + offsets[i].dy).toFixed(1)})`} fill={style.color} fillOpacity={0.7} data-drill={`test.${p.testId}`} {...{ onClick: props([{ kind: 'test', id: p.testId }], '').onClick }} className="drillable">
+                    <title>{`${formatPercent(p.o2)} oxygen, extinction ratio ${formatNumber(p.ratio, 2)}, ${p.family}`}</title>
+                  </path>
+                )
+              })}
+              <path d={line} fill="none" stroke="var(--ink)" strokeWidth={2} pointerEvents="none" />
+              {bins.filter((b) => b.median != null).map((b) => (
+                <circle key={b.key} cx={x(((b.min + b.max) / 2) * 100)} cy={y(b.median as number)} r={4} fill="var(--ink)" pointerEvents="none" />
+              ))}
+            </>
+          )
+        }}
+      </ZoomChart>
+    </section>
+  )
+}
+
 // Lab tool 3.
 function GravityBounds() {
   const data = useData()
   const props = useDrillProps()
   const pairs = useMemo(() => burnLengthPairs(data.tests), [data.tests])
   const max = Math.max(...pairs.map((p) => Math.max(p.ug ?? 0, p.g1 ?? 0)), 1)
+  // Burn length zooms. The samples are categories, so that axis never does.
+  const axes = useMemo<ZoomAxes>(() => ({ x: linearAxis([0, max * 1.05]), y: { full: [0, 1], minSpan: 1, locked: true } }), [max])
   const i7 = data.insightById.I7
   return (
     <div>
@@ -543,30 +633,34 @@ function GravityBounds() {
         </Limits>
       </ToolIntro>
       <section className="card p-4" aria-label="Burn length pairs">
-        <ChartFrame title="Burn length in microgravity and in normal gravity" description={`${pairs.length} Saffire-II samples, each with a microgravity point and a normal gravity point. A thin line pairs the two points of a sample. Intermediate gravity was not measured.`} aspect={0.5} minHeight={pairs.length * 38 + 60} maxHeight={pairs.length * 44 + 70}>
-          {(size) => {
-            const box = { l: Math.min(230, size.width * 0.42), t: 8, w: 0, h: Math.max(60, size.height - 48) }
-            box.w = Math.max(60, size.width - box.l - 16)
-            const x = scaleLinear().domain([0, max * 1.05]).range([box.l, box.l + box.w])
-            const rowH = box.h / pairs.length
+        <ZoomChart
+          title="Burn length in microgravity and in normal gravity"
+          description={`${pairs.length} Saffire-II samples, each with a microgravity point and a normal gravity point. A thin line pairs the two points of a sample. Intermediate gravity was not measured.`}
+          aspect={0.5}
+          minHeight={pairs.length * 38 + 60}
+          maxHeight={pairs.length * 44 + 70}
+          axes={axes}
+          layout={(size) => {
+            const left = Math.min(230, size.width * 0.42)
+            return { left, top: 8, width: Math.max(60, size.width - left - 16), height: Math.max(60, size.height - 48) }
+          }}
+          labels={({ x, box, size, domain }) => {
+            const rowH = box.height / pairs.length
             return (
-              <svg width={size.width} height={size.height} className="absolute inset-0">
+              <>
                 <g aria-hidden="true">
-                  {nice(max * 1.05, 6).map((t) => (
-                    <g key={t}>
-                      <line x1={x(t)} x2={x(t)} y1={box.t} y2={box.t + box.h} stroke="var(--line)" strokeOpacity={0.5} />
-                      <text x={x(t)} y={box.t + box.h + 14} textAnchor="middle" fontSize={11} fill="var(--muted)" className="num">
-                        {t}
-                      </text>
-                    </g>
+                  {ticksIn(nice(max * 1.05, 6), domain.x, 6).map((t) => (
+                    <text key={t} x={x(t)} y={box.top + box.height + 14} textAnchor="middle" fontSize={11} fill="var(--muted)" className="num">
+                      {t}
+                    </text>
                   ))}
-                  <text x={box.l + box.w / 2} y={box.t + box.h + 32} textAnchor="middle" fontSize={12} fill="var(--muted)">
+                  <text x={box.left + box.width / 2} y={box.top + box.height + 32} textAnchor="middle" fontSize={12} fill="var(--muted)">
                     Burn length, cm
                   </text>
                 </g>
+                {/* Each sample's row is one control. Its name stays put while the lengths zoom. */}
                 {pairs.map((p, i) => {
-                  const cy = box.t + rowH * (i + 0.5)
-                  const both = p.ug != null && p.g1 != null
+                  const cy = box.top + rowH * (i + 0.5)
                   return (
                     <g key={p.testId} className="drillable" tabIndex={-1} data-nav="" {...props([{ kind: 'bin', chart: 'burnLength', key: p.testId }], `Saffire-II sample ${p.label}, ${p.material}${p.thicknessLikely ? `, thickness ${p.thickness} as written in NASA's table, likely ${p.thicknessLikely} but unconfirmed` : ''}: microgravity burn length ${p.ugRaw}, normal gravity ${p.g1Raw}. Press Enter for the row.`)}>
                       <rect x={0} y={cy - rowH / 2} width={size.width} height={rowH} fill="transparent" />
@@ -574,19 +668,42 @@ function GravityBounds() {
                         {p.label} {p.material.length > 24 ? `${p.material.slice(0, 23)}…` : p.material}
                       </text>
                       <text x={8} y={cy + 12} fontSize={11} fill="var(--muted)">
-                        {p.thickness} {p.thicknessLikely ? <tspan fill="var(--warn)">{box.l >= 220 ? "as written in NASA's table *" : 'as written *'}</tspan> : null}
+                        {p.thickness} {p.thicknessLikely ? <tspan fill="var(--warn)">{box.left >= 220 ? "as written in NASA's table *" : 'as written *'}</tspan> : null}
                         {p.mixed ? '· two materials' : ''}
                       </text>
+                    </g>
+                  )
+                })}
+              </>
+            )
+          }}
+          grid={({ x, box, domain }) => (
+            <g aria-hidden="true">
+              {ticksIn(nice(max * 1.05, 6), domain.x, 6).map((t) => (
+                <line key={t} x1={x(t)} x2={x(t)} y1={box.top} y2={box.top + box.height} stroke="var(--line)" strokeOpacity={0.5} />
+              ))}
+            </g>
+          )}
+        >
+          {({ x, box }) => {
+            const rowH = box.height / pairs.length
+            return (
+              <g pointerEvents="none">
+                {pairs.map((p, i) => {
+                  const cy = box.top + rowH * (i + 0.5)
+                  const both = p.ug != null && p.g1 != null
+                  return (
+                    <g key={p.testId}>
                       {both ? <line x1={x(p.ug as number)} x2={x(p.g1 as number)} y1={cy} y2={cy} stroke="var(--faint)" strokeWidth={1.5} /> : null}
                       {p.ug != null ? <circle cx={x(p.ug)} cy={cy} r={6} fill="var(--freefall)" /> : null}
                       {p.g1 != null ? <path d={shapePath('diamond', 6)} transform={`translate(${x(p.g1)},${cy})`} fill="var(--ember)" /> : null}
                     </g>
                   )
                 })}
-              </svg>
+              </g>
             )
           }}
-        </ChartFrame>
+        </ZoomChart>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
           <LegendItem swatch={<span className="inline-block h-3 w-3 rounded-full bg-freefall" />}>Microgravity</LegendItem>
           <LegendItem swatch={<svg width="12" height="12" viewBox="-7 -8 14 16"><path d={shapePath('diamond', 6)} fill="var(--ember)" /></svg>}>Normal gravity</LegendItem>
