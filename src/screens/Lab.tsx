@@ -574,7 +574,7 @@ function GravityBounds() {
                         {p.label} {p.material.length > 24 ? `${p.material.slice(0, 23)}…` : p.material}
                       </text>
                       <text x={8} y={cy + 12} fontSize={11} fill="var(--muted)">
-                        {p.thickness} {p.thicknessLikely ? <tspan fill="var(--warn)">as written in NASA's table *</tspan> : null}
+                        {p.thickness} {p.thicknessLikely ? <tspan fill="var(--warn)">{box.l >= 220 ? "as written in NASA's table *" : 'as written *'}</tspan> : null}
                         {p.mixed ? '· two materials' : ''}
                       </text>
                       {both ? <line x1={x(p.ug as number)} x2={x(p.g1 as number)} y1={cy} y2={cy} stroke="var(--faint)" strokeWidth={1.5} /> : null}
