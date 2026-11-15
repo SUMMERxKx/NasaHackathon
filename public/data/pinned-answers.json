@@ -1,5 +1,323 @@
 {
  "schemaVersion": 1,
- "generatedBy": "Written by npm run build:pinned from live model answers on the production site, checked by the answer checker and then reviewed by the team. Empty until the live model is set up.",
- "answers": []
+ "generatedBy": "Written by npm run build:pinned from live model answers on the production site, checked by the answer checker and then reviewed by the team.",
+ "answers": [
+  {
+   "id": "chip-1-fire-at-34",
+   "question": "What do we know about fire at 34 percent oxygen?",
+   "scenario": {
+    "presetId": "exploration",
+    "o2": 0.34,
+    "pressurePsi": 8.2,
+    "gravity": 0.166,
+    "flowCmS": 20,
+    "focus": null
+   },
+   "evidenceIds": [
+    "S",
+    "I1",
+    "I2",
+    "I12",
+    "I5",
+    "I8",
+    "PSI-98"
+   ],
+   "segments": [
+    {
+     "text": "Counting every test at or above 30% oxygen at any pressure gives 507 tests: 483 gas flame tests, 24 droplet tests and 0 solid material tests",
+     "cites": [
+      "I2"
+     ]
+    },
+    {
+     "text": "In FLEX, flames went out in only 2 of 24 droplet tests at 28 to 36% oxygen, and the median extinction ratio was 0.23 in that band",
+     "cites": [
+      "I5"
+     ]
+    },
+    {
+     "text": "PSI holds no solid material tests at or above 30% oxygen, while the highest oxygen level in any solid material test is 22.2%",
+     "cites": [
+      "I1"
+     ]
+    },
+    {
+     "text": "The solid material tests in BASS-II covered 13.6% to 22.2% oxygen and so do not reach 34%",
+     "cites": [
+      "I8"
+     ]
+    },
+    {
+     "text": "The Exploration atmosphere has an Evidence Coverage of 67 out of 100",
+     "cites": [
+      "I12"
+     ]
+    }
+   ],
+   "model": "Claude Haiku 5.5 through OpenRouter",
+   "generatedBy": "Written by Claude Haiku 5.5 through OpenRouter from EMBER evidence, checked by the answer checker. To be reviewed by the team.",
+   "generatedAt": "2026-11-15T02:06:33Z",
+   "bundleId": "f6c46dba",
+   "check": {
+    "verdict": "verified",
+    "removed": 0
+   },
+   "reviewed": false,
+   "reviewNote": ""
+  },
+  {
+   "id": "chip-2-fabrics",
+   "question": "Which investigations tested fabrics?",
+   "scenario": null,
+   "evidenceIds": [
+    "S",
+    "PSI-26",
+    "PSI-98",
+    "PSI-99",
+    "PSI-100",
+    "PSI-25",
+    "G-sibal"
+   ],
+   "segments": [
+    {
+     "text": "BASS (PSI-26) burned cotton and fiberglass fabric (SIBAL) among its solid samples",
+     "cites": [
+      "PSI-26",
+      "G-sibal"
+     ]
+    },
+    {
+     "text": "Saffire-I (PSI-98) burned a large sheet of cotton and fiberglass fabric inside an uncrewed Cygnus cargo vehicle",
+     "cites": [
+      "PSI-98"
+     ]
+    },
+    {
+     "text": "Saffire-II (PSI-99) tested cotton and fiberglass fabric alongside silicone, PMMA and Nomex samples",
+     "cites": [
+      "PSI-99"
+     ]
+    },
+    {
+     "text": "Saffire-III (PSI-100) burned a large sheet of cotton and fiberglass fabric at a higher air flow than Saffire-I",
+     "cites": [
+      "PSI-100"
+     ]
+    },
+    {
+     "text": "BASS-II (PSI-25) tested cotton and fiberglass fabric (SIBAL) samples as well",
+     "cites": [
+      "PSI-25",
+      "G-sibal"
+     ]
+    }
+   ],
+   "model": "Claude Haiku 5.5 through OpenRouter",
+   "generatedBy": "Written by Claude Haiku 5.5 through OpenRouter from EMBER evidence, checked by the answer checker. To be reviewed by the team.",
+   "generatedAt": "2026-11-15T02:06:35Z",
+   "bundleId": "f6c46dba",
+   "check": {
+    "verdict": "verified",
+    "removed": 0
+   },
+   "reviewed": false,
+   "reviewNote": ""
+  },
+  {
+   "id": "chip-3-carbon-dioxide",
+   "question": "How was carbon dioxide tested as a suppressant?",
+   "scenario": null,
+   "evidenceIds": [
+    "S",
+    "PSI-69",
+    "PSI-23",
+    "PSI-22",
+    "PSI-102",
+    "G-carbon-dioxide",
+    "G-diluent"
+   ],
+   "segments": [
+    {
+     "text": "The FLEX investigation (PSI-69) burned single droplets of methanol and heptane in microgravity and varied the oxygen level, pressure, and added gases carbon dioxide and helium",
+     "cites": [
+      "PSI-69"
+     ]
+    },
+    {
+     "text": "Carbon dioxide was tested as a gaseous suppressant by burning droplets in atmospheres with it added, to see how well it put out the flame",
+     "cites": [
+      "G-carbon-dioxide",
+      "PSI-69"
+     ]
+    },
+    {
+     "text": "Carbon dioxide works as a diluent, an inert gas that takes heat from a flame and can extinguish it",
+     "cites": [
+      "G-diluent"
+     ]
+    }
+   ],
+   "model": "Claude Haiku 5.5 through OpenRouter",
+   "generatedBy": "Written by Claude Haiku 5.5 through OpenRouter from EMBER evidence, checked by the answer checker. To be reviewed by the team.",
+   "generatedAt": "2026-11-15T02:06:37Z",
+   "bundleId": "f6c46dba",
+   "check": {
+    "verdict": "verified",
+    "removed": 0
+   },
+   "reviewed": false,
+   "reviewNote": ""
+  },
+  {
+   "id": "chip-4-cool-flame",
+   "question": "What is a cool flame?",
+   "scenario": null,
+   "evidenceIds": [
+    "S",
+    "G-cool-flame",
+    "G-adiabatic-flame-temperature",
+    "PSI-142",
+    "PSI-117",
+    "PSI-39",
+    "PSI-23"
+   ],
+   "segments": [
+    {
+     "text": "A cool flame is a flame that burns at a low temperature with little or no visible light",
+     "cites": [
+      "G-cool-flame"
+     ]
+    },
+    {
+     "text": "NASA's Researcher's Guide describes stable cool flames that form after the visible flame of a heptane droplet goes out",
+     "cites": [
+      "G-cool-flame"
+     ]
+    },
+    {
+     "text": "The CFI investigation studies cool flames, where a droplet keeps burning at low temperature after the visible flame goes out",
+     "cites": [
+      "PSI-39"
+     ]
+    }
+   ],
+   "model": "Claude Haiku 5.5 through OpenRouter",
+   "generatedBy": "Written by Claude Haiku 5.5 through OpenRouter from EMBER evidence, checked by the answer checker. To be reviewed by the team.",
+   "generatedAt": "2026-11-15T02:06:38Z",
+   "bundleId": "f6c46dba",
+   "check": {
+    "verdict": "verified",
+    "removed": 0
+   },
+   "reviewed": false,
+   "reviewNote": ""
+  },
+  {
+   "id": "chip-5-missing-for-moon",
+   "question": "What is missing for the Moon?",
+   "scenario": {
+    "presetId": "exploration",
+    "o2": 0.34,
+    "pressurePsi": 8.2,
+    "gravity": 0.166,
+    "flowCmS": 20,
+    "focus": null
+   },
+   "evidenceIds": [
+    "S",
+    "I3",
+    "I1",
+    "I7",
+    "I12",
+    "PSI-115",
+    "PSI-22"
+   ],
+   "segments": [
+    {
+     "text": "The PSI evidence shows that no combustion investigation has run at Moon or Mars gravity, with all 24 being microgravity or ground studies",
+     "cites": [
+      "I3"
+     ]
+    },
+    {
+     "text": "Solid material tests stop at 22.2% oxygen, while a Moon Base is planned at 30% or more, and PSI holds 0 solid material tests at or above 30% oxygen",
+     "cites": [
+      "I1"
+     ]
+    },
+    {
+     "text": "The planned LUCI and FM2 experiments are named as possible ways to close this oxygen gap",
+     "cites": [
+      "I1"
+     ]
+    },
+    {
+     "text": "The Saffire-II results point to shorter burns in microgravity, but they come from 9 samples at one flow speed and about 22% oxygen, so they bound the question without settling it",
+     "cites": [
+      "I7"
+     ]
+    },
+    {
+     "text": "The ACME E-FIELD Flames experiment used an electric field to mimic partial gravity, but its table states no oxygen value",
+     "cites": [
+      "PSI-22"
+     ]
+    }
+   ],
+   "model": "Claude Haiku 5.5 through OpenRouter",
+   "generatedBy": "Written by Claude Haiku 5.5 through OpenRouter from EMBER evidence, checked by the answer checker. To be reviewed by the team.",
+   "generatedAt": "2026-11-15T02:06:40Z",
+   "bundleId": "f6c46dba",
+   "check": {
+    "verdict": "verified",
+    "removed": 0
+   },
+   "reviewed": false,
+   "reviewNote": ""
+  },
+  {
+   "id": "chip-6-shared-hardware",
+   "question": "Which experiments shared hardware?",
+   "scenario": null,
+   "evidenceIds": [
+    "S",
+    "HW-cir-acme",
+    "HW-cir-mdca",
+    "PSI-21",
+    "PSI-20",
+    "PSI-10",
+    "PSI-159"
+   ],
+   "segments": [
+    {
+     "text": "Six ACME experiments shared the Combustion Integrated Rack hardware with the ACME insert, which burns gaseous fuels on the ISS",
+     "cites": [
+      "HW-cir-acme"
+     ]
+    },
+    {
+     "text": "Those six were ACME Flame Design (PSI-10), ACME BRE (PSI-20), ACME CLD Flame (PSI-21), ACME E-FIELD Flames (PSI-22), ACME s-Flame (PSI-23) and ACME CFI-G (PSI-159)",
+     "cites": [
+      "HW-cir-acme"
+     ]
+    },
+    {
+     "text": "The Combustion Integrated Rack with the Multi-user Droplet Combustion Apparatus was shared by three investigations, CFI (PSI-39), FLEX-2 (PSI-68) and FLEX (PSI-69), which burn liquid fuel droplets",
+     "cites": [
+      "HW-cir-mdca"
+     ]
+    }
+   ],
+   "model": "Claude Haiku 5.5 through OpenRouter",
+   "generatedBy": "Written by Claude Haiku 5.5 through OpenRouter from EMBER evidence, checked by the answer checker. To be reviewed by the team.",
+   "generatedAt": "2026-11-15T02:06:42Z",
+   "bundleId": "f6c46dba",
+   "check": {
+    "verdict": "verified",
+    "removed": 0
+   },
+   "reviewed": false,
+   "reviewNote": ""
+  }
+ ]
 }
