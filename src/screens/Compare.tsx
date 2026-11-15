@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Investigation, Test } from '../types.ts'
+import { unplottedNote } from '../lib/mapLayout.ts'
 import { materialFamily } from '../lib/parse.ts'
 import { countBy } from '../lib/stats.ts'
 import { atmToPsi, formatNumber, formatPercent } from '../lib/units.ts'
@@ -182,18 +183,51 @@ export default function Compare() {
                         </li>
                       ))}
                     </ul>
+                    <UnplottedLine tests={tests} />
                     <p className="text-[12px] text-muted">Here colour shows the investigation. Shape still shows the fuel class, and hollow still means assumed.</p>
                     <MapLegend compact />
                   </div>
                 }
               />
             ) : (
-              <p className="text-[14px] text-muted">None of the chosen investigations has a test that can be plotted.</p>
+              <>
+                <p className="text-[14px] text-muted">None of the chosen investigations has a test that can be plotted.</p>
+                <UnplottedLine tests={tests} />
+              </>
             )}
           </section>
         </>
       )}
     </div>
+  )
+}
+
+// How many of the compared tests are on the map, and each one that is not, with the reason read
+// from NASA's table and a link to its row. The count is never padded with an invented value.
+function UnplottedLine({ tests }: { tests: Test[] }) {
+  const { invByAcc } = useData()
+  const note = unplottedNote(tests)
+  if (note.named.length === 0) return null
+  return (
+    <p className="text-[12px] text-muted" role="note">
+      <span className="num text-ink">
+        {note.plotted} of {note.total}
+      </span>{' '}
+      tests plotted.{' '}
+      {note.named.map(({ test, reason }) => (
+        <span key={test.id}>
+          <ScenarioLink to={`/investigations/${test.accession}?row=${encodeURIComponent(test.id)}`}>
+            {invByAcc[test.accession]?.displayName ?? test.accession} {test.label}
+          </ScenarioLink>{' '}
+          {reason}.{' '}
+        </span>
+      ))}
+      {note.more > 0 ? (
+        <>
+          <span className="num">{note.more}</span> more are not plotted either. Each is named on the page of its investigation and counted under <ScenarioLink to="/about?section=unplotted">tests that are not on the map</ScenarioLink>.
+        </>
+      ) : null}
+    </p>
   )
 }
 

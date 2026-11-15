@@ -32,6 +32,7 @@ const TAB_OF: Record<string, string> = {
   coverage: 'methods',
   assumptions: 'methods',
   corrections: 'methods',
+  'kept-as-written': 'methods',
   unplotted: 'methods',
   limits: 'methods',
   fireball: 'visuals',

@@ -3,6 +3,7 @@
 import { scaleLinear, scaleLog } from 'd3-scale'
 import type { FuelClass, Test } from '../types.ts'
 import { isAssumed } from './coverage.ts'
+import { parseNumber } from './parse.ts'
 import { atmToPsi } from './units.ts'
 
 export const MAP_DOMAIN = { psi: [3, 80] as [number, number], o2Pct: [10, 100] as [number, number] }
@@ -51,6 +52,50 @@ export function mapScales(box: MapBox, domain: MapDomain = MAP_DOMAIN) {
 }
 
 export const plottable = (t: Test): boolean => t.o2 != null && t.pressureAtm != null
+
+// The cell NASA wrote for a coordinate, found by its header.
+function rawCell(t: Test, patterns: RegExp[]): string | null {
+  for (const pattern of patterns) {
+    const key = Object.keys(t.raw).find((k) => pattern.test(k))
+    if (key != null) return t.raw[key].trim()
+  }
+  return null
+}
+const OXYGEN_HEADERS = [/oxygen/i, /\bx?o2\b/i, /^o initial/i]
+const PRESSURE_HEADERS = [/pressure/i, /^p(init|mean)\b/i]
+
+// Why a test is not on the map, read from its row as NASA wrote it. Null when it is on the map.
+// No value is ever invented to place it.
+export function unplottedReason(t: Test): string | null {
+  if (plottable(t)) return null
+  const gaps = [
+    ...(t.o2 == null ? [{ name: 'oxygen', cell: rawCell(t, OXYGEN_HEADERS) }] : []),
+    ...(t.pressureAtm == null ? [{ name: 'pressure', cell: rawCell(t, PRESSURE_HEADERS) }] : []),
+  ]
+  if (gaps.every((g) => !g.cell)) return `has no ${gaps.map((g) => g.name).join(' or ')} value in NASA's table`
+  const parts = gaps.map((g) => {
+    if (!g.cell) return { text: `no ${g.name} value`, zero: false }
+    const value = parseNumber(g.cell).value
+    if (value != null && value <= 0 && /^[-+.\d\s]+$/.test(g.cell)) return { text: `a ${g.name} of ${g.cell}`, zero: true, name: g.name }
+    return { text: `${g.name} written as "${g.cell}"`, zero: false }
+  })
+  const zero = parts.find((p) => p.zero)
+  const tail = zero ? `, so it cannot be placed on the ${zero.name} axis` : ', not as a single value'
+  return `has ${parts.map((p) => p.text).join(' and ')} in NASA's table${tail}`
+}
+
+export type UnplottedNote = { total: number; plotted: number; named: { test: Test; reason: string }[]; more: number }
+
+// The line beside a map that shows a set of tests: how many are plotted and which are not, and why.
+export function unplottedNote(tests: Test[], limit = 5): UnplottedNote {
+  const missing = tests.filter((t) => !plottable(t))
+  return {
+    total: tests.length,
+    plotted: tests.length - missing.length,
+    named: missing.slice(0, limit).map((test) => ({ test, reason: unplottedReason(test) as string })),
+    more: Math.max(0, missing.length - limit),
+  }
+}
 
 // The radius a stack needs for its marks to sit STACK_SPACING apart.
 export const spreadRadius = (n: number): number => STACK_SPACING * Math.sqrt(n / Math.PI)

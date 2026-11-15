@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { Download, ExternalLink, Play } from 'lucide-react'
 import { COVERAGE_FORMULA, DEFAULT_METHOD, PILLARS } from '../../lib/coverage.ts'
 import { D_SQUARED_FORMULA } from '../../lib/droplet.ts'
+import { SAFFIRE_2, burnLengthPairs } from '../../lib/lab.ts'
 import { plottable } from '../../lib/mapLayout.ts'
 import { NEARBY_RULE, NOT_PROOF } from '../../lib/nearby.ts'
 import { RANK_FORMULAS, RANK_WEIGHTS } from '../../lib/ranking.ts'
@@ -190,6 +191,7 @@ export function MethodsSection() {
   const m = DEFAULT_METHOD
   const unplotted = groupBy(tests.filter((t) => !plottable(t)), (t) => t.accession)
   const unplottedCount = tests.filter((t) => !plottable(t)).length
+  const keptAsWritten = burnLengthPairs(tests).filter((p) => p.thicknessLikely)
   return (
     <>
     <Section id="data" title="Data and snapshot">
@@ -314,6 +316,39 @@ export function MethodsSection() {
         </table>
       </div>
       <p>A few cells are corrected too, and each such test is flagged: the ACME BRE oxygen values 3400% and 2100% are read as 34 and 21, and fuel names that count up through CH5, CH6 and so on in two ACME tables are read as the fuel in the first row.</p>
+      <h3 id="kept-as-written" className="scroll-mt-24 text-[18px]">Source text kept as written</h3>
+      <p>Some cells look like a typing slip but are not corrected, because the right value is not confirmed. EMBER shows and stores them exactly as NASA wrote them, marks them where they appear, and lists them here.</p>
+      <div className="table-wrap" style={{ maxHeight: 'none' }}>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Table</th>
+              <th scope="col">Rows</th>
+              <th scope="col">As in the file</th>
+              <th scope="col">Likely reading</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(groupBy(keptAsWritten, (p) => p.thickness)).map(([raw, list]) => (
+              <tr key={raw}>
+                <td>{invByAcc[SAFFIRE_2]?.displayName ?? SAFFIRE_2}, Samle Thickness</td>
+                <td className="num">
+                  {list.map((p, i) => (
+                    <span key={p.testId}>
+                      {i > 0 ? ', ' : ''}
+                      <ScenarioLink to={`/investigations/${SAFFIRE_2}?row=${encodeURIComponent(p.testId)}`}>{p.label}</ScenarioLink>
+                    </span>
+                  ))}
+                </td>
+                <td className="num">{raw}</td>
+                <td className="num">{list[0].thicknessLikely}, unconfirmed</td>
+                <td className="text-warn">needs the science lead's check</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Section>
 
       <Section id="unplotted" title="Tests that are not on the map">

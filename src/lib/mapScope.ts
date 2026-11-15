@@ -3,14 +3,18 @@
 // Moon Base counts, its description and every drill it opens all count the tests of this one scope.
 import type { DrillStep, FuelClass, Investigation, PillarOrFundamentals, Test } from '../types.ts'
 import { FUEL_LABEL } from './nearby.ts'
+import { matchesTerms, searchTerms, testSearchText } from './search.ts'
 
-export type MapScope = { pillar?: PillarOrFundamentals; fuel?: FuelClass; inv?: string; hw?: string }
+// q is the free-text search. It narrows the same tests as the other parts, so search and filters
+// always agree.
+export type MapScope = { pillar?: PillarOrFundamentals; fuel?: FuelClass; inv?: string; hw?: string; q?: string }
 export type ScopeStep = Extract<DrillStep, { kind: 'scope' }>
 
 export const SCOPE_PILLARS: PillarOrFundamentals[] = ['prevention', 'detection', 'suppression', 'fundamentals']
 export const SCOPE_FUELS: FuelClass[] = ['solid', 'liquid', 'gas', 'aerosol']
 export const ACCESSION = /^PSI-\d+$/
 export const HARDWARE_ID = /^[a-z0-9-]+$/
+export const QUERY_MAX = 80
 
 const PILLAR_WORD: Record<PillarOrFundamentals, string> = {
   prevention: 'Prevention',
@@ -20,26 +24,29 @@ const PILLAR_WORD: Record<PillarOrFundamentals, string> = {
 }
 
 /** The scope from its parts, keeping only the parts that are well formed. */
-export function makeScope(parts: { pillar?: string | null; fuel?: string | null; inv?: string | null; hw?: string | null }): MapScope {
+export function makeScope(parts: { pillar?: string | null; fuel?: string | null; inv?: string | null; hw?: string | null; q?: string | null }): MapScope {
   const scope: MapScope = {}
   if (parts.pillar && SCOPE_PILLARS.includes(parts.pillar as PillarOrFundamentals)) scope.pillar = parts.pillar as PillarOrFundamentals
   if (parts.fuel && SCOPE_FUELS.includes(parts.fuel as FuelClass)) scope.fuel = parts.fuel as FuelClass
   if (parts.inv && ACCESSION.test(parts.inv)) scope.inv = parts.inv
   if (parts.hw && HARDWARE_ID.test(parts.hw)) scope.hw = parts.hw
+  const q = (parts.q ?? '').trim().replace(/\s+/g, ' ').slice(0, QUERY_MAX)
+  if (q) scope.q = q
   return scope
 }
 
-/** The scope as the dashboard address holds it: pillar, fuel, inv and hw. */
+/** The scope as the dashboard address holds it: pillar, fuel, inv, hw and q. */
 export const scopeFromParams = (params: URLSearchParams): MapScope =>
-  makeScope({ pillar: params.get('pillar'), fuel: params.get('fuel'), inv: params.get('inv'), hw: params.get('hw') })
+  makeScope({ pillar: params.get('pillar'), fuel: params.get('fuel'), inv: params.get('inv'), hw: params.get('hw'), q: params.get('q') })
 
-export const scopeActive = (scope: MapScope): boolean => Boolean(scope.pillar || scope.fuel || scope.inv || scope.hw)
+export const scopeActive = (scope: MapScope): boolean => Boolean(scope.pillar || scope.fuel || scope.inv || scope.hw || scope.q)
 
 export function inScope(test: Test, inv: Investigation | undefined, scope: MapScope): boolean {
   if (scope.pillar && inv?.pillar !== scope.pillar && !inv?.secondaryPillars.includes(scope.pillar as never)) return false
   if (scope.fuel && test.fuelClass !== scope.fuel) return false
   if (scope.inv && test.accession !== scope.inv) return false
   if (scope.hw && inv?.hardwareFamily !== scope.hw) return false
+  if (scope.q && !matchesTerms(testSearchText(test, inv?.displayName ?? test.accession), searchTerms(scope.q))) return false
   return true
 }
 
@@ -52,12 +59,13 @@ export function scopeStep(scope: MapScope): ScopeStep | null {
   return scopeActive(scope) ? { kind: 'scope', ...scope } : null
 }
 
-/** The scope in words, such as "BASS-II, Solid materials". */
+/** The scope in words, such as "BASS-II, Solid materials, matching "silicone"". */
 export function scopeLabel(scope: MapScope, invByAcc: Record<string, Investigation>, hardwareName: Record<string, string> = {}): string {
   const parts: string[] = []
   if (scope.inv) parts.push(invByAcc[scope.inv]?.displayName ?? scope.inv)
   if (scope.pillar) parts.push(PILLAR_WORD[scope.pillar])
   if (scope.fuel) parts.push(FUEL_LABEL[scope.fuel])
   if (scope.hw) parts.push(hardwareName[scope.hw] ?? scope.hw)
+  if (scope.q) parts.push(`matching "${scope.q}"`)
   return parts.join(', ')
 }

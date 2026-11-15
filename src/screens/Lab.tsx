@@ -10,8 +10,9 @@ import { Info, Pause, Play, RotateCcw } from 'lucide-react'
 import type { Test } from '../types.ts'
 import { D_SQUARED_FORMULA, burnTimeToCompletion, burnTimeToExtinction, diameterAt, dropletValues, validateDSquared } from '../lib/droplet.ts'
 import type { DiluentFamily } from '../lib/droplet.ts'
-import { DILUENT_FAMILIES, EXTINCTION_BINS, LAB_FUELS, burnLengthPairs, dropletKey, dropletSelection, extinctionBins, extinctionPoints, flexTests } from '../lib/lab.ts'
-import { median } from '../lib/stats.ts'
+import type { BurnPair } from '../lib/lab.ts'
+import { DILUENT_FAMILIES, EXTINCTION_BINS, LAB_FUELS, ambiguousThickness, burnLengthPairs, dropletKey, dropletSelection, extinctionBins, extinctionPoints, flexTests } from '../lib/lab.ts'
+import { groupBy, median } from '../lib/stats.ts'
 import { formatNumber, formatPercent } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
 import { useScenario } from '../state/hooks.ts'
@@ -567,13 +568,14 @@ function GravityBounds() {
                   const cy = box.t + rowH * (i + 0.5)
                   const both = p.ug != null && p.g1 != null
                   return (
-                    <g key={p.testId} className="drillable" tabIndex={-1} data-nav="" {...props([{ kind: 'bin', chart: 'burnLength', key: p.testId }], `Saffire-II sample ${p.label}, ${p.material}: microgravity burn length ${p.ugRaw}, normal gravity ${p.g1Raw}. Press Enter for the row.`)}>
+                    <g key={p.testId} className="drillable" tabIndex={-1} data-nav="" {...props([{ kind: 'bin', chart: 'burnLength', key: p.testId }], `Saffire-II sample ${p.label}, ${p.material}${p.thicknessLikely ? `, thickness ${p.thickness} as written in NASA's table, likely ${p.thicknessLikely} but unconfirmed` : ''}: microgravity burn length ${p.ugRaw}, normal gravity ${p.g1Raw}. Press Enter for the row.`)}>
                       <rect x={0} y={cy - rowH / 2} width={size.width} height={rowH} fill="transparent" />
                       <text x={8} y={cy - 2} fontSize={12} fill="var(--ink)" fontWeight={600}>
                         {p.label} {p.material.length > 24 ? `${p.material.slice(0, 23)}…` : p.material}
                       </text>
                       <text x={8} y={cy + 12} fontSize={11} fill="var(--muted)">
-                        {p.thickness} {p.mixed ? '· two materials' : ''}
+                        {p.thickness} {p.thicknessLikely ? <tspan fill="var(--warn)">{box.l >= 220 ? "as written in NASA's table *" : 'as written *'}</tspan> : null}
+                        {p.mixed ? '· two materials' : ''}
                       </text>
                       {both ? <line x1={x(p.ug as number)} x2={x(p.g1 as number)} y1={cy} y2={cy} stroke="var(--faint)" strokeWidth={1.5} /> : null}
                       {p.ug != null ? <circle cx={x(p.ug)} cy={cy} r={6} fill="var(--freefall)" /> : null}
@@ -590,10 +592,32 @@ function GravityBounds() {
           <LegendItem swatch={<svg width="12" height="12" viewBox="-7 -8 14 16"><path d={shapePath('diamond', 6)} fill="var(--ember)" /></svg>}>Normal gravity</LegendItem>
           <LegendItem swatch={<span className="inline-block h-0 w-6 border-t-2 border-faint" />}>Paired observations at 0 g and 1 g. Intermediate gravity not measured</LegendItem>
         </div>
+        <AmbiguousThickness pairs={pairs} />
       </section>
     </div>
   )
 }
+
+// A thickness kept as NASA wrote it, such as "037 mm", is marked in the chart and explained here.
+// The raw text is shown and stored. The likely reading stays unconfirmed until the science lead checks it.
+function AmbiguousThickness({ pairs }: { pairs: BurnPair[] }) {
+  const flagged = pairs.filter((p) => p.thicknessLikely)
+  if (flagged.length === 0) return null
+  const groups = Object.entries(groupBy(flagged, (p) => p.thickness))
+  return (
+    <p className="mt-2 border-l-2 border-warn pl-2 text-[12px] text-muted" role="note">
+      <span className="text-warn">*</span>{' '}
+      {groups.map(([raw, list]) => (
+        <span key={raw}>
+          {list.length === 1 ? 'Sample' : 'Samples'} {listWords(list.map((p) => p.label))} {list.length === 1 ? 'has' : 'have'} a thickness of "{raw}" in NASA's SAFFIRE-2 table. EMBER shows it as written. It is likely {ambiguousThickness(raw)}, but that is unconfirmed until the team's science lead checks it.{' '}
+        </span>
+      ))}
+      <ScenarioLink to="/about?section=kept-as-written">Source text kept as written</ScenarioLink>
+    </p>
+  )
+}
+
+const listWords = (items: string[]): string => (items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`)
 
 // The flame picture for the chosen habitat, with its three sourced readouts. It moved here from
 // the dashboard, whole. The habitat dropdown on this screen drives it.

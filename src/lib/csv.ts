@@ -27,3 +27,26 @@ export function testsToCsv(tests: Test[], names: Record<string, string>): string
   }
   return lines.join('\n') + '\n'
 }
+
+// The file name for a filtered view names its filter, such as ember-BASS-II-tests.csv.
+// With no filter it is the plotted set, and the whole dataset keeps its own file.
+export function viewCsvName(filters: (string | null | undefined)[]): string {
+  const slug = filters
+    .filter((f): f is string => Boolean(f && f.trim()))
+    .join('-')
+    .replace(/[^A-Za-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+    .replace(/-+$/, '')
+  return `ember-${slug || 'plotted'}-tests.csv`
+}
+
+// Hands the viewer a CSV file made in the browser. Nothing is sent anywhere.
+export function downloadCsv(name: string, text: string) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = name
+  link.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
