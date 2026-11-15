@@ -98,7 +98,7 @@ export function buildEvidence(snapshot, insights) {
     {
       id: 'M-coverage',
       title: 'What the Evidence Coverage score means',
-      text: 'Evidence Coverage measures how much real flight evidence sits close to a chosen habitat atmosphere, on a scale of 0 to 100. It is not a safety rating. Each test gets a weight that falls with its distance from the habitat: 4 points of oxygen is one unit of distance and about 25 percent in pressure is one unit. A test whose oxygen or pressure is assumed counts at half weight. For each pillar the weights are summed into an effective number of nearby tests N, and coverage is 100 × (1 − exp(−N ÷ 10)). The overall score is 0.4 × prevention plus 0.3 × detection plus 0.3 × suppression. Fundamentals tests count toward each pillar at a weight of 0.3. The constants are design choices by the team.',
+      text: 'Evidence Coverage measures how much real flight evidence sits close to a chosen habitat atmosphere, on a scale of 0 to 100. It is not a safety rating. Each test gets a weight that falls with its distance from the habitat: 4 points of oxygen is one unit of distance and about 25 percent in pressure is one unit. A test whose oxygen or pressure is assumed counts at half weight. For each pillar the weights of every plotted test, near or far, are summed into an effective number of tests N, and coverage is 100 × (1 − exp(−N ÷ 10)). The overall score is 0.4 × prevention plus 0.3 × detection plus 0.3 × suppression. Fundamentals tests count toward each pillar at a weight of 0.3. The constants are design choices by the team.',
       href: '/methods?section=formulas',
     },
     {
@@ -110,13 +110,13 @@ export function buildEvidence(snapshot, insights) {
     {
       id: 'M-dsquared',
       title: 'The d-squared law',
-      text: 'The d-squared law says the square of a burning droplet\'s diameter falls in a straight line with time: d(t)² = d0² − K × t. K is the burning rate constant. The burn time to extinction is (d0² − dExt²) ÷ K. EMBER checks this against the FLEX table. Source: Dietrich and co-authors, Droplet Combustion Experiments Aboard the International Space Station, 2014.',
+      text: 'The d-squared law says the square of a burning droplet\'s diameter falls in a straight line with time: d(t)² = d0² − K × t. K is the burning rate constant. The burn time to extinction is (d0² − dExt²) ÷ K. EMBER checks this against the FLEX table. The law is a classical result (Godsave 1953, Spalding 1953). The FLEX data: Dietrich and co-authors, Droplet Combustion Experiments Aboard the International Space Station, 2014.',
       href: '/lab/droplet',
     },
     {
       id: 'M-assumptions',
       title: 'Declared assumptions',
-      text: `Some PSI tables do not state an atmosphere. For ${assumed.length} investigations EMBER assumes cabin air, 21% oxygen at one atmosphere: ${assumed.map((a) => a.accession).join(', ')}. That covers ${snapshot.counts.testsWithAssumedOxygen} tests. Assumed values are drawn as hollow marks, marked as assumed in every table, and counted at half weight in the coverage score. They are never presented as measured.`,
+      text: `Some PSI tables do not state an atmosphere. For ${assumed.length} investigations EMBER assumes an oxygen value from cabin air: ${assumed.map((a) => `${a.accession} at ${Math.round(a.o2 * 1000) / 10}%`).join(', ')}. ${snapshot.counts.testsWithAssumedOxygen} tests have an assumed oxygen value and ${snapshot.counts.testsWithAssumedValue - snapshot.counts.testsWithAssumedOxygen} more have only an assumed pressure, about one atmosphere. The team reviewed every assumption on 15 November 2026 against the PSI records and published papers. Assumed values are drawn as hollow marks, marked as assumed in every table, and counted at half weight in the coverage score. They are never presented as measured.`,
       href: '/methods?section=assumptions',
     },
     {

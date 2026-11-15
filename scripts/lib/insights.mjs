@@ -156,20 +156,33 @@ export function buildInsightList(snapshot) {
     }
     const low = OXYGEN_BANDS[0].key.replace('-', 'to')
     const high = OXYGEN_BANDS[3].key.replace('-', 'to')
-    const ratios = flex.filter((t) => typeof t.extra.d0 === 'number' && typeof t.extra.dExt === 'number' && t.extra.d0 > 0)
-    const rLow = median(ratios.filter((t) => inBand(t, OXYGEN_BANDS[0])).map((t) => extinctionRatio(t.extra.d0, t.extra.dExt)))
-    const rHigh = median(ratios.filter((t) => inBand(t, OXYGEN_BANDS[3])).map((t) => extinctionRatio(t.extra.d0, t.extra.dExt)))
+    // The ratio is read only where the flame went out. Disruption and completion rows also list a
+    // final diameter, but it is not the diameter at which the flame went out.
+    const ratios = flex.filter((t) => t.outcome === 'Extinction' && typeof t.extra.d0 === 'number' && typeof t.extra.dExt === 'number' && t.extra.d0 > 0)
+    const lowRatios = ratios.filter((t) => inBand(t, OXYGEN_BANDS[0]))
+    const highRatios = ratios.filter((t) => inBand(t, OXYGEN_BANDS[3]))
+    const rLow = median(lowRatios.map((t) => extinctionRatio(t.extra.d0, t.extra.dExt)))
+    const rHigh = median(highRatios.map((t) => extinctionRatio(t.extra.d0, t.extra.dExt)))
     // The headline figure is printed with its denominator, so it reads on its own.
     display[`extinction${high}`] = `${numbers[`extinction${high}`]} of ${numbers[`tests${high}`]}`
     numbers.medianRatioLow = round(rLow, 2)
     numbers.medianRatioHigh = round(rHigh, 2)
+    numbers.ratioTestsLow = lowRatios.length
+    numbers.ratioTestsHigh = highRatios.length
     display.medianRatioLow = formatNumber(rLow, 2)
     display.medianRatioHigh = formatNumber(rHigh, 2)
+    display.ratioTestsLow = String(lowRatios.length)
+    display.ratioTestsHigh = String(highRatios.length)
+    byNumber.medianRatioLow = ids(lowRatios)
+    byNumber.medianRatioHigh = ids(highRatios)
+    byNumber.ratioTestsLow = ids(lowRatios)
+    byNumber.ratioTestsHigh = ids(highRatios)
+    const plural = (n) => (n === 1 ? 'test' : 'tests')
     out.push(card({
       id: 'I5',
       pillar: 'suppression',
       headline: `In FLEX, flames went out in ${numbers[`extinction${low}`]} of ${numbers[`tests${low}`]} droplet tests at 10 to 15% oxygen and in ${numbers[`extinction${high}`]} of ${numbers[`tests${high}`]} at 28 to 36%.`,
-      detail: `Tests that ended in extinction by oxygen band: ${parts.join(', ')}. The median extinction ratio, the flame-out diameter divided by the starting diameter, is ${display.medianRatioLow} at 10 to 15% oxygen and ${display.medianRatioHigh} at 28 to 36%. These counts mix fuels, pressures and added gases, so they show a direction and not a limit.`,
+      detail: `Tests that ended in extinction by oxygen band: ${parts.join(', ')}. Where the flame went out, the median extinction ratio, the flame-out diameter divided by the starting diameter, is ${display.medianRatioLow} at 10 to 15% oxygen (${lowRatios.length} ${plural(lowRatios.length)}) and ${display.medianRatioHigh} at 28 to 36% (${highRatios.length} ${plural(highRatios.length)}). Tests that ended in disruption or burned to completion are left out of the ratio. These counts mix fuels, pressures and added gases, so they show a direction and not a limit.`,
       numbers,
       display,
       primary: `extinction${high}`,
@@ -228,16 +241,26 @@ export function buildInsightList(snapshot) {
     const same = single.filter((t) => t.extra.ugBurnLengthCm === t.extra.g1BurnLengthCm)
     const longer = single.filter((t) => t.extra.ugBurnLengthCm > t.extra.g1BurnLengthCm)
     const silicone = shorter.filter((t) => /silicone/i.test(t.fuel || ''))
+    // "The same length" splits into samples that burned their full length in both and samples
+    // that barely burned in either. Saying "burned the same length" for a sample at 0 overclaims.
+    const sameFull = same.filter((t) => typeof t.extra.sampleLengthCm === 'number' && t.extra.ugBurnLengthCm === t.extra.sampleLengthCm)
+    const sameNone = same.filter((t) => t.extra.ugBurnLengthCm === 0)
+    const sameText = [
+      sameFull.length > 0 ? `${sameFull.length} ${sameFull.length === 1 ? 'sample' : 'samples'} burned the full length in both` : '',
+      sameNone.length > 0 ? `${sameNone.length} barely burned in either` : '',
+      same.length - sameFull.length - sameNone.length > 0 ? `${same.length - sameFull.length - sameNone.length} burned the same partial length in both` : '',
+    ].filter(Boolean)
+    const sameSentence = sameText.length === 0 ? 'No sample burned the same length in both.' : `${sameText.join(', and ').replace(/^./, (c) => c.toUpperCase())}.`
     out.push(card({
       id: 'I7',
       pillar: 'prevention',
       headline: `In Saffire-II, ${shorter.length} of ${single.length} single-material samples burned a shorter length in microgravity than in normal gravity. ${longer.length} burned longer.`,
-      detail: `${same.length} samples burned the same length in both. ${silicone.length} of the shorter ones were silicone samples that burned in normal gravity and barely burned in microgravity. The table gives lengths as text such as "Complete" and "~ 10 cm", which EMBER reads as the full sample length and 10 cm. This is ${saffire.length} samples at one flow speed and about 22% oxygen, so it bounds the question and does not settle it.`,
-      numbers: { samples: saffire.length, compared: single.length, shorterInMicrogravity: shorter.length, sameLength: same.length, longerInMicrogravity: longer.length, siliconeShorter: silicone.length },
-      display: { samples: String(saffire.length), compared: String(single.length), shorterInMicrogravity: `${shorter.length} of ${single.length}`, sameLength: String(same.length), longerInMicrogravity: String(longer.length), siliconeShorter: String(silicone.length) },
+      detail: `${sameSentence} ${silicone.length} of the shorter ones were silicone samples that burned in normal gravity and barely burned in microgravity. The table gives lengths as text such as "Complete" and "~ 10 cm", which EMBER reads as the full sample length and 10 cm. This is ${saffire.length} samples at one flow speed and about 22% oxygen, so it bounds the question and does not settle it.`,
+      numbers: { samples: saffire.length, compared: single.length, shorterInMicrogravity: shorter.length, sameLength: same.length, sameFullLength: sameFull.length, sameBarelyBurned: sameNone.length, longerInMicrogravity: longer.length, siliconeShorter: silicone.length },
+      display: { samples: String(saffire.length), compared: String(single.length), shorterInMicrogravity: `${shorter.length} of ${single.length}`, sameLength: String(same.length), sameFullLength: String(sameFull.length), sameBarelyBurned: String(sameNone.length), longerInMicrogravity: String(longer.length), siliconeShorter: String(silicone.length) },
       primary: 'shorterInMicrogravity',
       evidence: [{ accession: 'PSI-99', table: saffire[0].table, testIds: ids(saffire), field: 'burn length' }],
-      byNumber: { samples: ids(saffire), compared: ids(single), shorterInMicrogravity: ids(shorter), sameLength: ids(same), longerInMicrogravity: ids(longer), siliconeShorter: ids(silicone) },
+      byNumber: { samples: ids(saffire), compared: ids(single), shorterInMicrogravity: ids(shorter), sameLength: ids(same), sameFullLength: ids(sameFull), sameBarelyBurned: ids(sameNone), longerInMicrogravity: ids(longer), siliconeShorter: ids(silicone) },
       formula: 'A row by row comparison of the µg Burn Length and 1-g Burn Length columns.',
     }))
   }
@@ -366,7 +389,7 @@ export function buildInsightList(snapshot) {
       id: 'I12',
       pillar: 'method',
       headline: `Evidence Coverage is ${iss} out of 100 near the ISS cabin and ${exploration} near the Exploration atmosphere.`,
-      detail: `Evidence Coverage by habitat: ${lines.join(', ')}. The score counts real flight tests near each atmosphere, with tests that rest on an assumed value at half weight. It is not a safety rating.`,
+      detail: `Evidence Coverage by habitat: ${lines.join(', ')}. The score weights every flight test by how close it is to each atmosphere, with tests that rest on an assumed value at half weight. It is not a safety rating.`,
       numbers,
       display,
       primary: 'exploration',

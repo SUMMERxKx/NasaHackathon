@@ -220,8 +220,8 @@ function DropletCalculator() {
         <p className="num bg-surface-2 px-3 py-2 text-[13px]">{D_SQUARED_FORMULA}</p>
         <p className="text-muted">The model end time and the measured burn time are different quantities. The model is never stretched to hide the difference.</p>
         <Limits>
-          <li>The law assumes a round, steady flame around one droplet. Disrupted droplets and cool flames do not follow it.</li>
-          <li>The burning rate column lost its unit in the file. EMBER reads it as mm² per second. The team confirms this from the publication.</li>
+          <li>The law assumes a round, steady flame around one droplet. Disrupted droplets and cool flames do not follow it. The check below still includes the tests that ended in disruption, and NASA lists their final diameter.</li>
+          <li>The burning rate column lost its unit in the file. EMBER reads it as mm² per second, the unit NASA's detailed FLEX results give for the same values (NASA/TP-2015-216046, Table IX).</li>
           <li>The burning rate is a median over nearby tests. It mixes pressures and droplet sizes.</li>
           <li>The flame's size and colour in the picture are not inferred from the data. Only the droplet's size follows the row.</li>
           <li>A visible flame going out does not prove that all burning has stopped.</li>
@@ -464,7 +464,7 @@ const Validation = memo(function Validation() {
         </li>
       </ul>
       <p className="mt-3 max-w-[640px] text-[13px] text-muted">
-        The first number is a median ratio, not an error bound for any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model.
+        The first number is a median ratio, not an error bound for any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model. A test whose extinction diameter is not smaller than its starting diameter has no model burn time and is left out.
       </p>
       <div className="mt-3 max-w-[640px]">
         <ZoomChart
@@ -536,14 +536,14 @@ function ExtinctionExplorer() {
     <div>
       <ToolIntro line="Where each droplet flame went out, by oxygen level. Near 1 it went out at once. 0 means it burned away.">
         <p className="text-muted">
-          The extinction ratio is the diameter at which the visible flame went out, divided by the starting diameter. Each point is one FLEX test. The line joins the median of each oxygen bin, and the number on each bin is its count of tests.
+          The extinction ratio is the diameter at which the visible flame went out, divided by the starting diameter. Each point is one FLEX test that ended in extinction. Tests that ended in disruption or burned to completion are left out, because their listed final diameter is not a flame-out diameter. The line joins the median of each oxygen bin, and the number on each bin is its count of tests.
         </p>
         <div>
           <h3 className="stat-label">What the plot shows</h3>
           <ul className="m-0 mt-2 flex list-disc flex-col gap-2 pl-5">
             {i5 ? (
               <li>
-                {i5.headline} The median extinction ratio is <span className="num">{i5.display.medianRatioLow}</span> at 10 to 15% oxygen and <span className="num">{i5.display.medianRatioHigh}</span> at 28 to 36%.{' '}
+                {i5.headline} Where the flame went out, the median extinction ratio is <span className="num">{i5.display.medianRatioLow}</span> at 10 to 15% oxygen, over <span className="num">{i5.display.ratioTestsLow}</span> tests, and <span className="num">{i5.display.medianRatioHigh}</span> at 28 to 36%, over <span className="num">{i5.display.ratioTestsHigh}</span> tests.{' '}
                 <SourcedNumber path={[{ kind: 'insight', id: 'I5', number: i5.primary }]} label="The rows behind this count">
                   Rows
                 </SourcedNumber>
@@ -800,8 +800,8 @@ function HabitatFlame() {
           <h3 className="stat-label">What the three numbers are</h3>
           <ul className="m-0 mt-2 flex list-disc flex-col gap-2 pl-5">
             <li>Burn rate is the median burning rate of the nitrogen-diluted FLEX tests within 3 points of the chosen oxygen level. {GATES.burningRateUnitConfirmed ? 'It is in mm² per second.' : 'Its unit still waits on a check by the team.'}</li>
-            <li>Went out counts the FLEX tests within 3 points of oxygen where the visible flame went out. It ignores pressure, so it is not the nearby count of the dashboard, and it is not a success rate for an extinguisher.</li>
-            <li>Flame temp is a calculated temperature listed for ACME gas flames within 5 points of oxygen. It is not a measured cabin temperature.</li>
+            <li>Went out counts the nitrogen-diluted FLEX tests within 3 points of oxygen where the visible flame went out, the same tests as the burn rate. Tests with carbon dioxide or helium added are left out. It ignores pressure, so it is not the nearby count of the dashboard, and it is not a success rate for an extinguisher.</li>
+            <li>Flame temp is the calculated adiabatic flame temperature listed for normal ACME gas flames within 5 points of oxygen. Inverse flames, whose oxygen value is the burner stream, and cool flames are left out. It is not a measured temperature.</li>
           </ul>
         </div>
         <Limits>

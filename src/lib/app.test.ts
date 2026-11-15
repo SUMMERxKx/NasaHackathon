@@ -125,8 +125,10 @@ describe('drill counts', () => {
   it('resolves the cabin air stack to every test at that point', () => {
     const result = resolveDrill([{ kind: 'stack', o2: 0.21, pressureAtm: 1 }], data, preset('iss'))
     const assumedOxygen = result.testIds.filter((id) => data.testById.get(id)?.o2Source === 'assumed').length
-    expect(assumedOxygen).toBe(snapshot.counts.testsWithAssumedOxygen)
-    expect(assumedOxygen).toBe(722)
+    // Saffire-III's assumed 21.2 percent sits beside the stack, not in it.
+    expect(assumedOxygen).toBe(snapshot.tests.filter((t) => t.o2Source === 'assumed' && t.o2 === 0.21).length)
+    expect(assumedOxygen).toBe(719)
+    expect(snapshot.counts.testsWithAssumedOxygen).toBe(721)
   })
   it('makes each coverage segment add up to the number on the dial', () => {
     for (const h of snapshot.habitats) {
@@ -178,7 +180,7 @@ describe('drill counts', () => {
 // The six rows of the audit in the dashboard critique: total, solid, liquid, gas, smoke and aerosol,
 // investigations with a nearby row, nearby rows with an assumed value, inverse-flame rows.
 const NEARBY_AUDIT: Record<string, [number, number, number, number, number, number, number, number]> = {
-  iss: [1093, 229, 127, 618, 119, 15, 849, 11],
+  iss: [1087, 230, 127, 613, 117, 14, 843, 11],
   'shuttle-eva': [43, 0, 43, 0, 0, 1, 0, 0],
   exploration: [24, 0, 9, 15, 0, 3, 0, 2],
   'moon-bound': [14, 0, 8, 6, 0, 2, 0, 6],
@@ -273,7 +275,7 @@ describe('nearby counts', () => {
     expect(row.test?.rowIndex).toBeGreaterThanOrEqual(0)
     expect(row.crumbs.length).toBe(3)
     const assumed = resolveDrill([{ ...near('iss'), only: 'assumed' }], data, scenario)
-    expect(assumed.total).toBe(849)
+    expect(assumed.total).toBe(843)
     expect(assumed.testIds).toContain(id)
   })
   it('lead from the gas count to an inverse-flame row and say what its oxygen value is', () => {
@@ -349,7 +351,7 @@ describe('map layout', () => {
   it('keeps the cabin air stack inside a 9 pixel radius with one badge', () => {
     const stack = layout.stacks.find((s) => Math.abs(s.o2 - 0.21) < 1e-6 && Math.abs(s.pressureAtm - 1) < 1e-6)
     expect(stack).toBeDefined()
-    expect(stack?.count).toBeGreaterThanOrEqual(722)
+    expect(stack?.count).toBeGreaterThanOrEqual(719)
     expect(stack?.badge).toBe(true)
     const marks = layout.marks.filter((m) => m.stackKey === stack?.key)
     expect(marks.length).toBe(stack?.count)
@@ -620,18 +622,23 @@ describe('ramp', () => {
 describe('flame params', () => {
   it('gives each preset the readout numbers of the plan', () => {
     const iss = flameParams(preset('iss'), data.tests).lookup
-    expect([iss.flexNear.length, iss.burningRate.value, iss.burningRate.tests.length, iss.extinction.ended.length]).toEqual([165, 0.51, 39, 111])
-    expect(Math.round(iss.flameTemperature.value ?? 0)).toBe(2180)
-    expect(iss.flameTemperature.tests.length).toBe(146)
+    expect([iss.flexNear.length, iss.burningRate.value, iss.burningRate.tests.length, iss.extinction.ended.length]).toEqual([165, 0.51, 39, 23])
+    // Went out counts nitrogen-only tests, the same as the burn rate: 23 of 41 at the ISS.
+    expect(iss.extinction.of.length).toBe(41)
+    // Flame temp leaves out inverse flames and cool flames.
+    expect(Math.round(iss.flameTemperature.value ?? 0)).toBe(2197)
+    expect(iss.flameTemperature.tests.length).toBe(108)
+    expect(iss.flameTemperature.tests.some((t) => t.flags?.includes('oxidizer-stream'))).toBe(false)
     const exploration = flameParams(preset('exploration'), data.tests).lookup
     expect([exploration.flexNear.length, exploration.burningRate.value, exploration.burningRate.tests.length, exploration.extinction.ended.length]).toEqual([9, 0.715, 8, 0])
-    expect(Math.round(exploration.flameTemperature.value ?? 0)).toBe(2573)
+    expect(Math.round(exploration.flameTemperature.value ?? 0)).toBe(2634)
     const moon = flameParams(preset('moon-bound'), data.tests).lookup
     expect([moon.flexNear.length, moon.burningRate.value, moon.extinction.ended.length]).toEqual([15, 0.65, 2])
     const eva = flameParams(preset('shuttle-eva'), data.tests).lookup
     expect(eva.burningRate.tests.length).toBe(0)
     expect(eva.burningRate.interpolated).toBe(true)
-    expect(eva.extinction.ended.length).toBe(7)
+    // Every FLEX test near 26.5 percent had carbon dioxide or helium added.
+    expect(eva.extinction.of.length).toBe(0)
   })
   it('gives the ghost state when no droplet test is in range', () => {
     const suit = flameParams(preset('suit'), data.tests)

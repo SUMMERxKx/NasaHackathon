@@ -86,6 +86,6 @@ export function rankAll(
 export const RANK_FORMULAS: Record<keyof RankParts, { label: string; formula: string }> = {
   A: { label: 'Atmosphere match', formula: 'A = 1 − exp(−N ÷ 5), where N is the sum of the proximity weights of its own tests. 0 if it has no table.' },
   F: { label: 'Fuel relevance', formula: 'F = 1.0 solid, 0.8 aerosol, 0.6 liquid, 0.4 gas, 0.3 ground or modelling study.' },
-  P: { label: 'Pillar focus', formula: 'P = 1.0 if its pillar matches your focus pillar, 0.5 otherwise, 1.0 for all when no focus is set.' },
+  P: { label: 'Pillar focus', formula: 'P = 1.0 if its pillar or one of its secondary pillars matches your focus pillar, 0.5 otherwise, 1.0 for all when no focus is set.' },
   D: { label: 'Amount of data', formula: 'D = min(1, log10(1 + tests) ÷ log10(501)).' },
 }

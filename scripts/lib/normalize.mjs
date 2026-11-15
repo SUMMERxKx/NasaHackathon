@@ -70,6 +70,21 @@ function displayHeaderFor(file, header) {
   return hit ? { displayHeader: hit.corrected, corrected: true } : { displayHeader: clean, corrected: false }
 }
 
+// Rows that record no test. They are left out of the tests, counted as table rows, and listed on
+// About with the reason. Each match must hit exactly one row, or the build fails.
+const DROPPED_ROWS = [
+  {
+    file: 'BASS.csv',
+    match: (raw) => /^soot cleaning$/i.test(raw['Fuel Sample Material'] ?? ''),
+    reason: 'The row reads "SOOT Cleaning". It records maintenance of the hardware, not a burn.',
+  },
+  {
+    file: 'ACME BRE.csv',
+    match: (raw) => raw.Year === '2019' && raw.Month === 'April' && raw.Date === '1' && raw['Flames Ignited'] === '0',
+    reason: 'The row lists 0 flames ignited on that day, so no flame was tested.',
+  },
+]
+
 // Per table: how to read the label, the fuel, the atmosphere and the extra values.
 const num = (cell) => parseNumber(cell).value
 const TABLE_RULES = [
@@ -241,7 +256,9 @@ const TABLE_RULES = [
     label: (g) => g('Test Day'),
     fuel: (g) => fixFill(g('Fuel Bottle'), /\bN[3-9]\b/g, 'N2'),
     split(g) {
-      return parseOxygenPercents(g('Atmosphere')).map((v) => ({ o2: v / 100, approximate: true }))
+      // "~21% O2 with He" is oxygen in a balance of helium. Those rows record helium as the other gas.
+      const helium = /\bwith\s+He\b/.test(g('Atmosphere'))
+      return parseOxygenPercents(g('Atmosphere')).map((v) => ({ o2: v / 100, approximate: true, heliumBalance: helium }))
     },
     read(g, t) {
       t.extra.atmosphere = fixFill(g('Atmosphere'), /\bN[3-9]\b/g, 'N2') || null
@@ -382,6 +399,7 @@ function normalizeTable({ root, accession, file, tableIndex, fuelClass, assumpti
   const tests = []
   const noteRows = []
   const dataRows = []
+  const dropped = []
   let lastFuel = null
   let lastRaw = null
   for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
@@ -393,6 +411,13 @@ function normalizeTable({ root, accession, file, tableIndex, fuelClass, assumpti
     })
     if (isNoteRow(cells, headers.length)) {
       noteRows.push({ rowIndex, cells: raw })
+      continue
+    }
+    // A row that records no test is kept apart: it counts as a table row, but not in the column
+    // profile, so every column value still leads to a test.
+    const drop = DROPPED_ROWS.find((d) => file.endsWith(d.file) && d.match(raw))
+    if (drop) {
+      dropped.push({ accession, table: file, rowIndex, label: String((rule ? rule.label((p) => raw[findHeader(headers, p)] ?? '') : '') || `row ${rowIndex}`).trim(), reason: drop.reason, raw })
       continue
     }
     dataRows.push(cells)
@@ -460,6 +485,10 @@ function normalizeTable({ root, accession, file, tableIndex, fuelClass, assumpti
         helper.setO2(variant.o2, { approximate: Boolean(variant.approximate) })
         t.flags.push('day-level')
         if (variant.typoFixed) t.flags.push('typo-fixed')
+        if (variant.heliumBalance && t.o2 != null) {
+          t.diluent = { n2: 0, co2: 0, he: round(1 - t.o2, 6) }
+          t.flags.push('helium-balance')
+        }
       }
       if (assumption) {
         if (t.o2 == null && assumption.o2 != null) {
@@ -478,7 +507,7 @@ function normalizeTable({ root, accession, file, tableIndex, fuelClass, assumpti
     })
   }
   const columns = headers.map((h, i) => profileColumn(file, h, dataRows.map((r) => r[i]), dataRows.length))
-  return { tests, profile: { accession, table: file, rows: dataRows.length, columns, noteRows }, rowCount: dataRows.length + noteRows.length }
+  return { tests, dropped, profile: { accession, table: file, rows: dataRows.length, columns, noteRows }, rowCount: dataRows.length + noteRows.length + dropped.length }
 }
 
 function buildInvestigation(record, manual, hasThumb) {
@@ -564,6 +593,7 @@ export function buildSnapshot(root) {
   const investigations = []
   const tests = []
   const tableProfiles = []
+  const droppedRows = []
   let rows = 0
   let tables = 0
   for (const accession of accessions) {
@@ -575,6 +605,7 @@ export function buildSnapshot(root) {
       if (!existsSync(join(root, 'data/raw/tables', file))) return
       const out = normalizeTable({ root, accession, file, tableIndex, fuelClass: inv.fuelClass, assumption })
       tests.push(...out.tests)
+      droppedRows.push(...out.dropped)
       tableProfiles.push(out.profile)
       inv.tables.push({ file, rows: out.profile.rows })
       inv.testCount += out.tests.length
@@ -582,6 +613,10 @@ export function buildSnapshot(root) {
       tables += 1
     })
     investigations.push(inv)
+  }
+  for (const d of DROPPED_ROWS) {
+    const hits = droppedRows.filter((r) => r.table.endsWith(d.file) && d.reason === r.reason).length
+    if (hits !== 1) throw new Error(`Dropped row rule for ${d.file} matched ${hits} rows, expected 1`)
   }
   const projectTypes = {}
   for (const inv of investigations) projectTypes[inv.projectType] = (projectTypes[inv.projectType] || 0) + 1
@@ -605,6 +640,8 @@ export function buildSnapshot(root) {
     tableProfiles,
     habitats: manual.habitats.habitats,
     assumptions: manual.defaults.defaults,
+    assumptionsReview: manual.defaults.reviewNote ?? null,
+    droppedRows,
     labelCorrections: LABEL_CORRECTIONS.map((c) => {
       const profile = tableProfiles.find((p) => p.table.endsWith(c.file))
       return { accession: profile?.accession ?? '', table: profile?.table ?? c.file, original: c.original, corrected: c.corrected, reason: c.reason }

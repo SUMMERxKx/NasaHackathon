@@ -1,13 +1,14 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The sections of the About screen: how EMBER answers the challenge, the data, every formula,
 // every assumption, the limits, the visuals, the live answer, the SI disclosure and the sources.
+import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { Download, ExternalLink, Play } from 'lucide-react'
-import { COVERAGE_FORMULA, DEFAULT_METHOD, PILLARS } from '../../lib/coverage.ts'
+import { COVERAGE_FORMULA, DEFAULT_METHOD, PILLARS, computeCoverage, pillarLookup, scenarioPoint } from '../../lib/coverage.ts'
 import { D_SQUARED_FORMULA } from '../../lib/droplet.ts'
 import { SAFFIRE_2, burnLengthPairs } from '../../lib/lab.ts'
 import { plottable } from '../../lib/mapLayout.ts'
-import { NEARBY_RULE, NOT_PROOF } from '../../lib/nearby.ts'
+import { NEARBY_RULE, NOT_PROOF, isInverseFlame } from '../../lib/nearby.ts'
 import { RANK_FORMULAS, RANK_WEIGHTS } from '../../lib/ranking.ts'
 import { byAccession, groupBy } from '../../lib/stats.ts'
 import { formatNumber, formatPercent } from '../../lib/units.ts'
@@ -192,11 +193,22 @@ export function MethodsSection() {
   const unplotted = groupBy(tests.filter((t) => !plottable(t)), (t) => t.accession)
   const unplottedCount = tests.filter((t) => !plottable(t)).length
   const keptAsWritten = burnLengthPairs(tests).filter((p) => p.thicknessLikely)
+  // What the inverse flame rows add to the Exploration score, worked out from the snapshot.
+  const inverseShare = useMemo(() => {
+    const exploration = snapshot.habitats.find((h) => h.id === 'exploration')
+    if (!exploration) return null
+    const lookup = pillarLookup(snapshot.investigations)
+    const point = scenarioPoint(exploration)
+    return { with: Math.round(computeCoverage(tests, lookup, point).overall), without: Math.round(computeCoverage(tests.filter((t) => !isInverseFlame(t)), lookup, point).overall) }
+  }, [snapshot, tests])
+  // An assumption with no value reads "from the table" only when that table really states the value.
+  const statedInTable = (accession: string, field: 'o2' | 'pressure'): boolean =>
+    tests.some((t) => t.accession === accession && (field === 'o2' ? t.o2Source === 'table' : t.pressureSource === 'table'))
   return (
     <>
     <Section id="data" title="Data and snapshot">
       <p>
-        Every number in EMBER comes from NASA's Physical Sciences Informatics (PSI) repository at psi.nasa.gov. The snapshot was taken on <span className="num">{snapshot.fetchedAt.slice(0, 10)}</span>. It holds <span className="num">{c.investigations}</span> combustion investigations, <span className="num">{c.tables}</span> experimental tables with <span className="num">{c.rows.toLocaleString('en-US')}</span> rows, and <span className="num">{c.tests.toLocaleString('en-US')}</span> normalized tests. A table row that lists several oxygen levels for one test day becomes one test per level, and note rows are kept apart, which is why the two counts differ.
+        Every number in EMBER comes from NASA's Physical Sciences Informatics (PSI) repository at psi.nasa.gov. The snapshot was taken on <span className="num">{snapshot.fetchedAt.slice(0, 10)}</span>. It holds <span className="num">{c.investigations}</span> combustion investigations, <span className="num">{c.tables}</span> experimental tables with <span className="num">{c.rows.toLocaleString('en-US')}</span> rows, and <span className="num">{c.tests.toLocaleString('en-US')}</span> normalized tests. A table row that lists several oxygen levels for one test day becomes one test per level, note rows are kept apart, and <span className="num">{snapshot.droppedRows.length}</span> rows that record no test are left out and <ScenarioLink to="/about?section=dropped">listed</ScenarioLink>, which is why the two counts differ.
       </p>
       <p>
         The PSI service does not allow calls from a browser on another site, so the data is fetched once at build time and committed to the repository. The site reads only that committed snapshot. It cannot go down because PSI is down. The raw cell is kept beside every value EMBER read from it, and drill-through ends on exactly that.
@@ -234,7 +246,7 @@ export function MethodsSection() {
         The counts describe the snapshot. They are rows of NASA test tables, not unique experiments, and many rows can share one condition. {NOT_PROOF} A row with an assumed oxygen or pressure value counts as nearby at its assumed position, and the dashboard states how many such rows there are. Rows of inverse gas flames count too, and their oxygen value is the oxidizer stream. A count is not a probability, a risk score or a prediction.
       </p>
       <h3 id="coverage" className="scroll-mt-24 text-[18px]">Evidence Coverage</h3>
-      <p>The score measures how much real flight evidence sits close to the chosen atmosphere. It is not a safety rating. It is a heuristic of the team and it lives here, with its formula, and not on the dashboard. It sums a weight over every usable row, not only the nearby ones, so a large table can fill the score while a material or gravity gap remains. Inverse gas flame rows count in the score too, although their oxygen value is the burner stream. Without them Exploration would score 57 instead of 67.</p>
+      <p>The score measures how much real flight evidence sits close to the chosen atmosphere. It is not a safety rating. It is a heuristic of the team and it lives here, with its formula, and not on the dashboard. It sums a weight over every usable row, not only the nearby ones, so a large table can fill the score while a material or gravity gap remains. Inverse gas flame rows count in the score too, although their oxygen value is the burner stream.{inverseShare ? ` Without them Exploration would score ${inverseShare.without} instead of ${inverseShare.with}.` : ''}</p>
       <CoverageDetails />
       <Formula>{COVERAGE_FORMULA}</Formula>
       <Formula>
@@ -255,7 +267,7 @@ export function MethodsSection() {
       ))}
       <h3 className="text-[18px]">Droplet burning</h3>
       <Formula>{D_SQUARED_FORMULA} K is the burning rate constant in mm² per second.</Formula>
-      <p>Source: Dietrich and co-authors, 2014, listed in the PSI FLEX record. The Lab checks this law against every FLEX test that has all four values.</p>
+      <p>The law is a classical result (Godsave 1953, Spalding 1953). The FLEX data: Dietrich and co-authors, 2014, listed in the PSI FLEX record. NASA's detailed FLEX results (NASA/TP-2015-216046, Table IX) give the burning rate in mm² per second. The Lab checks this law against every FLEX test that has all four values and a defined model end.</p>
       <h3 className="text-[18px]">The Moon Base region</h3>
       <p>Oxygen of 30 percent or more at 10.2 psi or less, from the challenge statement. A test is inside it only when its table states both values. Tests within 5 percent above the pressure line are reported as on the edge.</p>
     </Section>
@@ -280,15 +292,21 @@ export function MethodsSection() {
                 <td>
                   <ScenarioLink to={`/investigations/${a.accession}`}>{snapshot.investigations.find((i) => i.accession === a.accession)?.displayName ?? a.accession}</ScenarioLink>
                 </td>
-                <td className="num">{a.o2 == null ? 'from the table' : `${a.o2 * 100}% assumed`}</td>
-                <td className="num">{a.pressureAtm == null ? 'from the table' : `${a.pressureAtm} atm assumed`}</td>
-                <td className="max-w-[360px]">{a.reason}</td>
-                <td className="text-warn">{a.status}</td>
+                <td className="num">{a.o2 == null ? (statedInTable(a.accession, 'o2') ? 'from the table' : 'not stated') : `${Math.round(a.o2 * 1000) / 10}% assumed`}</td>
+                <td className="num">{a.pressureAtm == null ? (statedInTable(a.accession, 'pressure') ? 'from the table' : 'not stated') : `${a.pressureAtm} atm assumed`}</td>
+                <td className="max-w-[360px]">
+                  {a.reason}
+                  {a.source ? <span className="mt-1 block text-[12px] text-muted">Source: {a.source}</span> : null}
+                </td>
+                <td className={a.status === 'needs human check' ? 'text-warn' : ''}>{a.status}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {snapshot.assumptionsReview ? <p className="bg-surface-2 px-3 py-2 text-[14px]">{snapshot.assumptionsReview} Each value still draws hollow and counts at half weight, because it is not a value from NASA's table. Where a paper gives the value, the source cites it.</p> : null}
+      <p>Measured ISS cabin oxygen ran from about 20 to 23 percent. EMBER uses 21.0 percent for every assumed cabin air value, the same as the ISS cabin habitat.</p>
+      <p>SAME, SAME-R and DAFT are smoke and dust tests for fire detectors. Nothing burned in them. SAME and SAME-R stay on the map as smoke and aerosol tests, because they count toward detection. DAFT states no oxygen, so it is not plotted.</p>
       <p className="text-[13px] text-muted">The pillar of each investigation, its hardware family and what it informs are also drafts by SI. Each carries the status "needs human check" until the team confirms it from the PSI record. The full list is under SI disclosure.</p>
     </Section>
     <Section id="corrections" title="Label corrections">
@@ -315,7 +333,29 @@ export function MethodsSection() {
           </tbody>
         </table>
       </div>
-      <p>A few cells are corrected too, and each such test is flagged: the ACME BRE oxygen values 3400% and 2100% are read as 34 and 21, and fuel names that count up through CH5, CH6 and so on in two ACME tables are read as the fuel in the first row.</p>
+      <p>A few cells are corrected too, and each such test is flagged: the ACME BRE oxygen value 3400% is read as 34, and fuel names that count up through CH5, CH6 and so on in two ACME tables are read as the fuel in the first row. The ACME s-Flame days run in helium record helium as the other gas.</p>
+      <h3 id="dropped" className="scroll-mt-24 text-[18px]">Rows that are not tests</h3>
+      <p>These table rows record no test. EMBER leaves them out of the tests, still counts them as table rows, and lists them here.</p>
+      <div className="table-wrap" style={{ maxHeight: 'none' }}>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Table</th>
+              <th scope="col">Row</th>
+              <th scope="col">Why it is left out</th>
+            </tr>
+          </thead>
+          <tbody>
+            {snapshot.droppedRows.map((d) => (
+              <tr key={d.table + d.rowIndex}>
+                <td>{invByAcc[d.accession]?.displayName ?? d.accession}</td>
+                <td className="num">{d.label}</td>
+                <td className="max-w-[360px]">{d.reason}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <h3 id="kept-as-written" className="scroll-mt-24 text-[18px]">Source text kept as written</h3>
       <p>Some cells look like a typing slip but are not corrected, because the right value is not confirmed. EMBER shows and stores them exactly as NASA wrote them, marks them where they appear, and lists them here.</p>
       <div className="table-wrap" style={{ maxHeight: 'none' }}>
@@ -346,6 +386,13 @@ export function MethodsSection() {
                 <td className="text-warn">needs the science lead's check</td>
               </tr>
             ))}
+            <tr>
+              <td>{invByAcc['PSI-106']?.displayName ?? 'PSI-106'}, Test Date</td>
+              <td className="num">last row</td>
+              <td className="num">2012-MAR-23 Last day of testing: SPICE testing</td>
+              <td>a SPICE test day filed under SLICE</td>
+              <td>kept where NASA filed it. SPICE and SLICE share one assumed atmosphere, so its mark is in the right place.</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -389,10 +436,10 @@ export function VisualsSection() {
         The fireball in the <ScenarioLink to="/lab/flame">Lab</ScenarioLink> is an SI-generated illustration, drawn by shader code in the browser with three.js. Every view of it carries a small SI mark in its corner. There are no model files. It is driven by the NASA tests near the chosen atmosphere: the burning rate and the outcomes come from the FLEX table, and the listed flame temperature comes from the ACME gas flame tables. The three numbers beside it each open their rows.
       </p>
       <p>
-        The temperature scale has two labelled ends, about 300 K for cabin air and about 2,300 K for a typical flame, from page 8 of NASA's Researcher's Guide to Combustion Science. The pattern between them is drawn, not computed. No pressure effect on the flame is drawn, because the tables do not show one. No shape between the Earth flame and the fireball is drawn, because no partial-gravity test exists.
+        The temperature scale has two labelled ends, about 300 K for cabin air and about 2,300 K for a typical flame, from page 8 of NASA's Researcher's Guide to Combustion Science. The pattern between them is drawn, not computed. No pressure effect on the flame is drawn, because EMBER does not model one. No shape between the Earth flame and the fireball is drawn, because no partial-gravity test exists.
       </p>
       <p>
-        Two details wait on a check by the team's science lead. The mark on the temperature scale {GATES.tadConfirmed ? 'moves, now that' : 'does not move until'} the ACME column headed Tad (K) is confirmed as the adiabatic flame temperature. The droplet in the Lab {GATES.burningRateUnitConfirmed ? 'is animated, now that' : 'is not animated until'} the FLEX burning rate unit is confirmed as mm² per second.
+        The mark on the temperature scale {GATES.tadConfirmed ? 'moves with the habitat. It shows the calculated adiabatic flame temperature from the ACME column headed Tad (K), the median of normal hot flames near the chosen oxygen. Inverse flames and cool flames are left out.' : 'does not move until the ACME column headed Tad (K) is confirmed as the adiabatic flame temperature.'} The droplet in the Lab {GATES.burningRateUnitConfirmed ? 'is animated, with the FLEX burning rate read in mm² per second.' : 'is not animated until the FLEX burning rate unit is confirmed as mm² per second.'} Both readings were reviewed by the EMBER team on 15 November 2026 against NASA/TP-2015-216046 and the ACME publications. A combustion researcher should confirm before this is used for design.
       </p>
       <p className="text-[14px] text-muted">
           {SCALE_NOTE} Pressure changes which tests are near. EMBER draws no pressure effect that the tables do not show.{' '}
@@ -533,12 +580,12 @@ export function DisclosureSection() {
       </p>
     </Section>
 
-      <Section id="drafts" title="What is SI drafted, and what still needs a human check">
+      <Section id="drafts" title="What is SI drafted, what the team reviewed, and what still needs a human check">
         <p>The main screens carry no tags, to keep them clean. This is the full list.</p>
         <ul className="m-0 flex list-disc flex-col gap-2 pl-5">
           <li>SI drafted, checked against PSI data: the plain summary of every investigation, the wording of the twelve findings, the glossary, the incident and spinoff cards, and the bullet points in the Lab notes.</li>
           <li>SI drafted, needs human check: the pillar of each investigation, its hardware family, and what it informs.</li>
-          <li>SI drafted, needs human check: the declared assumptions for tables that state no atmosphere. Their status is in the table under Data and methods.</li>
+          <li>SI drafted, reviewed by the EMBER team on 15 November 2026: the declared assumptions for tables that state no atmosphere, and the two readings behind the fireball, the ACME flame temperature column and the FLEX burning rate unit. A combustion researcher should confirm before this is used for design. Their status is in the table under Data and methods.</li>
           <li>Live answers in the chat panel are written by a language model and checked by code. Pinned answers were also read by the team.</li>
           <li>SI-generated visuals: the fireball and the sky on the start page. Each carries a small SI mark.</li>
         </ul>

@@ -154,14 +154,18 @@ export function FireballReadout({ params }: { params: FlameParams }) {
           <span className="num">{look.burningRate.value != null ? formatNumber(look.burningRate.value, 2) : 'none'}</span>
         )}
       </Tile>
-      <Tile label="Went out" note="FLEX tests">
-        <SourcedNumber path={[{ kind: 'fireball', readout: 'outcomes' }]} label={`${look.extinction.ended.length} of ${look.extinction.of.length} nearby FLEX tests ended in extinction`}>
-          {look.extinction.ended.length} of {look.extinction.of.length}
-        </SourcedNumber>
+      <Tile label="Went out" note={look.extinction.of.length > 0 ? 'nitrogen-only FLEX tests' : 'no nitrogen-only test'}>
+        {look.extinction.of.length > 0 ? (
+          <SourcedNumber path={[{ kind: 'fireball', readout: 'outcomes' }]} label={`${look.extinction.ended.length} of ${look.extinction.of.length} nitrogen-only FLEX tests near this oxygen level ended in extinction`}>
+            {look.extinction.ended.length} of {look.extinction.of.length}
+          </SourcedNumber>
+        ) : (
+          <span className="num">none</span>
+        )}
       </Tile>
-      <Tile label="Flame temp" note={look.flameTemperature.value != null ? `${look.flameTemperature.tests.length} ACME tests` : 'no test nearby'}>
+      <Tile label="Flame temp" note={look.flameTemperature.value != null ? `calculated, ${look.flameTemperature.tests.length} ACME tests` : 'no test nearby'}>
         {look.flameTemperature.value != null ? (
-          <SourcedNumber path={[{ kind: 'fireball', readout: 'flameTemperature' }]} label={`Listed flame temperature ${Math.round(look.flameTemperature.value)} kelvin, the median of ${look.flameTemperature.tests.length} ACME tests`}>
+          <SourcedNumber path={[{ kind: 'fireball', readout: 'flameTemperature' }]} label={`Calculated adiabatic flame temperature ${Math.round(look.flameTemperature.value)} kelvin, the median of ${look.flameTemperature.tests.length} ACME tests`}>
             <CountUp value={look.flameTemperature.value ?? 0} ms={400} format={kelvin} />
           </SourcedNumber>
         ) : (
@@ -181,8 +185,8 @@ export const BASIS = {
 // What each control changes in the picture. Shown on the About screen.
 export const DRIVERS: { control: string; change: string; basis: keyof typeof BASIS }[] = [
   { control: 'Oxygen', change: 'How fast it seethes, from the median FLEX burning rate near this oxygen', basis: 'tables' },
-  { control: 'Oxygen', change: 'How hot the brightest part is, from the listed flame temperature of ACME gas flames. A calculated upper temperature', basis: 'tables' },
-  { control: 'Oxygen', change: 'Whether it holds, struggles or goes out, from the share of nearby FLEX tests that ended in extinction', basis: 'tables' },
+  { control: 'Oxygen', change: 'How hot the brightest part is, from the calculated adiabatic flame temperature of normal ACME gas flames. A calculated upper temperature, not a measurement', basis: 'tables' },
+  { control: 'Oxygen', change: 'Whether it holds, struggles or goes out, from the share of nearby nitrogen-diluted FLEX tests that ended in extinction', basis: 'tables' },
   { control: 'Oxygen', change: 'In the camera view, how blue or how yellow it is. NASA\'s guide says a flame stays bluer longer at lower oxygen', basis: 'direction' },
   { control: 'Oxygen and pressure', change: 'Whether it is solid or a ghost, from the count of droplet tests within one unit of the habitat', basis: 'tables' },
   { control: 'Pressure', change: 'How dense the haze of gas around it is', basis: 'definition' },

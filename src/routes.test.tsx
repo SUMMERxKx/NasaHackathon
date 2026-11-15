@@ -108,11 +108,11 @@ describe('routes', () => {
   it('draw only the filtered tests on the dashboard map, with the Moon Base counts of the filter', () => {
     const text = (url: string) => render(url).replace(/<!-- -->/g, '')
     const whole = text('/dashboard')
-    expect(whole).toContain('1937 of 1937 tests')
+    expect(whole).toContain('1893 of 1893 tests')
     expect(whole).toContain('0 solid, 0 liquid, 66 gas')
     for (const [inv, shown, moon] of [['PSI-25', 129, '0 solid, 0 liquid, 0 gas'], ['PSI-99', 9, '0 solid, 0 liquid, 0 gas'], ['PSI-69', 273, '0 solid, 0 liquid, 0 gas']] as const) {
       const html = text(`/dashboard?inv=${inv}`)
-      expect(html).toContain(`${shown} of 1937 tests`)
+      expect(html).toContain(`${shown} of 1893 tests`)
       expect(html).toContain(`${shown} tests plotted on oxygen against pressure`)
       expect(html).toContain(moon)
       expect(html).not.toContain('66 gas')
@@ -124,10 +124,10 @@ describe('routes', () => {
   it('lead the dashboard with the five counts, each labelled, and write out a zero', () => {
     const text = (url: string) => render(url).replace(/<!-- -->/g, '')
     const iss = text('/dashboard')
-    expect(iss).toMatch(/>1,093<\/button>\s*nearby NASA test records/)
+    expect(iss).toMatch(/>1,087<\/button>\s*nearby NASA test records/)
     // The chart itself is drawn in the browser. Its accessible name carries the four class counts.
-    expect(iss).toContain('1,093 NASA test records near ISS cabin. Solid materials: 229. Liquid fuels: 127. Gas flames: 618. Smoke and aerosols: 119.')
-    expect(iss).toContain('View the 1,093 NASA rows')
+    expect(iss).toContain('1,087 NASA test records near ISS cabin. Solid materials: 230. Liquid fuels: 127. Gas flames: 613. Smoke and aerosols: 117.')
+    expect(iss).toContain('View the 1,087 NASA rows')
     expect(iss).not.toContain(NO_NEARBY.toLowerCase())
     const exploration = text('/dashboard?h=exploration')
     expect(exploration).toMatch(/>24<\/button>\s*nearby NASA test records/)
@@ -158,7 +158,7 @@ describe('routes', () => {
     expect(exploration).toContain('Gravity does not change these counts')
     const iss = render('/dashboard').replace(/<!-- -->/g, '')
     expect(iss).toContain('Nearby evidence spans all four fuel classes. Most of these rows use assumed coordinates.')
-    expect(iss).toMatch(/>849<\/button>\s*rows with assumed coordinates/)
+    expect(iss).toMatch(/>843<\/button>\s*rows with assumed coordinates/)
     expect(render('/dashboard?h=shuttle-eva')).toContain('Nearby evidence is limited to liquid-fuel tests.')
   })
   it('list three investigations with their nearby counts and no relevance bar', () => {

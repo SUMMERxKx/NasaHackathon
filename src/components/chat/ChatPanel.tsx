@@ -152,18 +152,28 @@ function Sources({ items, onGo }: { items: EvidenceItem[]; onGo: () => void }) {
   )
 }
 
+// The chat lists the first few matching rows under the count.
+const SHOWN_ROWS = 4
+
 function MatchingRows({ rows }: { rows: NonNullable<RetrievalResult['rows']> }) {
   const { testById, invByAcc } = useData()
   const { open } = useDrill()
   const tests = useMemo(() => rows.testIds.map((id) => testById.get(id)).filter((t): t is Test => Boolean(t)), [rows, testById])
-  if (tests.length === 0) return null
   return (
     <div className="mt-2 text-[12px]">
       <p className="text-muted">
-        <span className="num text-ink">{tests.length}</span> matching tests
+        {rows.total === 0 ? (
+          'No matching tests.'
+        ) : (
+          <>
+            <span className="num text-ink">{rows.total.toLocaleString('en-US')}</span> matching {rows.total === 1 ? 'test' : 'tests'}
+            {rows.total > SHOWN_ROWS ? <>, first <span className="num text-ink">{SHOWN_ROWS}</span> listed</> : null}
+          </>
+        )}
       </p>
+      <p className="text-faint">Filter: {rows.filter}</p>
       <ul className="m-0 mt-1 flex list-none flex-col p-0">
-        {tests.slice(0, 4).map((t) => (
+        {tests.slice(0, SHOWN_ROWS).map((t) => (
           <li key={t.id}>
             <button type="button" className="flex w-full items-baseline justify-between gap-2 px-1 py-0.5 text-left hover:bg-surface-2" data-drill={`test.${t.id}`} onClick={() => open([{ kind: 'test', id: t.id }])}>
               <span className="min-w-0 truncate">

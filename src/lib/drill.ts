@@ -404,10 +404,12 @@ export function resolveMark(step: DrillStep, data: DrillData, scenario: Scenario
       if (step.readout === 'outcomes') {
         return {
           ...empty,
-          title: `Ended in extinction: ${look.extinction.ended.length} of ${plural(look.extinction.of.length, 'FLEX test')} within 3 points of ${formatPercent(point.o2)} oxygen.`,
+          title: look.extinction.of.length > 0
+            ? `Ended in extinction: ${look.extinction.ended.length} of ${plural(look.extinction.of.length, 'nitrogen-diluted FLEX test')} within 3 points of ${formatPercent(point.o2)} oxygen.`
+            : `No nitrogen-diluted FLEX test within 3 points of ${formatPercent(point.o2)} oxygen.`,
           label: 'Fireball, outcomes',
-          formula: 'A count of the Test end column over FLEX tests within 3 points of oxygen.',
-          note: look.extinction.of.length === 0 ? 'No FLEX test sits near this oxygen level.' : null,
+          formula: 'A count of the Test end column over nitrogen-diluted FLEX tests within 3 points of oxygen, the same tests as the burning rate. Tests with carbon dioxide or helium added are left out.',
+          note: look.extinction.of.length === 0 ? 'No nitrogen-diluted FLEX test sits near this oxygen level.' : null,
           tests: look.extinction.of,
         }
       }
@@ -415,10 +417,10 @@ export function resolveMark(step: DrillStep, data: DrillData, scenario: Scenario
         return {
           ...empty,
           title: look.flameTemperature.tests.length > 0
-            ? `Listed flame temperature for gas flames near ${formatPercent(point.o2)} oxygen: ${formatNumber(look.flameTemperature.value as number, 0)} K, the median of ${plural(look.flameTemperature.tests.length, 'ACME test')}.`
-            : `No ACME gas flame test within 5 points of ${formatPercent(point.o2)} oxygen lists a flame temperature.`,
+            ? `Calculated adiabatic flame temperature for gas flames near ${formatPercent(point.o2)} oxygen: ${formatNumber(look.flameTemperature.value as number, 0)} K, the median of ${plural(look.flameTemperature.tests.length, 'ACME test')}.`
+            : `No normal ACME gas flame test within 5 points of ${formatPercent(point.o2)} oxygen lists a flame temperature.`,
           label: 'Fireball, flame temperature',
-          formula: 'The median of the column headed Tad (K) over ACME gas flame tests within 5 points of oxygen. It is a calculated upper temperature for gas flames.',
+          formula: 'The median of the column headed Tad (K), the calculated adiabatic flame temperature, over normal ACME gas flame tests within 5 points of oxygen. Inverse flames and cool flames are left out. It is a calculated upper temperature, not a measurement.',
           note: look.flameTemperature.tests.length === 0 ? 'There are no rows behind this number here.' : null,
           tests: look.flameTemperature.tests,
         }

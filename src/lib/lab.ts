@@ -57,10 +57,12 @@ export const EXTINCTION_BINS = [0.1, 0.14, 0.18, 0.22, 0.26, 0.3, 0.34, 0.38]
 export type ExtinctionPoint = { testId: string; o2: number; ratio: number; family: DiluentFamily }
 export type ExtinctionBin = { key: string; fuel: string; index: number; min: number; max: number; testIds: string[]; median: number | null }
 
+// Only tests that ended in extinction. Disruption and completion rows also list a final diameter
+// in NASA's table, but it is not the diameter at which the flame went out.
 export function extinctionPoints(tests: Test[], fuel: string): ExtinctionPoint[] {
   const out: ExtinctionPoint[] = []
   for (const t of flexTests(tests)) {
-    if (t.fuel !== fuel || t.o2 == null) continue
+    if (t.fuel !== fuel || t.o2 == null || t.outcome !== 'Extinction') continue
     const d0 = t.extra.d0
     const dExt = t.extra.dExt
     if (typeof d0 !== 'number' || typeof dExt !== 'number' || d0 <= 0) continue
