@@ -30,7 +30,7 @@ import {
 import type { MapBox, MapDomain, MapMark, MapStack } from '../lib/mapLayout.ts'
 import { inScope } from '../lib/mapScope.ts'
 import type { ScopeStep } from '../lib/mapScope.ts'
-import { MOON_REGION, moonCounts } from '../lib/regions.ts'
+import { MOON_REGION, inverseClause, moonCounts } from '../lib/regions.ts'
 import { atmToPsi, formatNumber, formatPercent, psiToAtm } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
 import { useDrill, useScenario } from '../state/hooks.ts'
@@ -694,11 +694,11 @@ function MapBody({
             transform={`translate(${regionBox.x + 8},${regionBox.y + 8})`}
             {...drillProps(
               [{ kind: 'region', id: 'moon' }],
-              compact ? 'Moon Base region. Press Enter for its rows.' : `Moon Base region ${region.solid} solid, ${region.liquid} liquid, ${region.gas} gas ${region.edge} droplet tests on the edge. Press Enter for its rows.`,
+              compact ? 'Moon Base region. Press Enter for its rows.' : `Moon Base region ${region.solid} solid, ${region.liquid} liquid, ${region.gas} gas${region.inverse > 0 ? `, ${inverseClause(region.gas, region.inverse)}` : ''}. ${region.edge} droplet tests on the edge. Press Enter for its rows.`,
               open,
             )}
           >
-            <rect width={compact ? 132 : zoomMoon && !narrow ? 250 : 196} height={compact ? 22 : zoomMoon && !narrow ? 66 : 50} fill="var(--surface)" stroke="var(--gap)" fillOpacity={0.94} />
+            <rect width={compact ? 132 : zoomMoon && !narrow ? 250 : 196} height={compact ? 22 : (zoomMoon && !narrow ? 66 : 50) + (region.inverse > 0 ? 13 : 0)} fill="var(--surface)" stroke="var(--gap)" fillOpacity={0.94} />
             {compact ? (
               <text x={8} y={15} fontSize={11} fill="var(--ink)">
                 Moon Base region
@@ -711,7 +711,14 @@ function MapBody({
                 <text x={10} y={zoomMoon && !narrow ? 40 : 31} fontSize={zoomMoon && !narrow ? 20 : 13} fill="var(--ink)" fontWeight={600} className="num">
                   {region.solid} solid, {region.liquid} liquid, {region.gas} gas
                 </text>
-                <text x={10} y={zoomMoon && !narrow ? 57 : 44} fontSize={11} fill="var(--muted)">
+                {/* An inverse flame's oxygen is the burner stream, not the chamber, so the badge
+                    says how many of the gas tests are inverse flames. */}
+                {region.inverse > 0 ? (
+                  <text x={10} y={zoomMoon && !narrow ? 57 : 44} fontSize={11} fill="var(--warn)">
+                    {region.inverse === region.gas && region.gas > 1 ? 'all' : region.inverse} of the gas {region.inverse === 1 ? 'is an inverse flame' : 'are inverse flames'}
+                  </text>
+                ) : null}
+                <text x={10} y={(zoomMoon && !narrow ? 57 : 44) + (region.inverse > 0 ? 13 : 0)} fontSize={11} fill="var(--muted)">
                   {region.edge} droplet tests on the edge
                 </text>
               </>

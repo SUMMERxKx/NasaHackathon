@@ -371,6 +371,32 @@ describe('tour', () => {
     }
     expect(storyCaption(STORY_STEPS[2], data)).toContain(String(data.insightById.I2.numbers.moonRegionTests))
     expect(storyCaption(STORY_STEPS[3], data)).toContain(data.insightById.I1.display.maxSolidO2Pct.replace('%', ''))
+    // The Moon Base step says how many of its gas flames are inverse, and the solid step is qualified.
+    expect(storyCaption(STORY_STEPS[2], data)).toContain(`${data.insightById.I2.numbers.moonRegionInverse} of them inverse flames whose oxygen is the burner stream, not the chamber`)
+    expect(storyCaption(STORY_STEPS[3], data)).toContain('Solid material tests that state their oxygen stop at 22.2%')
     expect(STORY_STEPS[4].params.ask).toBe(CHIPS[4].question)
+  })
+})
+
+describe('audit fixes on screen', () => {
+  const text = (url: string) => render(url).replace(/<!-- -->/g, '').replace(/&quot;/g, '"').replace(/&#x27;/g, "'")
+  it('marks oxygen and pressure assumed for both smoke studies in Compare, in the table and the summary', () => {
+    const html = text('/investigations/compare?ids=PSI-102,PSI-101')
+    expect(html).toContain('oxygen range (both assumed)')
+    expect(html).toContain('pressure range (both assumed)')
+    expect(html).toContain('>(both assumed)<')
+  })
+  it('shows no negative model end for FLEX C13H102', () => {
+    const html = text('/lab/droplet?fuel=Heptane&lo2=17&gas=carbon%20dioxide&test=PSI-69:0:129')
+    expect(html).toContain('Model end not defined')
+    // The readout itself never prints a negative time.
+    expect(html).not.toMatch(/Model end<\/p><p[^>]*>[-−]/)
+  })
+  it('adds the BRE note to the Exploration, Shuttle EVA and Mars gap statements only', () => {
+    for (const h of ['exploration', 'shuttle-eva', 'mars']) expect(text(`/dashboard?h=${h}`), h).toContain('does not say which tests ran at which pressure')
+    for (const h of ['iss', 'moon-bound']) expect(text(`/dashboard?h=${h}`), h).not.toContain('does not say which tests ran at which pressure')
+  })
+  it('links the glossary from the dashboard', () => {
+    expect(text('/dashboard')).toContain('href="/about?section=glossary"')
   })
 })

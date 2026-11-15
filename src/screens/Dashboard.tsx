@@ -12,7 +12,7 @@ import { distance } from '../lib/coverage.ts'
 import { downloadCsv, testsToCsv, viewCsvName } from '../lib/csv.ts'
 import { FUEL_CLASSES, encodeZoom, parseZoom, plottable } from '../lib/mapLayout.ts'
 import type { MapDomain } from '../lib/mapLayout.ts'
-import { NEARBY_FUELS, gapStatement, nearbyReason, summarizeNearby } from '../lib/nearby.ts'
+import { BRE_ACCESSION, NEARBY_FUELS, breGapNote, gapStatement, nearbyReason, summarizeNearby } from '../lib/nearby.ts'
 import type { NearbySummary } from '../lib/nearby.ts'
 import { makeScope, scopeActive, scopeLabel, scopeStep, scopeTests } from '../lib/mapScope.ts'
 import { isFlightInvestigation } from '../lib/ranking.ts'
@@ -240,12 +240,18 @@ function GapStatement({ summary }: { summary: NearbySummary }) {
   const { scenario } = useScenario()
   const lines = gapStatement(summary, isPartialGravity(scenario.gravity))
   const gap = summary.total === 0 || NEARBY_FUELS.some((fuel) => summary.byFuel[fuel] === 0) || isPartialGravity(scenario.gravity)
+  const bre = breGapNote(scenario.presetId)
   return (
     <section className={`card border-l-2 p-4 md:p-5 lg:col-span-12 ${gap ? 'border-l-gap' : 'border-l-line'}`} aria-labelledby="gap-title">
       <p className="stat-label">What is near this habitat, and what is missing</p>
       <h2 id="gap-title" className="mt-1.5 max-w-[46ch] text-[20px] leading-snug md:text-[24px]">
         {lines.join(' ')}
       </h2>
+      {bre ? (
+        <p className="mt-2 max-w-[70ch] text-[14px]">
+          <ScenarioLink to={`/investigations/${BRE_ACCESSION}`}>ACME BRE</ScenarioLink> {bre}
+        </p>
+      ) : null}
       <p className="mt-2 text-[13px] text-muted">
         Evidence is matched on oxygen and pressure only. Gravity does not change these counts.{' '}
         {isPartialGravity(scenario.gravity) ? <ScenarioLink to="/about?section=limits">What the snapshot cannot say about Moon or Mars gravity</ScenarioLink> : null}

@@ -34,7 +34,7 @@ import { burnLengthPairs, dropletSelection, extinctionBins, flexTests, parseDrop
 import { FUEL_FILTERS, FUEL_LABEL, FUEL_WORD, NEARBY_FUELS, NEARBY_RULE, NEARBY_SUBSETS, isInverseFlame, nearbyTests } from './nearby.ts'
 import { inScope, makeScope, scopeActive, scopeLabel } from './mapScope.ts'
 import { RANK_FORMULAS } from './ranking.ts'
-import { inMoonRegion, onMoonEdge } from './regions.ts'
+import { inMoonRegion, moonCounts, onMoonEdge } from './regions.ts'
 import { byAccession, countBy } from './stats.ts'
 import { atmToPsi, formatNumber, formatPercent } from './units.ts'
 
@@ -263,9 +263,11 @@ export function resolveMark(step: DrillStep, data: DrillData, scenario: Scenario
       const inside = data.tests.filter(inMoonRegion)
       const edge = data.tests.filter(onMoonEdge)
       const edgeDroplets = edge.filter((t) => t.fuelClass === 'liquid').length
+      const counts = moonCounts(inside)
+      const inverse = counts.inverse > 0 ? ` ${counts.inverse === counts.gas && counts.gas > 1 ? 'All' : counts.inverse} of the ${plural(counts.gas, 'gas flame test')} ${counts.inverse === 1 ? 'is an inverse flame' : 'are inverse flames'}, whose oxygen is the burner stream, not the chamber.` : ''
       return {
         ...empty,
-        title: `${plural(inside.length, 'test')} inside the Moon Base region: ${classCounts(inside)}. ${plural(edgeDroplets, 'droplet test')} on its edge.`,
+        title: `${plural(inside.length, 'test')} inside the Moon Base region: ${classCounts(inside)}.${inverse} ${plural(edgeDroplets, 'droplet test')} on its edge.`,
         label: 'Moon Base region',
         formula: 'Inside means the table states oxygen of 30% or more and a pressure of 10.2 psi or less. On the edge means within 5% above that pressure line.',
         tests: inside,

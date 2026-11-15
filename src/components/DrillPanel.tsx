@@ -126,6 +126,8 @@ export function TestDetail({ test }: { test: Test }) {
   const { invByAcc, snapshot } = useData()
   const inv = invByAcc[test.accession]
   const profile = snapshot.tableProfiles.find((p) => p.table === test.table)
+  // The declared assumption behind an assumed value, with its reason, such as NASA's own note.
+  const assumption = snapshot.assumptions.find((a) => a.accession === test.accession)
   const headerNote = (header: string) => profile?.columns.find((c) => c.header === header && c.corrected)?.displayHeader
   const read: [string, string][] = [
     ['Oxygen', oxygenText(test)],
@@ -145,6 +147,8 @@ export function TestDetail({ test }: { test: Test }) {
         <p className="border border-line bg-surface-2 px-3 py-2 text-[13px]">
           <strong className="text-warn">Assumed.</strong> The table for this test does not state{' '}
           {test.o2Source === 'assumed' && test.pressureSource === 'assumed' ? 'an atmosphere' : test.o2Source === 'assumed' ? 'an oxygen level' : 'a pressure'}. EMBER uses a declared assumption and counts this test at half weight.
+          {assumption ? <> {assumption.reason}</> : null}{' '}
+          <ScenarioLink to="/about?section=assumptions">All assumptions</ScenarioLink>
         </p>
       ) : null}
       <section>

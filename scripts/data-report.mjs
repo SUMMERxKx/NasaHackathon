@@ -17,6 +17,7 @@ const rows = [
   ['Highest oxygen in a solid test, percent', card('I1').maxSolidO2Pct, 22.2],
   ['BASS-II tests', card('I1').topInvestigationTests, 129],
   ['Tests inside the Moon Base region', card('I2').moonRegionTests, 66],
+  ['Inverse flames inside the Moon Base region', card('I2').moonRegionInverse, 46],
   ['Droplet tests on the edge of the region', card('I2').edgeDropletTests, 17],
   ['FLEX tests at or above 30 percent oxygen', card('I2').liquidAtOrAbove30, 24],
   ['d-squared median ratio', card('I4').medianRatio, 0.951],
@@ -25,5 +26,6 @@ const rows = [
   ['Tests with an assumed oxygen value', snapshot.counts.testsWithAssumedOxygen, 722],
   ['Raw files: d-squared median ratio', raw.I4.medianRatio, 0.951],
   ['Raw files: Moon Base region', raw.I2.moonRegionTests, 66],
+  ['Raw files: inverse flames in the Moon Base region', raw.I2.moonRegionInverse, 46],
 ]
 console.table(rows.map(([what, now, plan]) => ({ what, now, plan, same: now === plan ? 'yes' : 'NO' })))

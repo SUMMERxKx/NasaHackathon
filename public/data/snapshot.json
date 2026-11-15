@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "buildId": "4b3955ad",
+ "buildId": "14278e63",
  "fetchedAt": "2026-11-14T22:26:52Z",
  "generatedBy": "Built from the NASA PSI repository by the EMBER pipeline. Code and plain summaries were SI drafted and reviewed by the team.",
  "counts": {
@@ -88781,7 +88781,7 @@
    "accession": "PSI-20",
    "o2": null,
    "pressureAtm": 1,
-   "reason": "The ACME BRE table lists oxygen levels for each test day and no pressure. One atmosphere is assumed.",
+   "reason": "The ACME BRE table lists oxygen levels for each test day and no pressure. Its own note says: \"The chamber pressures were also varied but are not identified in this summary table.\" One atmosphere is assumed only to place the tests on the map, so a plotted BRE pressure may not be the pressure that test ran at.",
    "status": "needs human check"
   },
   {
@@ -89072,6 +89072,33 @@
     "coverage score",
     "evidence coverage score",
     "score"
+   ]
+  },
+  {
+   "id": "nearby",
+   "term": "Nearby",
+   "definition": "A test record is nearby when it lies within one unit of distance from the chosen oxygen and pressure. One unit is 4 points of oxygen or about 25 percent in pressure. Gravity is not part of the rule. The dashboard leads with counts of nearby rows. A nearby row is not a test of this habitat and not proof of safety.",
+   "aliases": [
+    "nearby rows",
+    "nearby tests",
+    "nearby evidence",
+    "nearby test records",
+    "distance",
+    "coverage units"
+   ]
+  },
+  {
+   "id": "assumed-coordinates",
+   "term": "Assumed coordinates",
+   "definition": "Some NASA tables state no oxygen level or no pressure. EMBER places those tests at a declared assumption, usually cabin air at 21 percent oxygen and 14.7 psi, and draws them hollow on the map. They count as nearby at their assumed position, the dashboard says how many there are, and the Evidence Coverage score counts each at half weight. Every assumption and its reason is listed under Assumptions.",
+   "aliases": [
+    "assumed",
+    "assumption",
+    "assumptions",
+    "assumed value",
+    "assumed values",
+    "assumed atmosphere",
+    "hollow marks"
    ]
   },
   {
