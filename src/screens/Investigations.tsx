@@ -1,12 +1,13 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The 24 investigations, ranked for the chosen habitat, with "Why this rank".
-import { useCallback, useMemo } from 'react'
+// The 24 investigations as one scannable list, ranked for the chosen habitat.
+import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { SlidersHorizontal } from 'lucide-react'
 import type { Pillar } from '../types.ts'
 import { useData } from '../state/data.tsx'
 import { useRanking, useScenario } from '../state/hooks.ts'
 import { PageHeader } from '../components/AppShell.tsx'
-import { FUEL_NAME, PILLAR_NAME, RankedCard } from '../components/cards.tsx'
+import { FUEL_NAME, InvestigationRow, PILLAR_NAME } from '../components/cards.tsx'
 import { Chip, EmptyState, ScenarioLink, Segmented } from '../components/ui.tsx'
 
 const SORTS = [
@@ -15,6 +16,7 @@ const SORTS = [
   { value: 'tests', label: 'Most tests' },
   { value: 'name', label: 'Name' },
 ]
+const FUELS = ['solid', 'liquid', 'gas', 'aerosol']
 
 export default function Investigations() {
   const { snapshot, invByAcc } = useData()
@@ -28,6 +30,9 @@ export default function Investigations() {
   const type = params.get('type') ?? ''
   const informs = params.get('informs') ?? ''
   const selected = (params.get('sel') ?? '').split(',').filter(Boolean)
+  const filterCount = [pillar, fuel, hw, type, informs].filter(Boolean).length
+  const [showFilters, setShowFilters] = useState(filterCount > 0)
+  const [openRow, setOpenRow] = useState<string | null>(null)
   const set = useCallback(
     (key: string, value: string) => {
       setParams(
@@ -63,32 +68,50 @@ export default function Investigations() {
     return rows
   }, [ranking, invByAcc, pillar, fuel, hw, type, informs, sort])
   const types = Object.keys(snapshot.counts.projectTypes)
-  const fuels = ['solid', 'liquid', 'gas', 'aerosol']
 
   return (
     <div className="page">
-      <PageHeader
-        title="Investigations"
-        lead={`All ${snapshot.investigations.length} PSI combustion investigations, ranked for ${name}. The ranking is a transparent heuristic. Every bar opens the tests that were counted.`}
-      />
-      <div className="mb-5 flex flex-col gap-3" role="group" aria-label="List controls">
-        <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <span className="field-label">Sort</span>
-            <Segmented label="Sort" value={sort} options={SORTS} onChange={(v) => set('sort', v === 'relevance' ? '' : v)} />
+      <PageHeader title="Investigations" lead={`Ranked for ${name}`} />
+      <div className="mb-3 flex flex-wrap items-center gap-2" role="group" aria-label="List controls">
+        <Segmented label="Sort" value={sort} options={SORTS} onChange={(v) => set('sort', v === 'relevance' ? '' : v)} />
+        <Segmented
+          label="Focus pillar for the ranking"
+          value={scenario.focus ?? 'none'}
+          options={[{ value: 'none', label: 'No focus' }, { value: 'prevention', label: 'Prevention' }, { value: 'detection', label: 'Detection' }, { value: 'suppression', label: 'Suppression' }]}
+          onChange={(v) => setScenario({ ...scenario, focus: v === 'none' ? null : (v as Pillar) }, { replace: true })}
+        />
+        <button type="button" className={`chip ${filterCount > 0 ? 'chip-on' : ''}`} aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>
+          <SlidersHorizontal size={13} aria-hidden="true" /> Filters{filterCount > 0 ? ` ${filterCount}` : ''}
+        </button>
+        <span className="num ml-auto text-[12px] text-muted" role="status">
+          {list.length} of {snapshot.investigations.length}
+        </span>
+      </div>
+      {showFilters ? (
+        <div className="card mb-3 flex flex-col gap-2.5 p-3" role="group" aria-label="Filters">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {['prevention', 'detection', 'suppression', 'fundamentals'].map((p) => (
+              <Chip key={p} pressed={pillar === p} onClick={() => set('pillar', pillar === p ? '' : p)}>
+                {PILLAR_NAME[p]}
+              </Chip>
+            ))}
+            <span className="mx-1 h-4 w-px bg-line" aria-hidden="true" />
+            {FUELS.map((f) => (
+              <Chip key={f} pressed={fuel === f} onClick={() => set('fuel', fuel === f ? '' : f)}>
+                {FUEL_NAME[f]}
+              </Chip>
+            ))}
           </div>
-          <div>
-            <span className="field-label">Focus pillar for the ranking</span>
-            <Segmented
-              label="Focus pillar"
-              value={scenario.focus ?? 'none'}
-              options={[{ value: 'none', label: 'None' }, { value: 'prevention', label: 'Prevention' }, { value: 'detection', label: 'Detection' }, { value: 'suppression', label: 'Suppression' }]}
-              onChange={(v) => setScenario({ ...scenario, focus: v === 'none' ? null : (v as Pillar) }, { replace: true })}
-            />
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="stat-label mr-1">Informs</span>
+            {snapshot.equipmentTags.map((tag) => (
+              <Chip key={tag.id} pressed={informs === tag.id} onClick={() => set('informs', informs === tag.id ? '' : tag.id)}>
+                {tag.label}
+              </Chip>
+            ))}
           </div>
-          <label className="w-full sm:w-60">
-            <span className="field-label">Hardware</span>
-            <select className="select" name="hw" value={hw} onChange={(e) => set('hw', e.target.value)}>
+          <div className="flex flex-wrap gap-2">
+            <select className="select !min-h-9 sm:!w-60" name="hw" aria-label="Hardware" value={hw} onChange={(e) => set('hw', e.target.value)}>
               <option value="">All hardware</option>
               {snapshot.hardwareFamilies.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -96,72 +119,53 @@ export default function Investigations() {
                 </option>
               ))}
             </select>
-          </label>
-          <label className="w-full sm:w-56">
-            <span className="field-label">Project type</span>
-            <select className="select" name="type" value={type} onChange={(e) => set('type', e.target.value)}>
-              <option value="">All types</option>
+            <select className="select !min-h-9 sm:!w-56" name="type" aria-label="Project type" value={type} onChange={(e) => set('type', e.target.value)}>
+              <option value="">All project types</option>
               {types.map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
               ))}
             </select>
-          </label>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="eyebrow mr-1">Pillar</span>
-          {['prevention', 'detection', 'suppression', 'fundamentals'].map((p) => (
-            <Chip key={p} pressed={pillar === p} onClick={() => set('pillar', pillar === p ? '' : p)}>
-              {PILLAR_NAME[p]}
-            </Chip>
-          ))}
-          <span className="eyebrow ml-3 mr-1">Fuel</span>
-          {fuels.map((f) => (
-            <Chip key={f} pressed={fuel === f} onClick={() => set('fuel', fuel === f ? '' : f)}>
-              {FUEL_NAME[f]}
-            </Chip>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="eyebrow mr-1">What this informs</span>
-          {snapshot.equipmentTags.map((tag) => (
-            <Chip key={tag.id} pressed={informs === tag.id} onClick={() => set('informs', informs === tag.id ? '' : tag.id)}>
-              {tag.label}
-            </Chip>
-          ))}
-        </div>
-      </div>
+      ) : null}
 
-      <p className="mb-3 text-[13px] text-muted" role="status">
-        Showing <span className="num text-ink">{list.length}</span> of {snapshot.investigations.length} investigations.
-      </p>
       {list.length === 0 ? (
         <EmptyState title="No investigation matches these filters">Clear a filter to see more.</EmptyState>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <ol className="card m-0 list-none overflow-hidden p-0">
           {list.map((r) => (
-            <RankedCard key={r.accession} inv={invByAcc[r.accession]} ranked={r} position={position[r.accession]} selected={selected.includes(r.accession)} onSelect={toggleSelect} />
+            <InvestigationRow
+              key={r.accession}
+              inv={invByAcc[r.accession]}
+              ranked={r}
+              position={position[r.accession]}
+              open={openRow === r.accession}
+              onToggle={() => setOpenRow(openRow === r.accession ? null : r.accession)}
+              selected={selected.includes(r.accession)}
+              onSelect={toggleSelect}
+            />
           ))}
-        </div>
+        </ol>
       )}
 
       {selected.length >= 1 ? (
-        <div className="no-print fixed inset-x-0 bottom-[72px] z-30 px-4 lg:bottom-4">
-          <div className="card mx-auto flex max-w-[720px] flex-wrap items-center justify-between gap-3 px-4 py-3" style={{ boxShadow: 'var(--shadow-pop)' }}>
-            <p className="text-[14px]">
+        <div className="no-print fixed inset-x-0 bottom-[128px] z-30 px-4 sm:bottom-[76px]">
+          <div className="card mx-auto flex max-w-[640px] flex-wrap items-center justify-between gap-3 px-4 py-2.5" style={{ boxShadow: 'var(--shadow-pop)' }}>
+            <p className="min-w-0 truncate text-[13px]">
               <span className="num">{selected.length}</span> selected: {selected.map((a) => invByAcc[a]?.displayName ?? a).join(', ')}
             </p>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => set('sel', '')}>
                 Clear
               </button>
               {selected.length >= 2 ? (
-                <ScenarioLink to={`/compare?ids=${selected.join(',')}`} className="btn btn-primary btn-sm">
+                <ScenarioLink to={`/investigations/compare?ids=${selected.join(',')}`} className="btn btn-primary btn-sm">
                   Compare {selected.length}
                 </ScenarioLink>
               ) : (
-                <span className="text-[13px] text-muted">Select one more to compare</span>
+                <span className="text-[12px] text-muted">Pick one more</span>
               )}
             </div>
           </div>
