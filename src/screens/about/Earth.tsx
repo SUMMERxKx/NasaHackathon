@@ -1,10 +1,9 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // Earth: three NASA spinoffs, then the Earth benefits named in the PSI records themselves.
-import type { Investigation } from '../types.ts'
-import { useData } from '../state/data.tsx'
-import { PageHeader } from '../components/AppShell.tsx'
-import { ContextCardView } from '../components/cards.tsx'
-import { ScenarioLink } from '../components/ui.tsx'
+import type { Investigation } from '../../types.ts'
+import { useData } from '../../state/data.tsx'
+import { ContextCardView } from '../../components/cards.tsx'
+import { ScenarioLink } from '../../components/ui.tsx'
 
 const GROUPS: { id: string; title: string; lead: string; pillars: string[] }[] = [
   { id: 'detection', title: 'Detection', lead: 'Smoke and aerosol research that informs fire detectors.', pillars: ['detection'] },
@@ -21,14 +20,13 @@ export function earthSentences(inv: Investigation): string[] {
   return sentences.filter((s) => EARTH_WORDS.test(s) && s.length > 40).slice(0, 2)
 }
 
-export default function Earth() {
+export function EarthSection() {
   const { snapshot, invByAcc } = useData()
   const spinoffs = snapshot.context.filter((c) => c.kind === 'spinoff')
   return (
-    <div className="page">
-      <PageHeader title="Back on Earth" lead="Fire research for space also pays off on the ground. Three NASA spinoffs lead this page. Under them are the Earth benefits that the PSI records themselves name." />
-
-      <section aria-labelledby="spinoffs-title">
+    <div>
+      <section id="earth" aria-labelledby="spinoffs-title">
+        <p className="mb-5 max-w-[70ch] text-[15px]">Fire research for space also pays off on the ground. Three NASA spinoffs lead this section. Under them are the Earth benefits that the PSI records themselves name.</p>
         <h2 id="spinoffs-title" className="mb-4 text-[22px]">
           Three NASA spinoffs
         </h2>
