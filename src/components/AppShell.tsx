@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import { Link, Outlet, useLocation, useRouteError } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { Home, List, Map as MapIcon, Menu, MessageCircleQuestion, Play, TriangleAlert } from 'lucide-react'
-import { useData } from '../state/data.tsx'
+import { loadAskData, useData } from '../state/data.tsx'
 import { useCoverage, useDrill, useScenario } from '../state/hooks.ts'
 import { isPartialGravity } from '../state/scenario.ts'
 import { pageName } from '../routes.tsx'
@@ -143,6 +143,15 @@ export function AppShell() {
   const name = pageName(location.pathname)
   const first = useRef(true)
   const [announce, setAnnounce] = useState('')
+  // The Ask files load when the browser is idle after the first paint.
+  useEffect(() => {
+    const load = () => void loadAskData().catch(() => {})
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback
+    const timer = idle ? idle(load) : window.setTimeout(load, 1500)
+    return () => {
+      if (!idle) window.clearTimeout(timer)
+    }
+  }, [])
   // On every route change, focus moves to the page heading and the page title is announced.
   useEffect(() => {
     document.title = name === 'Brief' ? 'EMBER: a fire evidence map for crew habitats' : `${name} · EMBER`

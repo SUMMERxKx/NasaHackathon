@@ -176,6 +176,16 @@ export default function Brief() {
         </section>
       </div>
 
+      <details className="mt-8">
+        <summary className="cursor-pointer font-display text-[18px] font-semibold">See all {data.insights.length} insight cards</summary>
+        <p className="mt-1 text-[14px] text-muted">Every number is computed from the PSI snapshot and recomputed by the build. Choose a number to open the rows behind it.</p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {data.insights.map((card) => (
+            <InsightCard key={card.id} card={card} />
+          ))}
+        </div>
+      </details>
+
       <CompareHabitats />
 
       <section aria-labelledby="why-title" className="mt-10">
