@@ -226,7 +226,7 @@ export function MethodsSection() {
     <Section id="formulas" title="Formulas">
       <h3 className="text-[18px]">Atmospheres and units</h3>
       <Formula>1 atm = 101.325 kPa = 14.696 psi = 760 mmHg. 1 bar = 0.98692 atm. ppO2 = xO2 × P.</Formula>
-      <p>The normoxic line on the map is every atmosphere with the same oxygen partial pressure as sea level air: xO2 × P = 0.2095 atm. Flammability does not follow this line. Lower pressure with more oxygen keeps breathing normal and makes most materials easier to burn.</p>
+      <p>The normoxic line on the map is every atmosphere with the same oxygen partial pressure as sea level air: xO2 × P = 0.2095 atm. Flammability does not follow this line. The line uses the dry gas. NASA's breathing standard also takes away water vapour in the lungs, so it rates 34 percent oxygen at 8.2 psi as mild hypoxia. More oxygen at lower pressure also makes most materials easier to burn.</p>
       <h3 id="nearby" className="scroll-mt-24 text-[18px]">Nearby test records</h3>
       <p>The dashboard leads with counts of nearby test records. {NEARBY_RULE}</p>
       <Formula>nearby when √(dx² + dp²) ≤ 1, dx = Δoxygen ÷ {m.o2Scale}, dp = Δln(pressure) ÷ {m.pressureScale}</Formula>
@@ -234,7 +234,7 @@ export function MethodsSection() {
         The counts describe the snapshot. They are rows of NASA test tables, not unique experiments, and many rows can share one condition. {NOT_PROOF} A row with an assumed oxygen or pressure value counts as nearby at its assumed position, and the dashboard states how many such rows there are. Rows of inverse gas flames count too, and their oxygen value is the oxidizer stream. A count is not a probability, a risk score or a prediction.
       </p>
       <h3 id="coverage" className="scroll-mt-24 text-[18px]">Evidence Coverage</h3>
-      <p>The score measures how much real flight evidence sits close to the chosen atmosphere. It is not a safety rating. It is a heuristic of the team and it lives here, with its formula, and not on the dashboard. It sums a weight over every usable row, not only the nearby ones, so a large table can fill the score while a material or gravity gap remains.</p>
+      <p>The score measures how much real flight evidence sits close to the chosen atmosphere. It is not a safety rating. It is a heuristic of the team and it lives here, with its formula, and not on the dashboard. It sums a weight over every usable row, not only the nearby ones, so a large table can fill the score while a material or gravity gap remains. Inverse gas flame rows count in the score too, although their oxygen value is the burner stream. Without them Exploration would score 57 instead of 67.</p>
       <CoverageDetails />
       <Formula>{COVERAGE_FORMULA}</Formula>
       <Formula>
