@@ -3,8 +3,9 @@
 // the chat launcher and the drill panel.
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, Outlet, useLocation, useRouteError, useSearchParams } from 'react-router-dom'
+import { Outlet, useLocation, useSearchParams } from 'react-router-dom'
 import { FlaskConical, Info, LayoutDashboard, List } from 'lucide-react'
+import { MotionConfig } from 'motion/react'
 import { NavBar } from '@/components/ui/tubelight-navbar.tsx'
 import type { NavItem } from '@/components/ui/tubelight-navbar.tsx'
 import { DataGate } from '../state/data.tsx'
@@ -81,32 +82,15 @@ function ShellBody() {
 
 export function AppShell() {
   return (
-    <DataGate skeleton={<BootSkeleton />}>
-      <ShellBody />
-    </DataGate>
+    <MotionConfig reducedMotion="user">
+      <DataGate skeleton={<BootSkeleton />}>
+        <ShellBody />
+      </DataGate>
+    </MotionConfig>
   )
 }
 
-// A plain fallback when a screen fails. The shell and every other screen keep working.
-export function RouteError({ standalone = false }: { standalone?: boolean }) {
-  const error = useRouteError()
-  useEffect(() => {
-    if (error) console.error(error)
-  }, [error])
-  return (
-    <div className={`page ${standalone ? 'flex min-h-screen flex-col justify-center' : ''}`}>
-      <h1 id="page-title" tabIndex={-1} className="text-[28px]">
-        This screen could not be shown
-      </h1>
-      <p className="mt-3 text-muted">The rest of EMBER still works.</p>
-      <p className="mt-4">
-        <Link to="/dashboard" className="btn btn-primary">
-          Go to the dashboard
-        </Link>
-      </p>
-    </div>
-  )
-}
+export default AppShell
 
 export function BootSkeleton() {
   return (

@@ -2,9 +2,9 @@
 // Every route renders to a string against the committed snapshot, in both themes, with no browser.
 import { renderToString } from 'react-dom/server'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
-import { MotionConfig } from 'motion/react'
 import { describe, expect, it } from 'vitest'
-import { RouteError } from './components/AppShell.tsx'
+import { AppShell } from './components/AppShell.tsx'
+import { RouteError } from './components/RouteError.tsx'
 import ChatPanel, { CHAT_NOTE, CHIPS } from './components/chat/ChatPanel.tsx'
 import { decodeDrill, resolveDrill } from './lib/drill.ts'
 import { appHref } from './lib/links.ts'
@@ -21,17 +21,15 @@ import { LoadError, StaticDataProvider, checkSchema } from './state/data.tsx'
 import { parseScenario } from './state/scenario.ts'
 import { STORY_STEPS, storyCaption } from './story/Story.tsx'
 
-const routes = makeRoutes({ Hero, Dashboard, Investigations, InvestigationDetail, Compare, Lab, About })
+const routes = makeRoutes({ Shell: AppShell, Hero, Dashboard, Investigations, InvestigationDetail, Compare, Lab, About })
 
 function render(url: string, theme: 'dark' | 'light' = 'dark'): string {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
   return renderToString(
     <div data-theme={theme}>
-      <MotionConfig reducedMotion="user">
-        <StaticDataProvider data={data}>
-          <RouterProvider router={router} />
-        </StaticDataProvider>
-      </MotionConfig>
+      <StaticDataProvider data={data}>
+        <RouterProvider router={router} />
+      </StaticDataProvider>
     </div>,
   )
 }

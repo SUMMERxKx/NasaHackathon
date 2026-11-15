@@ -3,9 +3,10 @@
 import type { ComponentType } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import type { RouteObject } from 'react-router-dom'
-import { AppShell, RouteError } from './components/AppShell.tsx'
+import { RouteError } from './components/RouteError.tsx'
 
 export type ScreenSet = {
+  Shell: ComponentType
   Hero: ComponentType
   Dashboard: ComponentType
   Investigations: ComponentType
@@ -50,7 +51,7 @@ export function makeRoutes(s: ScreenSet): RouteObject[] {
   return [
     { path: '/', element: <s.Hero />, errorElement: <RouteError standalone /> },
     {
-      element: <AppShell />,
+      element: <s.Shell />,
       errorElement: <RouteError standalone />,
       children: [
         { path: 'dashboard', ...screen(s.Dashboard) },
