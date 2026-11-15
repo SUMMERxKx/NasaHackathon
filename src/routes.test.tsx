@@ -104,6 +104,22 @@ describe('routes', () => {
     expect(html).not.toContain('top-bar')
     expect(render('/?h=suit')).toContain('href="/dashboard?h=suit"')
   })
+  it('draw only the filtered tests on the dashboard map, with the Moon Base counts of the filter', () => {
+    const text = (url: string) => render(url).replace(/<!-- -->/g, '')
+    const whole = text('/dashboard')
+    expect(whole).toContain('1937 of 1937 tests')
+    expect(whole).toContain('0 solid, 0 liquid, 66 gas')
+    for (const [inv, shown, moon] of [['PSI-25', 129, '0 solid, 0 liquid, 0 gas'], ['PSI-99', 9, '0 solid, 0 liquid, 0 gas'], ['PSI-69', 273, '0 solid, 0 liquid, 0 gas']] as const) {
+      const html = text(`/dashboard?inv=${inv}`)
+      expect(html).toContain(`${shown} of 1937 tests`)
+      expect(html).toContain(`${shown} tests plotted on oxygen against pressure`)
+      expect(html).toContain(moon)
+      expect(html).not.toContain('66 gas')
+      expect(html).toContain(`Only the ${shown} tests of the filter are drawn`)
+    }
+    expect(text('/dashboard?inv=PSI-69')).toContain('17 droplet tests on the edge')
+    expect(text('/dashboard?inv=PSI-25')).toContain('0 droplet tests on the edge')
+  })
   it('lead the dashboard with the five counts, each labelled, and write out a zero', () => {
     const text = (url: string) => render(url).replace(/<!-- -->/g, '')
     const iss = text('/dashboard')

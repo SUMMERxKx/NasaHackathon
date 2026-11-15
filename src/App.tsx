@@ -31,6 +31,9 @@ const Compare = onDemand(() => import('./screens/Compare.tsx'))
 const Lab = onDemand(() => import('./screens/Lab.tsx'))
 const About = onDemand(() => import('./screens/About.tsx'))
 
+// Only the hero answers a click on the sky. On every other screen a click is the page's alone.
+export const skyClicksAt = (pathname: string): boolean => pathname === '/'
+
 export function App() {
   const router = useMemo(() => createBrowserRouter(makeRoutes({ Shell, Hero, Dashboard, Investigations, InvestigationDetail, Compare, Lab, About })), [])
   // The dashboard is the next click from the hero, so its code is fetched while the hero is read.
@@ -44,9 +47,10 @@ export function App() {
   }, [])
   // One sky sits behind every screen, on one canvas that is never rebuilt. The hero shows it
   // in full and follows the display. Every other screen shows it quieter and at most 30 times
-  // a second, so it leaves the frame budget to the map and to the fireball's own canvas.
-  const [onHero, setOnHero] = useState(() => router.state.location.pathname === '/')
-  useEffect(() => router.subscribe((state) => setOnHero(state.location.pathname === '/')), [router])
+  // a second, so it leaves the frame budget to the map and to the fireball's own canvas. Only the
+  // hero listens for clicks on it. Every other screen keeps the hover and has no click effect.
+  const [onHero, setOnHero] = useState(() => skyClicksAt(router.state.location.pathname))
+  useEffect(() => router.subscribe((state) => setOnHero(skyClicksAt(state.location.pathname))), [router])
   return (
     <DataProvider>
       <HalftoneNebula backdrop maxDpr={1} params={onHero ? undefined : NEBULA_QUIET} maxFps={onHero ? undefined : 30} sparkOnClick={onHero} />

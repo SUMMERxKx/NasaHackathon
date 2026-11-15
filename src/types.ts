@@ -266,6 +266,8 @@ export type DrillStep =
   | { kind: 'bin'; chart: 'dsquared' | 'validation' | 'extinction' | 'burnLength'; key: string }
   | { kind: 'investigation'; accession: string }
   | { kind: 'test'; id: string }
+  // The map filter a mark was drawn under. It narrows the mark before it to the tests of the filter.
+  | { kind: 'scope'; pillar?: PillarOrFundamentals; fuel?: FuelClass; inv?: string; hw?: string }
 
 export type DrillPath = DrillStep[]
 

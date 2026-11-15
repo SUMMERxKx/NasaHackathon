@@ -3,7 +3,8 @@
 // (21st.dev style), with its solar preset tuned to the EMBER flame palette. The planet of the
 // original is drawn here as a flame in freefall: a sphere of flame around a small fuel droplet.
 // One canvas serves the whole app. The hero shows it at full strength. Every other screen
-// shows the same sky quieter, with no flame and no sparks, behind its panels.
+// shows the same sky quieter, with no flame and no sparks, behind its panels. Only the hero
+// answers a click. Everywhere else the sky has no click listener at all, only the hover lamp.
 import * as React from "react"
 import { NEBULA } from "@/three/ramp.ts"
 
@@ -461,6 +462,18 @@ export function pushSparkle(list: Sparkle[], next: Sparkle, max = MAX_SPARKS): S
   return [...list.slice(0, oldest), ...list.slice(oldest + 1), next]
 }
 
+/**
+ * Listen for clicks on the sky only while clicks are on. When they are off nothing is
+ * attached, so a press anywhere on the page costs the sky no work at all.
+ * Returns the function that takes the listener off again.
+ */
+export function bindSkyClicks(target: EventTarget, onDown: (e: PointerEvent) => void, on: boolean): () => void {
+  if (!on) return () => {}
+  const listener = onDown as EventListener
+  target.addEventListener("pointerdown", listener)
+  return () => target.removeEventListener("pointerdown", listener)
+}
+
 /** A hex colour, short or long, as [r, g, b] in 0..1. Anything unparsable is black. */
 export function hexToRgb(hex: string): [number, number, number] {
   let h = hex.trim().replace(/^#/, "")
@@ -494,7 +507,7 @@ export type HalftoneNebulaProps = {
   maxDpr?: number
   /** Frames per second cap. Unset follows the display. A capped sky also skips its turn when the page is busy. */
   maxFps?: number
-  /** A click on the sky drops a sparkle and sends a ring through the gas. */
+  /** A click on the sky drops a sparkle and sends a ring through the gas. Off, the sky does not listen for clicks. */
   sparkOnClick?: boolean
   /**
    * The sky as the page background: fixed behind everything, the size of the window, hidden
@@ -537,11 +550,13 @@ export default function HalftoneNebula({
   // The loop reads through a ref, so tuning a value never restarts WebGL.
   const paramsRef = React.useRef(P)
   paramsRef.current = P
-  // The frame cap and the click switch are read the same way, so a route change never restarts WebGL.
+  // The frame cap is read the same way, and the click listener is put on or taken off by an
+  // effect of its own, so a route change never restarts WebGL.
   const capRef = React.useRef(maxFps)
   capRef.current = maxFps
   const sparkRef = React.useRef(sparkOnClick)
   sparkRef.current = sparkOnClick
+  const clicksRef = React.useRef<((on: boolean) => void) | null>(null)
   // Under reduced motion nothing loops, so a change of parameters asks for one new still frame.
   const repaintRef = React.useRef<(() => void) | null>(null)
   React.useEffect(() => {
@@ -679,7 +694,7 @@ export default function HalftoneNebula({
       inside = false
     }
     const onDown = (e: PointerEvent) => {
-      if (!interactive || !sparkRef.current || e.button > 0) return
+      if (!interactive || e.button > 0) return
       // Let buttons and links in the overlay keep their clicks.
       if ((e.target as HTMLElement | null)?.closest("a,button,input,textarea,select,label,[role=button]")) return
       const [x, y] = toUv(e)
@@ -703,32 +718,17 @@ export default function HalftoneNebula({
       if (reduced) paint()
     }
 
-    // A capped sky holds still while something is pressed, and for a moment after a click or a
-    // key, so the work that follows a click never shares a frame with it.
-    let pressed = false
-    let holdUntil = 0
-    const HOLD_MS = 400
-    const onPress = () => {
-      pressed = true
-    }
-    const onRelease = () => {
-      pressed = false
-      holdUntil = performance.now() + HOLD_MS
-    }
-    if (backdrop) {
-      window.addEventListener("pointerdown", onPress, true)
-      window.addEventListener("pointerup", onRelease, true)
-      window.addEventListener("pointercancel", onRelease, true)
-      window.addEventListener("click", onRelease, true)
-      window.addEventListener("keydown", onRelease, true)
-      window.addEventListener("blur", onRelease)
-    }
-
     // As a backdrop the sky sits behind the page, so it listens to the whole window.
     const host: HTMLElement | Window = backdrop ? window : root
     const edge: HTMLElement = backdrop ? document.documentElement : root
     host.addEventListener("pointermove", onMove as EventListener)
-    host.addEventListener("pointerdown", onDown as EventListener)
+    let unbindClicks = () => {}
+    const bindClicks = (on: boolean) => {
+      unbindClicks()
+      unbindClicks = bindSkyClicks(host, onDown, on)
+    }
+    bindClicks(sparkRef.current)
+    clicksRef.current = bindClicks
     edge.addEventListener("pointerleave", onLeave)
     host.addEventListener("pointercancel", onLeave)
 
@@ -828,11 +828,10 @@ export default function HalftoneNebula({
       // A capped sky paints at most that many times a second. It also gives way: when the
       // frame before this one ran long, the page is busy, so the sky skips its turn. It never
       // waits more than half a second for that, so on a slow machine it slows down and does
-      // not stop. While something is pressed it does not paint at all.
+      // not stop.
       const due = !cap || since >= 1000 / cap - 2
       const busy = Boolean(cap) && gap > 30 && since < 500
-      const held = Boolean(cap) && (pressed || now < holdUntil)
-      if (due && !busy && !held) {
+      if (due && !busy) {
         paint()
         lastPaint = now
       }
@@ -869,14 +868,9 @@ export default function HalftoneNebula({
       observer.disconnect()
       io.disconnect()
       document.removeEventListener("visibilitychange", wake)
-      window.removeEventListener("pointerdown", onPress, true)
-      window.removeEventListener("pointerup", onRelease, true)
-      window.removeEventListener("pointercancel", onRelease, true)
-      window.removeEventListener("click", onRelease, true)
-      window.removeEventListener("keydown", onRelease, true)
-      window.removeEventListener("blur", onRelease)
       host.removeEventListener("pointermove", onMove as EventListener)
-      host.removeEventListener("pointerdown", onDown as EventListener)
+      unbindClicks()
+      clicksRef.current = null
       edge.removeEventListener("pointerleave", onLeave)
       host.removeEventListener("pointercancel", onLeave)
       canvas.removeEventListener("webglcontextlost", onLost)
@@ -885,6 +879,11 @@ export default function HalftoneNebula({
       gl.deleteProgram(program)
     }
   }, [interactive, reduced, generation, maxDpr, backdrop])
+
+  // Clicks are switched without touching WebGL: the hero turns them on, every other screen off.
+  React.useEffect(() => {
+    clicksRef.current?.(sparkOnClick)
+  }, [sparkOnClick])
 
   return (
     <section
