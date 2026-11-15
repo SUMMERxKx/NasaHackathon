@@ -114,6 +114,13 @@ No data rebuild is needed for these two. Run `npm run ci`.
 - **What to read:** the two NTRS reports named in the `source` field, 20130013505 and 20150021491. Confirm 34% oxygen at 8.2 psi for the Exploration atmosphere and 26.5% at 10.2 psi for Shuttle EVA preparation, and settle how the preset should be named and sourced.
 - **What to set when approved:** correct `o2`, `pressurePsi` or `source` where needed, rebuild, and tick the item in the sign-off table. A change here moves the coverage scores. The tests pin the headline numbers, so a test that fails after the change names the number that moved.
 
+## 11. Saffire-II sample thickness "037 mm"
+
+- **Where it shows:** the Lab gravity page, samples 2-4, 2-5 and 2-6, and About, Data and methods, "Source text kept as written".
+- **What it is:** NASA's SAFFIRE-2 table (PSI-99, column `Samle Thickness`) gives `037 mm` for those three samples. EMBER keeps the text as written and marks it "likely 0.37 mm, unconfirmed". The detection is `ambiguousThickness` in `src/lib/lab.ts`.
+- **What to read:** the Saffire-II record PSI-99 on psi.nasa.gov and its publication, for the thickness of each of the three samples.
+- **What to set when confirmed:** add a disclosed cell correction for the three rows in `scripts/lib/normalize.mjs`, the same way the ACME BRE oxygen values are corrected: keep the raw cell, flag the test, and move the row in About from "Source text kept as written" to the corrected cells. Rebuild and tick the item in the sign-off table. If the thickness is something else, record what the source says instead.
+
 ## Sign-off table
 
 Fill in a row when the item is done. This table is the record for the items that have no flag of their own.
@@ -130,6 +137,7 @@ Fill in a row when the item is done. This table is the record for the items that
 | 8. Insight card wording | | | |
 | 9. Glossary, context cards, quotes | | | |
 | 10. Exploration atmosphere preset | | | |
+| 11. Saffire-II thickness "037 mm" | | | |
 
 ## Not for the science lead
 

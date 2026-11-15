@@ -73,7 +73,15 @@ export function extinctionBins(tests: Test[], fuel: string): ExtinctionBin[] {
   return bins
 }
 
-export type BurnPair = { testId: string; label: string; material: string; thickness: string; flow: number | null; ug: number | null; g1: number | null; ugRaw: string; g1Raw: string; mixed: boolean }
+// A thickness written with a leading zero and no decimal point, such as "037 mm" in the SAFFIRE-2
+// table, is kept exactly as NASA wrote it and flagged. The likely reading is returned only to be
+// shown as unconfirmed. It is never stored or used as a measurement.
+export function ambiguousThickness(text: string): string | null {
+  const m = /^0(\d+)\s*(mm|cm)$/i.exec(text.trim())
+  return m ? `0.${m[1]} ${m[2]}` : null
+}
+
+export type BurnPair = { testId: string; label: string; material: string; thickness: string; thicknessLikely: string | null; flow: number | null; ug: number | null; g1: number | null; ugRaw: string; g1Raw: string; mixed: boolean }
 
 // Lab tool 3: for each Saffire-II sample, the microgravity and the normal gravity burn length.
 export function burnLengthPairs(tests: Test[]): BurnPair[] {
@@ -84,6 +92,7 @@ export function burnLengthPairs(tests: Test[]): BurnPair[] {
       label: t.label,
       material: t.fuel ?? 'Not stated',
       thickness: String(t.extra.thickness ?? ''),
+      thicknessLikely: ambiguousThickness(String(t.extra.thickness ?? '')),
       flow: t.flowCmS,
       ug: typeof t.extra.ugBurnLengthCm === 'number' ? t.extra.ugBurnLengthCm : null,
       g1: typeof t.extra.g1BurnLengthCm === 'number' ? t.extra.g1BurnLengthCm : null,

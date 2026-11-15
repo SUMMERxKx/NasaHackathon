@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
-import { Check } from 'lucide-react'
+import { Check, Search, X } from 'lucide-react'
 import type { DrillPath } from '../types.ts'
 import { encodeDrill } from '../lib/drill.ts'
 import { scenarioQuery } from '../state/scenario.ts'
@@ -33,6 +33,36 @@ export function Chip({
 }
 
 // A link that keeps the habitat on every internal link and drops the screen-level parameters.
+// A free-text search field. The screen keeps the query in the URL and passes it in.
+export function SearchBox({ value, onChange, label, placeholder, className = '' }: { value: string; onChange: (value: string) => void; label: string; placeholder: string; className?: string }) {
+  return (
+    <div className={`relative min-w-0 ${className}`} role="search">
+      <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true" />
+      <input
+        type="search"
+        className="input !min-h-9 !pl-8 !pr-9"
+        aria-label={label}
+        placeholder={placeholder}
+        value={value}
+        spellCheck={false}
+        autoComplete="off"
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && value !== '') {
+            e.preventDefault()
+            onChange('')
+          }
+        }}
+      />
+      {value !== '' ? (
+        <button type="button" className="absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center text-muted hover:text-ink" aria-label="Clear the search" onClick={() => onChange('')}>
+          <X size={14} aria-hidden="true" />
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
 export function ScenarioLink({ to, children, extra, ...rest }: Omit<LinkProps, 'to'> & { to: string; extra?: Record<string, string> }) {
   const [params] = useSearchParams()
   const [path, hash] = to.split('#')

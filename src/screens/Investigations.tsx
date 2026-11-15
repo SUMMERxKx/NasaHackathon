@@ -4,11 +4,12 @@ import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { SlidersHorizontal } from 'lucide-react'
 import type { Pillar } from '../types.ts'
+import { investigationSearchText, matchesTerms, searchTerms } from '../lib/search.ts'
 import { useData } from '../state/data.tsx'
 import { useRanking, useScenario } from '../state/hooks.ts'
 import { PageHeader } from '../components/AppShell.tsx'
 import { FUEL_NAME, InvestigationRow, PILLAR_NAME } from '../components/cards.tsx'
-import { Chip, EmptyState, ScenarioLink, Segmented } from '../components/ui.tsx'
+import { Chip, EmptyState, ScenarioLink, SearchBox, Segmented } from '../components/ui.tsx'
 
 const SORTS = [
   { value: 'relevance', label: 'Relevance' },
@@ -19,7 +20,7 @@ const SORTS = [
 const FUELS = ['solid', 'liquid', 'gas', 'aerosol']
 
 export default function Investigations() {
-  const { snapshot, invByAcc } = useData()
+  const { snapshot, invByAcc, testsByAcc } = useData()
   const { scenario, setScenario, name } = useScenario()
   const ranking = useRanking()
   const [params, setParams] = useSearchParams()
@@ -29,6 +30,7 @@ export default function Investigations() {
   const hw = params.get('hw') ?? ''
   const type = params.get('type') ?? ''
   const informs = params.get('informs') ?? ''
+  const query = params.get('q') ?? ''
   const selected = (params.get('sel') ?? '').split(',').filter(Boolean)
   const filterCount = [pillar, fuel, hw, type, informs].filter(Boolean).length
   const [showFilters, setShowFilters] = useState(filterCount > 0)
@@ -51,6 +53,20 @@ export default function Investigations() {
     const next = selected.includes(accession) ? selected.filter((a) => a !== accession) : [...selected, accession].slice(-3)
     set('sel', next.join(','))
   }
+  const clearAll = () =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        for (const key of ['q', 'pillar', 'fuel', 'hw', 'type', 'informs']) next.delete(key)
+        return next
+      },
+      { replace: true, preventScrollReset: true },
+    )
+  const searchText = useMemo(
+    () => Object.fromEntries(snapshot.investigations.map((inv) => [inv.accession, investigationSearchText(inv, testsByAcc[inv.accession] ?? [])])),
+    [snapshot.investigations, testsByAcc],
+  )
+  const terms = useMemo(() => searchTerms(query), [query])
   const position = useMemo(() => Object.fromEntries(ranking.map((r, i) => [r.accession, i + 1])), [ranking])
   const list = useMemo(() => {
     const rows = ranking.filter((r) => {
@@ -60,19 +76,27 @@ export default function Investigations() {
       if (hw && inv.hardwareFamily !== hw) return false
       if (type && inv.projectType !== type) return false
       if (informs && !inv.informs.includes(informs)) return false
+      if (!matchesTerms(searchText[r.accession] ?? '', terms)) return false
       return true
     })
     if (sort === 'date') return [...rows].sort((a, b) => (invByAcc[b.accession].endDate ?? '').localeCompare(invByAcc[a.accession].endDate ?? ''))
     if (sort === 'tests') return [...rows].sort((a, b) => invByAcc[b.accession].testCount - invByAcc[a.accession].testCount)
     if (sort === 'name') return [...rows].sort((a, b) => invByAcc[a.accession].displayName.localeCompare(invByAcc[b.accession].displayName))
     return rows
-  }, [ranking, invByAcc, pillar, fuel, hw, type, informs, sort])
+  }, [ranking, invByAcc, pillar, fuel, hw, type, informs, sort, searchText, terms])
   const types = Object.keys(snapshot.counts.projectTypes)
 
   return (
     <div className="page">
       <PageHeader title="Investigations" lead={`Ranked for ${name}`} />
       <div className="card mb-3 flex flex-wrap items-center gap-2 p-2" role="group" aria-label="List controls">
+        <SearchBox
+          className="w-full sm:w-72"
+          value={query}
+          onChange={(v) => set('q', v)}
+          label="Search investigations by name, id, summary or fuel"
+          placeholder="Search name, id, summary or fuel"
+        />
         <div className="hide-scrollbar max-w-full overflow-x-auto">
           <Segmented label="Sort" value={sort} options={SORTS} onChange={(v) => set('sort', v === 'relevance' ? '' : v)} />
         </div>
@@ -89,6 +113,7 @@ export default function Investigations() {
         </button>
         <span className="num ml-auto pr-2 text-[12px] text-muted" role="status">
           {list.length} of {snapshot.investigations.length}
+          {terms.length > 0 ? ` match "${query.trim()}"` : ''}
         </span>
       </div>
       {showFilters ? (
@@ -136,7 +161,12 @@ export default function Investigations() {
       ) : null}
 
       {list.length === 0 ? (
-        <EmptyState title="No investigation matches these filters">Clear a filter to see more.</EmptyState>
+        <EmptyState title={terms.length > 0 ? `No investigation matches "${query.trim()}"${filterCount > 0 ? ' with these filters' : ''}` : 'No investigation matches these filters'}>
+          {terms.length > 0 ? 'Search looks in names, ids, plain summaries and the fuels or materials each table lists. ' : 'Clear a filter to see more. '}
+          <button type="button" className="btn btn-secondary btn-sm mt-3" onClick={clearAll}>
+            {terms.length > 0 && filterCount > 0 ? 'Clear the search and filters' : terms.length > 0 ? 'Clear the search' : 'Clear the filters'}
+          </button>
+        </EmptyState>
       ) : (
         <ol className="card m-0 list-none overflow-hidden p-0">
           {list.map((r) => (
