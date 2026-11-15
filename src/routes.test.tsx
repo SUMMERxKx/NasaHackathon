@@ -12,6 +12,7 @@ import { data, evidence, preset, snapshot } from './lib/testData.ts'
 import { makeRoutes, movedTo, pageName } from './routes.tsx'
 import About, { ABOUT_TABS, aboutTab } from './screens/About.tsx'
 import Compare from './screens/Compare.tsx'
+import { dropletEmptyState } from './lib/lab.ts'
 import { NO_NEARBY, NO_PARTIAL_GRAVITY } from './lib/nearby.ts'
 import Dashboard from './screens/Dashboard.tsx'
 import Hero from './screens/Hero.tsx'
@@ -398,5 +399,25 @@ describe('audit fixes on screen', () => {
   })
   it('links the glossary from the dashboard', () => {
     expect(text('/dashboard')).toContain('href="/about?section=glossary"')
+  })
+})
+
+describe('the Lab droplet tool with no matching FLEX test', () => {
+  const text = (url: string) => render(url).replace(/<!-- -->/g, '').replace(/&quot;/g, '"').replace(/&#x27;/g, "'")
+  // The cards, the tiles in them and the controls, in page order. An empty input must keep all of them.
+  const frame = (html: string) => [...html.matchAll(/<section[^>]*aria-label(?:ledby)?="([^"]+)"|class="(bg-surface-2 p-3|mt-3 text-\[12px\] text-muted|field-label)"/g)].map((m) => m[1] ?? m[2])
+  it('keeps every card in place and says so inside the chart instead of hiding anything', () => {
+    const full = text('/lab/droplet?lo2=21')
+    const empty = text('/lab/droplet?lo2=26')
+    expect(full).not.toContain('No FLEX tests at 26% oxygen.')
+    expect(empty).toContain('No FLEX tests at 26% oxygen.')
+    expect(empty).toContain('Move the slider to see tests.')
+    expect(empty).toMatch(/<select[^>]*name="test"[^>]*disabled/)
+    expect(empty).toContain('None at 26% oxygen')
+    expect(frame(empty)).toEqual(frame(full))
+    expect(frame(empty)).toContain('validation-title')
+  })
+  it('points to the fuel or gas when no oxygen level has a test', () => {
+    expect(dropletEmptyState([], 'Methanol', 0.26, 'helium', 0)).toEqual(['No FLEX tests at 26% oxygen.', 'Pick another fuel or gas to see tests.'])
   })
 })
