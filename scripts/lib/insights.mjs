@@ -153,6 +153,8 @@ export function buildInsightList(snapshot) {
     const ratios = flex.filter((t) => typeof t.extra.d0 === 'number' && typeof t.extra.dExt === 'number' && t.extra.d0 > 0)
     const rLow = median(ratios.filter((t) => inBand(t, OXYGEN_BANDS[0])).map((t) => extinctionRatio(t.extra.d0, t.extra.dExt)))
     const rHigh = median(ratios.filter((t) => inBand(t, OXYGEN_BANDS[3])).map((t) => extinctionRatio(t.extra.d0, t.extra.dExt)))
+    // The headline figure is printed with its denominator, so it reads on its own.
+    display[`extinction${high}`] = `${numbers[`extinction${high}`]} of ${numbers[`tests${high}`]}`
     numbers.medianRatioLow = round(rLow, 2)
     numbers.medianRatioHigh = round(rHigh, 2)
     display.medianRatioLow = formatNumber(rLow, 2)
@@ -196,7 +198,7 @@ export function buildInsightList(snapshot) {
     }
     const ext = flex.filter((t) => t.outcome === 'Extinction')
     numbers.extinctionAll = ext.length
-    display.extinctionAll = String(ext.length)
+    display.extinctionAll = `${ext.length} of ${flex.length}`
     byNumber.extinctionAll = ids(ext)
     out.push(card({
       id: 'I6',
@@ -226,7 +228,7 @@ export function buildInsightList(snapshot) {
       headline: `In Saffire-II, ${shorter.length} of ${single.length} single-material samples burned a shorter length in microgravity than in normal gravity. ${longer.length} burned longer.`,
       detail: `${same.length} samples burned the same length in both. ${silicone.length} of the shorter ones were silicone samples that burned in normal gravity and barely burned in microgravity. The table gives lengths as text such as "Complete" and "~ 10 cm", which EMBER reads as the full sample length and 10 cm. This is ${saffire.length} samples at one flow speed and about 22% oxygen, so it bounds the question and does not settle it.`,
       numbers: { samples: saffire.length, compared: single.length, shorterInMicrogravity: shorter.length, sameLength: same.length, longerInMicrogravity: longer.length, siliconeShorter: silicone.length },
-      display: { samples: String(saffire.length), compared: String(single.length), shorterInMicrogravity: String(shorter.length), sameLength: String(same.length), longerInMicrogravity: String(longer.length), siliconeShorter: String(silicone.length) },
+      display: { samples: String(saffire.length), compared: String(single.length), shorterInMicrogravity: `${shorter.length} of ${single.length}`, sameLength: String(same.length), longerInMicrogravity: String(longer.length), siliconeShorter: String(silicone.length) },
       primary: 'shorterInMicrogravity',
       evidence: [{ accession: 'PSI-99', table: saffire[0].table, testIds: ids(saffire), field: 'burn length' }],
       byNumber: { samples: ids(saffire), compared: ids(single), shorterInMicrogravity: ids(shorter), sameLength: ids(same), longerInMicrogravity: ids(longer), siliconeShorter: ids(silicone) },

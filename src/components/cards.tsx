@@ -23,7 +23,7 @@ export const PILLAR_NAME: Record<string, string> = {
 
 export const FUEL_NAME: Record<string, string> = { solid: 'Solid materials', liquid: 'Liquid fuels', gas: 'Gas flames', aerosol: 'Smoke and aerosols', unknown: 'Not classed' }
 
-const INSIGHT_ORDER = ['I1', 'I2', 'I3', 'I12', 'I5', 'I7', 'I4', 'I6', 'I8', 'I9', 'I10', 'I11']
+const INSIGHT_ORDER = ['I1', 'I2', 'I3', 'I5', 'I7', 'I4', 'I6', 'I8', 'I9', 'I10', 'I11', 'I12']
 
 export function insightApplies(card: Insight, scenario: Scenario): boolean {
   const when = card.appliesWhen

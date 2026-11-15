@@ -6,6 +6,8 @@ EMBER is a web dashboard that answers one question: for the crew habitat I care 
 
 Built by team **Low Cortisol Gng** for the NASA Space Apps Challenge 2026, challenge "Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data". Built with NASA open data from the PSI repository. NASA does not endorse this project.
 
+![The Brief for the Exploration atmosphere, with the fireball and its sourced readout](public/preview.png)
+
 - Live site: the production address of the Vercel project. See `SETUP.md` for the steps that put it online.
 - The build plan the team worked from: `plan.html` in this repository.
 

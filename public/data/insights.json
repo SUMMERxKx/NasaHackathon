@@ -2737,7 +2737,7 @@
     "tests19to23": "91",
     "extinction19to23": "63",
     "tests28to36": "24",
-    "extinction28to36": "2",
+    "extinction28to36": "2 of 24",
     "medianRatioLow": "0.8",
     "medianRatioHigh": "0.23"
    },
@@ -3429,7 +3429,7 @@
     "heptaneExtinction": "60",
     "heptaneDisruption": "38",
     "heptaneCompletion": "19",
-    "extinctionAll": "186"
+    "extinctionAll": "186 of 274"
    },
    "primary": "extinctionAll",
    "evidence": [
@@ -4766,7 +4766,7 @@
    "display": {
     "samples": "9",
     "compared": "8",
-    "shorterInMicrogravity": "5",
+    "shorterInMicrogravity": "5 of 8",
     "sameLength": "3",
     "longerInMicrogravity": "0",
     "siliconeShorter": "3"
