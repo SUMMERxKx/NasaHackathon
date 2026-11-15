@@ -9,7 +9,7 @@ import { COVERAGE_FORMULA, DEFAULT_METHOD } from '../lib/coverage.ts'
 import { D_SQUARED_FORMULA } from '../lib/droplet.ts'
 import { RANK_FORMULAS, RANK_WEIGHTS } from '../lib/ranking.ts'
 import { useData } from '../state/data.tsx'
-import { LAST_EVALUATION, PASS_BARS } from '../config/evaluation.ts'
+import { EVALUATION_NOTE, LAST_EVALUATION, MEANING_CHECK, PASS_BARS } from '../config/evaluation.ts'
 import { GATES } from '../three/flameParams.ts'
 import { PageHeader } from '../components/AppShell.tsx'
 import { ScenarioLink } from '../components/ui.tsx'
@@ -286,35 +286,41 @@ export default function Methods() {
               </table>
             </div>
             {LAST_EVALUATION ? (
-              <div className="table-wrap" style={{ maxHeight: 'none' }}>
-                <table className="data-table">
-                  <caption className="sr-only">The last evaluation run</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Model</th>
-                      <th scope="col">Date</th>
-                      <th scope="col">Answer rate</th>
-                      <th scope="col">Sentence quality</th>
-                      <th scope="col">Trick questions</th>
-                      <th scope="col">Verdict language</th>
-                      <th scope="col">First word</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {LAST_EVALUATION.map((run) => (
-                      <tr key={run.model}>
-                        <td>{run.model}</td>
-                        <td className="num">{run.date}</td>
-                        <td className="num">{run.answerRate}</td>
-                        <td className="num">{run.sentenceQuality}</td>
-                        <td className="num">{run.trickQuestions}</td>
-                        <td className="num">{run.verdictLanguage}</td>
-                        <td className="num">{run.medianFirstWordSeconds}</td>
+              <>
+                <div className="table-wrap" style={{ maxHeight: 'none' }}>
+                  <table className="data-table">
+                    <caption className="sr-only">The last evaluation run</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Model</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Answer rate</th>
+                        <th scope="col">Sentence quality</th>
+                        <th scope="col">Trick questions</th>
+                        <th scope="col">Verdict language</th>
+                        <th scope="col">First word</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {LAST_EVALUATION.map((run) => (
+                        <tr key={run.model}>
+                          <td>{run.model}</td>
+                          <td className="num">{run.date}</td>
+                          <td className="num">{run.answerRate}</td>
+                          <td className="num">{run.sentenceQuality}</td>
+                          <td className="num">{run.trickQuestions}</td>
+                          <td className="num">{run.verdictLanguage}</td>
+                          <td className="num">{run.medianFirstWordSeconds}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[14px] text-muted">{EVALUATION_NOTE}</p>
+                <p className="rounded-control bg-surface-2 px-3 py-2 text-[14px]">
+                  {MEANING_CHECK ?? 'The Meaning measure is still open. The checker proves that ids and numbers match the evidence. The team\'s science lead has not yet read the verified answers against their sources.'}
+                </p>
+              </>
             ) : (
               <p className="rounded-control bg-surface-2 px-3 py-2 text-[14px]">The evaluation set is fixed: 12 real questions and 5 trick questions. Retrieval recall is tested on every build. The answer rate and the other live measures are published here after the first run against the live model. No result is shown until it has been measured.</p>
             )}
