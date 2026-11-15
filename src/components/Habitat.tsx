@@ -38,8 +38,10 @@ function CustomHabitat() {
     <div className="grid gap-3 px-2 pb-2 pt-3 sm:grid-cols-2">
       <Slider label="Oxygen" min={12} max={100} step={0.5} value={Math.round(draft.o2 * 1000) / 10} display={formatPercent(draft.o2)} onChange={(v) => change({ o2: v / 100 })} />
       <Slider label="Pressure" min={3} max={15} step={0.1} value={draft.pressurePsi} display={`${formatNumber(draft.pressurePsi, 1)} psi`} onChange={(v) => change({ pressurePsi: v })} />
-      <Slider label="Air flow" min={0} max={50} step={1} value={draft.flowCmS} display={`${draft.flowCmS} cm/s`} onChange={(v) => change({ flowCmS: v })} />
-      <div>
+      <div className="sm:col-span-2">
+        <Slider label="Air flow" min={0} max={50} step={1} value={draft.flowCmS} display={`${draft.flowCmS} cm/s`} onChange={(v) => change({ flowCmS: v })} />
+      </div>
+      <div className="sm:col-span-2">
         <span className="field-label">Gravity</span>
         <Segmented
           label="Gravity"

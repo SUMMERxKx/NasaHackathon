@@ -597,7 +597,9 @@ export default function Lab() {
   return (
     <div className="page">
       <PageHeader title="Lab" lead="Three models, each checked against the real tests">
-        <Segmented label="Lab tool" value={active} options={TOOLS} onChange={(v) => navigate(`/lab/${v}${scenarioQuery(params)}`, { preventScrollReset: true })} />
+        <div className="hide-scrollbar max-w-full overflow-x-auto">
+          <Segmented label="Lab tool" value={active} options={TOOLS} onChange={(v) => navigate(`/lab/${v}${scenarioQuery(params)}`, { preventScrollReset: true })} />
+        </div>
       </PageHeader>
       {active === 'droplet' ? <DropletCalculator /> : null}
       {active === 'extinction' ? <ExtinctionExplorer /> : null}

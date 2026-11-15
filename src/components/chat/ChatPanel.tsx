@@ -96,7 +96,9 @@ function EvidenceAnswer({ items }: { items: EvidenceItem[] }) {
     <div className="flex flex-col gap-2.5">
       {items.slice(0, 3).map((item) => {
         const card = item.kind === 'insight' ? insightById[item.id] : null
-        const text = card ? card.detail : item.text
+        const body = card ? card.detail : item.text
+        // Glossary text opens by repeating its own term. The title already says it.
+        const text = body.startsWith(`${item.title}: `) ? body.slice(item.title.length + 2) : body
         return (
           <div key={item.id}>
             <p className="font-semibold">{item.title}</p>

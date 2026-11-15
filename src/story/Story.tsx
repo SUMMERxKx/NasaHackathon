@@ -66,22 +66,22 @@ export function StoryStepper() {
   const exitHref = `${location.pathname}${exit.toString() ? `?${exit.toString()}` : ''}`
   return (
     <motion.aside
-      className="no-print fixed inset-x-0 bottom-[76px] z-[70] px-3 sm:bottom-5"
+      className="no-print fixed inset-x-0 top-2 z-[70] px-3 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:top-auto sm:w-[520px] sm:px-0"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32 }}
       aria-label="The guided tour"
     >
-      <div className="card glow-ember mx-auto flex max-w-[760px] flex-col gap-3 border-ember px-4 py-3 md:flex-row md:items-center" style={{ boxShadow: 'var(--shadow-pop)' }}>
+      <div className="card glow-ember flex flex-col gap-2 border-ember px-4 py-3" style={{ boxShadow: 'var(--shadow-pop)' }}>
         <div className="min-w-0 flex-1">
           <p className="eyebrow">
             The Moon Base tour · step <span className="num">{n}</span> of <span className="num">{STORY_STEPS.length}</span>
           </p>
-          <p className="mt-1 text-[16px] font-semibold leading-snug" role="status">
+          <p className="mt-1 text-[15px] font-semibold leading-snug" role="status">
             {storyCaption(step, data)}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-2">
           {n > 1 ? (
             <Link to={storyHref(n - 1)} className="btn btn-ghost btn-sm" preventScrollReset>
               <ArrowLeft size={14} aria-hidden="true" /> Back

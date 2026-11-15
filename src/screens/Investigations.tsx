@@ -73,13 +73,17 @@ export default function Investigations() {
     <div className="page">
       <PageHeader title="Investigations" lead={`Ranked for ${name}`} />
       <div className="mb-3 flex flex-wrap items-center gap-2" role="group" aria-label="List controls">
-        <Segmented label="Sort" value={sort} options={SORTS} onChange={(v) => set('sort', v === 'relevance' ? '' : v)} />
-        <Segmented
-          label="Focus pillar for the ranking"
-          value={scenario.focus ?? 'none'}
-          options={[{ value: 'none', label: 'No focus' }, { value: 'prevention', label: 'Prevention' }, { value: 'detection', label: 'Detection' }, { value: 'suppression', label: 'Suppression' }]}
-          onChange={(v) => setScenario({ ...scenario, focus: v === 'none' ? null : (v as Pillar) }, { replace: true })}
-        />
+        <div className="hide-scrollbar max-w-full overflow-x-auto">
+          <Segmented label="Sort" value={sort} options={SORTS} onChange={(v) => set('sort', v === 'relevance' ? '' : v)} />
+        </div>
+        <div className="hide-scrollbar max-w-full overflow-x-auto">
+          <Segmented
+            label="Focus pillar for the ranking"
+            value={scenario.focus ?? 'none'}
+            options={[{ value: 'none', label: 'No focus' }, { value: 'prevention', label: 'Prevention' }, { value: 'detection', label: 'Detection' }, { value: 'suppression', label: 'Suppression' }]}
+            onChange={(v) => setScenario({ ...scenario, focus: v === 'none' ? null : (v as Pillar) }, { replace: true })}
+          />
+        </div>
         <button type="button" className={`chip ${filterCount > 0 ? 'chip-on' : ''}`} aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>
           <SlidersHorizontal size={13} aria-hidden="true" /> Filters{filterCount > 0 ? ` ${filterCount}` : ''}
         </button>

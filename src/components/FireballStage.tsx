@@ -52,10 +52,10 @@ export function FireballPoster({ params, view, droplet = null, showEarth = true 
       {showEarth ? (
         <g transform={earth ? 'translate(196,58) scale(1.55)' : 'translate(40,104)'} opacity={earth ? 1 : 0.95}>
           <path d="M22,78C6,66 8,44 16,28C19,20 21,10 22,0C24,10 27,20 30,28C38,44 38,66 22,78Z" fill="url(#poster-earth)" />
-          <rect x="15" y="80" width="14" height="30" rx="2" fill="var(--muted)" opacity="0.7" />
-          <line x1="22" y1="72" x2="22" y2="81" stroke="var(--ink)" strokeWidth="1.5" />
+          <rect x="15" y="80" width="14" height="30" rx="2" fill="var(--hero-ink)" fillOpacity="0.6" opacity="0.7" />
+          <line x1="22" y1="72" x2="22" y2="81" stroke="var(--hero-ink)" strokeWidth="1.5" />
           {!earth ? (
-            <text x="22" y="126" textAnchor="middle" fontSize="10" fill="var(--muted)">
+            <text x="22" y="126" textAnchor="middle" fontSize="10" fill="var(--hero-ink)" fillOpacity="0.6">
               On Earth
             </text>
           ) : null}
@@ -65,8 +65,8 @@ export function FireballPoster({ params, view, droplet = null, showEarth = true 
         <g transform={`translate(${showEarth ? 212 : 180},112)`}>
           {params.ghost ? (
             <>
-              <circle r="74" fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeDasharray="4 6" opacity="0.8" />
-              <circle r="13" fill="none" stroke="var(--muted)" strokeWidth="1.2" strokeDasharray="2 4" />
+              <circle r="74" fill="none" stroke="var(--hero-ink)" strokeWidth="1.5" strokeDasharray="4 6" opacity="0.8" />
+              <circle r="13" fill="none" stroke="var(--hero-ink)" strokeWidth="1.2" strokeDasharray="2 4" />
             </>
           ) : (
             <>
@@ -74,14 +74,14 @@ export function FireballPoster({ params, view, droplet = null, showEarth = true 
               <circle r={Math.max(1.5, dropletR)} fill="url(#poster-drop)" opacity="0.95" />
             </>
           )}
-          <text y="104" textAnchor="middle" fontSize="10" fill="var(--muted)">
+          <text y="104" textAnchor="middle" fontSize="10" fill="var(--hero-ink)" fillOpacity="0.6">
             In freefall
           </text>
         </g>
       ) : null}
       <g transform="translate(332,218)">
-        <rect width="22" height="15" rx="4" fill="var(--label-bg)" fillOpacity="0.7" stroke="var(--line)" />
-        <text x="11" y="11" textAnchor="middle" fontSize="9" fontWeight="600" fill="var(--label-ink)">
+        <rect width="22" height="15" rx="4" fill="var(--hero-void)" fillOpacity="0.7" stroke="var(--hero-ink)" strokeOpacity="0.25" />
+        <text x="11" y="11" textAnchor="middle" fontSize="9" fontWeight="600" fill="var(--hero-ink)" fillOpacity="0.8">
           {SI_MARK}
         </text>
       </g>
@@ -199,6 +199,7 @@ export function FireballStage({ droplet = null, showEarth = true }: { droplet?: 
   const [near, setNear] = useState(false)
   const [failed, setFailed] = useState(false)
   const [asked, setAsked] = useState(false)
+  const [drawn, setDrawn] = useState(false)
   const stage = useRef<HTMLDivElement>(null)
   // The 3D code loads the first time the stage comes on screen. After that the canvas stays
   // mounted and pauses itself whenever it is out of view.
@@ -221,19 +222,22 @@ export function FireballStage({ droplet = null, showEarth = true }: { droplet?: 
   return (
     <div className="flex flex-col gap-3">
       <div ref={stage} className="relative overflow-hidden rounded-control border border-line" style={{ aspectRatio: '16 / 9', background: STAGE }}>
-        <div className="absolute inset-0">
-          <FireballPoster params={params} view={view} droplet={droplet} showEarth={showEarth} />
-        </div>
+        {/* The poster shows until the live canvas has drawn its first frame, and again if it fails. */}
+        {!showLive || !drawn ? (
+          <div className="absolute inset-0">
+            <FireballPoster params={params} view={view} droplet={droplet} showEarth={showEarth} />
+          </div>
+        ) : null}
         {showLive ? (
           <Suspense fallback={null}>
-            <LiveFireball params={params} view={view} droplet={droplet} showEarth={showEarth} onFail={() => setFailed(true)} />
+            <LiveFireball params={params} view={view} droplet={droplet} showEarth={showEarth} onFail={() => setFailed(true)} onReady={() => setDrawn(true)} />
           </Suspense>
         ) : null}
         {showLive ? (
           <>
-            {showEarth && params.shape !== 'earth' ? <span className="absolute bottom-2 left-[12%] text-[10px] text-muted">On Earth</span> : null}
+            {showEarth && params.shape !== 'earth' ? <span className="absolute bottom-2 left-[12%] text-[10px] text-hero-ink/60">On Earth</span> : null}
             {showEarth ? (
-              <span className="absolute bottom-2 text-[10px] text-muted" style={{ left: params.shape !== 'earth' ? '62%' : '46%' }}>
+              <span className="absolute bottom-2 text-[10px] text-hero-ink/60" style={{ left: params.shape !== 'earth' ? '62%' : '46%' }}>
                 {params.shape === 'earth' ? 'On Earth, at 1 g' : 'In freefall'}
               </span>
             ) : null}
