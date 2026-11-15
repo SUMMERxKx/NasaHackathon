@@ -1,5 +1,6 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// One investigation: summary, what varied and what stayed fixed, the test table and its sources.
+// One investigation: summary, what varied and what stayed fixed, and the test table.
+// The long text of the PSI record sits behind one expander.
 import { useEffect, useMemo } from 'react'
 import { Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { Download, ExternalLink } from 'lucide-react'
@@ -13,7 +14,7 @@ import { DataTable } from '../components/DataTable.tsx'
 import type { Column } from '../components/DataTable.tsx'
 import { oxygenText, pressureText } from '../components/DrillPanel.tsx'
 import { InformsChips, InvestigationChips, Thumb, years } from '../components/cards.tsx'
-import { ScenarioLink, SiTag, useDrillDescribed } from '../components/ui.tsx'
+import { ScenarioLink, useDrillDescribed } from '../components/ui.tsx'
 
 export function downloadCsv(name: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }))
@@ -108,11 +109,10 @@ function ProfileStrip({ inv, profile, tableIndex }: { inv: Investigation; profil
 function Block({ title, text }: { title: string; text: string }) {
   if (!text) return null
   return (
-    <details className="card p-4">
-      <summary className="cursor-pointer font-display text-[16px] font-semibold">{title}</summary>
-      <p className="prose-width mt-3 whitespace-pre-line text-[14px] text-muted">{text}</p>
-      <p className="mt-2 text-[12px] text-faint">The full text of the PSI record, as NASA wrote it.</p>
-    </details>
+    <div>
+      <h3 className="stat-label">{title}</h3>
+      <p className="prose-width mt-1.5 whitespace-pre-line text-[14px] text-muted">{text}</p>
+    </div>
   )
 }
 
@@ -173,7 +173,7 @@ export default function InvestigationDetail() {
           <h1 id="page-title" tabIndex={-1} className="text-[28px] outline-none md:text-[36px]">
             {inv.displayName}
           </h1>
-          <p className="mt-1 text-muted">{inv.title}</p>
+          <p className="mt-1 text-[14px] text-muted">{inv.title}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             <span className="chip chip-source">{inv.accession}</span>
             <InvestigationChips inv={inv} />
@@ -204,12 +204,9 @@ export default function InvestigationDetail() {
 
       <div className="grid gap-6 lg:grid-cols-12">
         <section className="card p-5 lg:col-span-7" aria-labelledby="summary-title">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 id="summary-title" className="text-[18px]">
-              Plain summary
-            </h2>
-            <SiTag />
-          </div>
+          <h2 id="summary-title" className="mb-3 text-[18px]">
+            Summary
+          </h2>
           <dl className="m-0 flex flex-col gap-3 text-[15px]">
             <div>
               <dt className="eyebrow">What was burned</dt>
@@ -232,31 +229,9 @@ export default function InvestigationDetail() {
           {assumption ? (
             <p className="mt-4 rounded-control bg-surface-2 px-3 py-2 text-[13px]">
               <strong className="text-warn">Assumed atmosphere.</strong> {assumption.reason} Status: {assumption.status}.{' '}
-              <ScenarioLink to="/methods?section=assumptions">All assumptions</ScenarioLink>
+              <ScenarioLink to="/about?section=assumptions">All assumptions</ScenarioLink>
             </p>
           ) : null}
-          <div className="mt-4">
-            <p className="eyebrow mb-1">More from NASA</p>
-            <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[14px]">
-              <li>
-                <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/" target="_blank" rel="noreferrer">
-                  NASA Combustion Science
-                </a>
-              </li>
-              <li>
-                <a href="https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/" target="_blank" rel="noreferrer">
-                  A Researcher's Guide to International Space Station Combustion Science
-                </a>
-              </li>
-              {inv.experimentHardwareLink ? (
-                <li>
-                  <a href={inv.experimentHardwareLink} target="_blank" rel="noreferrer">
-                    Hardware: {inv.experimentHardware.slice(0, 80)}
-                  </a>
-                </li>
-              ) : null}
-            </ul>
-          </div>
         </section>
 
         <section className="card p-4 lg:col-span-5" aria-label="This investigation on the atmosphere map">
@@ -276,7 +251,7 @@ export default function InvestigationDetail() {
           <h2 id="profile-title" className="text-[22px]">
             What varied and what stayed fixed
           </h2>
-          <p className="mb-4 mt-1 text-[14px] text-muted">One row per column of the PSI table. Choose a value to see the tests that have it.</p>
+          <div className="mb-3" />
           {profiles.map((profile) => (
             <ProfileStrip key={profile.table} inv={inv} profile={profile} tableIndex={Number(tests.find((t) => t.table === profile.table)?.id.split(':')[1] ?? 0)} />
           ))}
@@ -298,9 +273,7 @@ export default function InvestigationDetail() {
             <h2 id="tests-title" className="text-[22px]">
               Test table
             </h2>
-            <p className="mt-1 text-[14px] text-muted">
-              {tests.length === 0 ? 'PSI lists no experimental table for this record.' : 'Choose a row to see it as NASA wrote it. The word assumed marks every value that is not in the table.'}
-            </p>
+            {tests.length === 0 ? <p className="mt-1 text-[14px] text-muted">PSI lists no experimental table for this record.</p> : null}
           </div>
           {tests.length > 0 ? (
             <div className="flex flex-wrap gap-2">
@@ -343,14 +316,38 @@ export default function InvestigationDetail() {
         ) : null}
       </section>
 
-      <section className="mt-8 grid gap-3" aria-label="The PSI record text">
-        <h2 className="text-[22px]">The record, in NASA's words</h2>
-        <Block title="Objectives" text={inv.objective} />
-        <Block title="Hypothesis" text={inv.hypothesis} />
-        <Block title="Approach" text={inv.approach} />
-        <Block title="Research impacts and Earth benefits" text={inv.researchImpacts} />
-        <Block title="Experiment hardware" text={`${inv.experimentHardware}${family ? `\n\nEMBER groups it under: ${family.name}. ${family.note}` : ''}`} />
-      </section>
+      <details className="card mt-8 p-4 md:p-5">
+        <summary className="cursor-pointer font-display text-[18px] font-semibold">The record, in NASA's words</summary>
+        <div className="mt-4 flex flex-col gap-5">
+          <Block title="Objectives" text={inv.objective} />
+          <Block title="Hypothesis" text={inv.hypothesis} />
+          <Block title="Approach" text={inv.approach} />
+          <Block title="Research impacts and Earth benefits" text={inv.researchImpacts} />
+          <Block title="Experiment hardware" text={`${inv.experimentHardware}${family ? `\n\nEMBER groups it under: ${family.name}. ${family.note}` : ''}`} />
+          <div>
+            <h3 className="stat-label">More from NASA</h3>
+            <ul className="m-0 mt-1.5 flex list-none flex-col gap-1 p-0 text-[14px]">
+              <li>
+                <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/" target="_blank" rel="noreferrer">
+                  NASA Combustion Science
+                </a>
+              </li>
+              <li>
+                <a href="https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/" target="_blank" rel="noreferrer">
+                  A Researcher's Guide to International Space Station Combustion Science
+                </a>
+              </li>
+              {inv.experimentHardwareLink ? (
+                <li>
+                  <a href={inv.experimentHardwareLink} target="_blank" rel="noreferrer">
+                    Hardware: {inv.experimentHardware.slice(0, 80)}
+                  </a>
+                </li>
+              ) : null}
+            </ul>
+          </div>
+        </div>
+      </details>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="card p-5" aria-labelledby="files-title">
@@ -416,10 +413,10 @@ export default function InvestigationDetail() {
         </section>
       </div>
 
-      <section className="mt-8" aria-labelledby="pubs-title">
-        <h2 id="pubs-title" className="text-[22px]">
-          Publications <span className="num text-[16px] text-muted">{inv.publications.length}</span>
-        </h2>
+      <details className="card mt-6 p-4 md:p-5">
+        <summary className="cursor-pointer font-display text-[18px] font-semibold">
+          Publications <span className="num text-[14px] font-normal text-muted">{inv.publications.length}</span>
+        </summary>
         {inv.publications.length === 0 ? (
           <p className="mt-2 text-[14px] text-muted">The PSI record lists no publications.</p>
         ) : (
@@ -440,7 +437,7 @@ export default function InvestigationDetail() {
             ))}
           </ol>
         )}
-      </section>
+      </details>
     </div>
   )
 }

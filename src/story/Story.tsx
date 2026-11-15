@@ -16,11 +16,11 @@ export type StoryStep = {
 }
 
 export const STORY_STEPS: StoryStep[] = [
-  { path: '/', habitat: 'iss', params: {}, template: 'NASA has burned things in orbit for decades. Near the ISS cabin, the evidence is deep.' },
-  { path: '/', habitat: 'exploration', params: {}, template: 'A Moon Base will run richer in oxygen at lower pressure. Watch the evidence thin out.' },
-  { path: '/map', habitat: 'exploration', params: { zoom: 'moon' }, template: 'Every mark is a real test. In this region there are {moonTests}, and {moonGas} of them are gas flames.' },
-  { path: '/', habitat: 'exploration', params: { drill: 'insight.I1.maxSolidO2Pct' }, template: 'Solid material tests stop at {maxSolid} percent oxygen. That gap is the finding.' },
-  { path: '/ask', habitat: 'exploration', params: { q: 'What is missing for the Moon?' }, template: 'Ask in plain words. Every sentence is checked against its source.' },
+  { path: '/dashboard', habitat: 'iss', params: {}, template: 'NASA has burned things in orbit for decades. Near the ISS cabin, the evidence is deep.' },
+  { path: '/dashboard', habitat: 'exploration', params: {}, template: 'A Moon Base will run richer in oxygen at lower pressure. Watch the evidence thin out.' },
+  { path: '/dashboard', habitat: 'exploration', params: { zoom: 'moon' }, template: 'Every mark is a real test. In this region there are {moonTests}, and {moonGas} of them are gas flames.' },
+  { path: '/dashboard', habitat: 'exploration', params: { drill: 'insight.I1.maxSolidO2Pct' }, template: 'Solid material tests stop at {maxSolid} percent oxygen. That gap is the finding.' },
+  { path: '/dashboard', habitat: 'exploration', params: { ask: 'What is missing for the Moon?' }, template: 'Ask in plain words. Every sentence is checked against its source.' },
 ]
 
 export function storyCaption(step: StoryStep, data: Data): string {
@@ -66,22 +66,22 @@ export function StoryStepper() {
   const exitHref = `${location.pathname}${exit.toString() ? `?${exit.toString()}` : ''}`
   return (
     <motion.aside
-      className="no-print fixed inset-x-0 bottom-[68px] z-[70] px-3 lg:bottom-5"
+      className="no-print fixed inset-x-0 top-2 z-[70] px-3 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:top-auto sm:w-[520px] sm:px-0"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32 }}
-      aria-label="The guided story"
+      aria-label="The guided tour"
     >
-      <div className="card glow-ember mx-auto flex max-w-[760px] flex-col gap-3 border-ember px-4 py-3 md:flex-row md:items-center" style={{ boxShadow: 'var(--shadow-pop)' }}>
+      <div className="card glow-ember flex flex-col gap-2 border-ember px-4 py-3" style={{ boxShadow: 'var(--shadow-pop)' }}>
         <div className="min-w-0 flex-1">
           <p className="eyebrow">
-            The Moon Base story · step <span className="num">{n}</span> of <span className="num">{STORY_STEPS.length}</span>
+            The Moon Base tour · step <span className="num">{n}</span> of <span className="num">{STORY_STEPS.length}</span>
           </p>
-          <p className="mt-1 text-[16px] font-semibold leading-snug" role="status">
+          <p className="mt-1 text-[15px] font-semibold leading-snug" role="status">
             {storyCaption(step, data)}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-2">
           {n > 1 ? (
             <Link to={storyHref(n - 1)} className="btn btn-ghost btn-sm" preventScrollReset>
               <ArrowLeft size={14} aria-hidden="true" /> Back
@@ -96,7 +96,7 @@ export function StoryStepper() {
               Finish
             </Link>
           )}
-          <Link to={exitHref} className="btn btn-ghost btn-icon btn-sm" aria-label="Exit the story" preventScrollReset>
+          <Link to={exitHref} className="btn btn-ghost btn-icon btn-sm" aria-label="Exit the tour" preventScrollReset>
             <X size={16} aria-hidden="true" />
           </Link>
         </div>

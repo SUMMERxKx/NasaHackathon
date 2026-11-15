@@ -1,5 +1,6 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -67,6 +68,8 @@ function dropBundledRuntime(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), devApi()],
+  // The shadcn-style alias: @ is the src folder.
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   worker: { format: 'es', plugins: () => [dropBundledRuntime()] },
   define: { __BUILD_ID__: JSON.stringify(readBuildId()) },
   build: { chunkSizeWarningLimit: 900 },

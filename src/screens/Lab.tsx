@@ -1,11 +1,11 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The Lab: three simple models, each fitted to and checked against the real test tables.
-// Each tool states the model, shows the validation against real tests and lists its limits.
-import { useEffect, useMemo, useRef, useState } from 'react'
+// Each tool shows one short line. The model, its notes and its limits sit behind the Notes button.
+import { memo, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { scaleLinear } from 'd3-scale'
-import { Pause, Play, RotateCcw } from 'lucide-react'
+import { Info, Pause, Play, RotateCcw } from 'lucide-react'
 import type { Test } from '../types.ts'
 import { D_SQUARED_FORMULA, burnTimeToCompletion, burnTimeToExtinction, diameterAt, dropletValues, validateDSquared } from '../lib/droplet.ts'
 import type { DiluentFamily } from '../lib/droplet.ts'
@@ -18,12 +18,12 @@ import { GATES } from '../three/flameParams.ts'
 import { PageHeader } from '../components/AppShell.tsx'
 import { ChartFrame, LegendItem } from '../components/ChartFrame.tsx'
 import { FireballStage } from '../components/FireballStage.tsx'
-import { ScenarioLink, Segmented, SiTag, Slider, SourcedNumber, useDrillProps, usePrefersReducedMotion } from '../components/ui.tsx'
+import { ScenarioLink, Segmented, Slider, SourcedNumber, useDrillProps, usePrefersReducedMotion } from '../components/ui.tsx'
 
 const TOOLS = [
-  { value: 'droplet', label: 'Droplet burn calculator' },
-  { value: 'extinction', label: 'Extinction explorer' },
-  { value: 'gravity', label: 'Between zero and one g' },
+  { value: 'droplet', label: 'Droplet burn' },
+  { value: 'extinction', label: 'Extinction' },
+  { value: 'gravity', label: 'Gravity bounds' },
 ]
 
 const FAMILY_STYLE: Record<DiluentFamily, { color: string; shape: 'circle' | 'square' | 'triangle' | 'diamond' }> = {
@@ -42,10 +42,26 @@ function shapePath(shape: string, r: number): string {
 
 function Limits({ children }: { children: ReactNode }) {
   return (
-    <section className="card mt-6 border-l-2 border-l-warn p-4">
-      <h3 className="text-[16px]">Limits</h3>
+    <div>
+      <h3 className="stat-label">Limits</h3>
       <ul className="m-0 mt-2 flex list-disc flex-col gap-1.5 pl-5 text-[14px] text-muted">{children}</ul>
-    </section>
+    </div>
+  )
+}
+
+// One short line for each tool. The long notes open on request.
+function ToolIntro({ line, children }: { line: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[14px] text-muted">{line}</p>
+        <button type="button" className="chip" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+          <Info size={13} aria-hidden="true" /> Notes
+        </button>
+      </div>
+      {open ? <div className="card mt-3 flex flex-col gap-4 p-4 text-[14px] [&_p]:max-w-[70ch]">{children}</div> : null}
+    </div>
   )
 }
 
@@ -143,15 +159,23 @@ function DropletCalculator() {
   const rate = row?.k ?? k ?? 0
   const diameter = rate > 0 ? diameterAt(d0, rate, t) : d0
   const droplet = animated && row ? { scale: Math.max(0.05, diameter / d0), flameOn: t < end - 1e-6 } : null
-  const validation = useMemo(() => validateDSquared(flexTests(data.tests)), [data.tests])
-  const i4 = data.insightById.I4
 
   return (
     <div>
-      <p className="prose-width text-muted">
-        A burning droplet shrinks so that the square of its diameter falls in a straight line with time. This is the d-squared law. EMBER takes the burning rate from real FLEX tests near the condition you pick, and checks the law against every FLEX test that has the four values it needs.
-      </p>
-      <p className="num mt-3 rounded-control bg-surface-2 px-3 py-2 text-[13px]">{D_SQUARED_FORMULA}</p>
+      <ToolIntro line="A burning droplet shrinks in a straight line of diameter squared against time.">
+        <p className="text-muted">
+          This is the d-squared law. EMBER takes the burning rate from real FLEX tests near the condition you pick, and checks the law against every FLEX test that has the four values it needs.
+        </p>
+        <p className="num rounded-control bg-surface-2 px-3 py-2 text-[13px]">{D_SQUARED_FORMULA}</p>
+        <p className="text-muted">The model end time and the measured burn time are different quantities. The model is never stretched to hide the difference.</p>
+        <Limits>
+          <li>The law assumes a round, steady flame around one droplet. Disrupted droplets and cool flames do not follow it.</li>
+          <li>The burning rate column lost its unit in the file. EMBER reads it as mm² per second. The team confirms this from the publication.</li>
+          <li>The burning rate is a median over nearby tests. It mixes pressures and droplet sizes.</li>
+          <li>The flame's size and colour in the picture are not inferred from the data. Only the droplet's size follows the row.</li>
+          <li>A visible flame going out does not prove that all burning has stopped.</li>
+        </Limits>
+      </ToolIntro>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-12">
         <section className="card flex flex-col gap-4 p-4 lg:col-span-3" aria-label="Inputs">
@@ -170,22 +194,29 @@ function DropletCalculator() {
               ))}
             </select>
           </label>
-          <div className="rounded-control bg-surface-2 p-3 text-[14px]">
+          <div className="stat-tile">
+            <span className="stat-label">Burning rate K</span>
             {selection.enough && k != null ? (
               <>
-                Burning rate K ={' '}
-                <SourcedNumber path={[{ kind: 'bin', chart: 'dsquared', key: dropletKey(fuel, o2, family) }]} label={`Burning rate ${formatNumber(k, 3)}, the median of ${selection.tests.length} FLEX tests`}>
-                  {formatNumber(k, 3)}
-                </SourcedNumber>{' '}
-                mm² per second, the median of <span className="num">{selection.tests.length}</span> FLEX tests within 3 points of this oxygen.
+                <span className="text-[20px] leading-tight">
+                  <SourcedNumber path={[{ kind: 'bin', chart: 'dsquared', key: dropletKey(fuel, o2, family) }]} label={`Burning rate ${formatNumber(k, 3)}, the median of ${selection.tests.length} FLEX tests`}>
+                    {formatNumber(k, 3)}
+                  </SourcedNumber>{' '}
+                  <span className="text-[12px] text-muted">mm² per second</span>
+                </span>
+                <span className="text-[11px] text-muted">
+                  median of <span className="num">{selection.tests.length}</span> FLEX tests
+                </span>
               </>
             ) : (
-              <strong>Not enough tests near this condition. {selection.tests.length} matched, and three are needed. Nothing is drawn.</strong>
+              <span className="text-[13px]">
+                Not enough tests here. <span className="num">{selection.tests.length}</span> matched, three are needed.
+              </span>
             )}
           </div>
           {withAll.length > 0 ? (
             <label>
-              <span className="field-label">Drive it with one FLEX row</span>
+              <span className="field-label">FLEX test</span>
               <select className="select" name="test" value={chosen?.id ?? ''} onChange={(e) => set('test', e.target.value)}>
                 {withAll.map((test) => (
                   <option key={test.id} value={test.id}>
@@ -198,7 +229,9 @@ function DropletCalculator() {
         </section>
 
         <section className="lg:col-span-4" aria-label="The fireball for this test">
-          <FireballStage compact showEarth={false} droplet={droplet ?? (row ? { scale: 1, flameOn: true } : null)} />
+          <div className="card p-4">
+            <FireballStage showEarth={false} droplet={droplet ?? (row ? { scale: 1, flameOn: true } : null)} />
+          </div>
         </section>
 
         <section className="card p-4 lg:col-span-5" aria-label="Diameter squared against time">
@@ -240,14 +273,14 @@ function DropletCalculator() {
           {row && chosen && modelEnd != null ? (
             <div className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
               <div className="rounded-control bg-surface-2 p-3">
-                <p className="eyebrow">Model end time</p>
+                <p className="stat-label">Model end</p>
                 <p className="num mt-1 text-[22px] text-freefall">{formatNumber(modelEnd, 2)} s</p>
                 <p className="num text-muted">
                   ({formatNumber(row.d0, 2)}² − {formatNumber(row.dExt, 2)}²) ÷ {formatNumber(row.k, 2)}
                 </p>
               </div>
               <div className="rounded-control bg-surface-2 p-3">
-                <p className="eyebrow">Measured burn time</p>
+                <p className="stat-label">Measured</p>
                 <p className="mt-1 text-[22px]">
                   <SourcedNumber path={[{ kind: 'test', id: chosen.id }]} label={`FLEX test ${chosen.label} measured burn time ${formatNumber(row.burnTime, 1)} seconds`}>
                     {formatNumber(row.burnTime, 1)} s
@@ -257,7 +290,6 @@ function DropletCalculator() {
                   FLEX test {chosen.label}, ended in {String(chosen.outcome).toLowerCase()}
                 </p>
               </div>
-              <p className="col-span-2 text-muted">The two times are different quantities. The model is never stretched to hide the difference.</p>
             </div>
           ) : null}
           {row ? (
@@ -275,76 +307,93 @@ function DropletCalculator() {
                 </span>
               </div>
             ) : (
-              <p className="mt-3 rounded-control border border-line px-3 py-2 text-[13px] text-muted">
-                The droplet is shown still. The burning rate column lost its unit in the PSI file, and EMBER reads it as mm² per second. The droplet will be animated once the team has confirmed that unit from the publication.
+              <p className="mt-3 text-[12px] text-muted" title="The burning rate column lost its unit in the PSI file. The droplet is animated once the team confirms that unit from the publication.">
+                Shown still until the burning rate unit is confirmed.
               </p>
             )
           ) : null}
         </section>
       </div>
 
-      <section className="card mt-6 p-4" aria-labelledby="validation-title">
-        <h3 id="validation-title" className="text-[18px]">
-          Does the law hold on the real tests?
-        </h3>
-        <p className="prose-width mt-1 text-[14px] text-muted">
-          Predicted against measured burn time for the{' '}
-          <SourcedNumber path={[{ kind: 'bin', chart: 'validation', key: 'all' }]} label={`${validation.points.length} FLEX tests with all four values`}>
-            {validation.points.length}
-          </SourcedNumber>{' '}
-          FLEX tests that list all four values. The median of predicted over measured is{' '}
-          <SourcedNumber path={[{ kind: 'insight', id: 'I4', number: 'medianRatio' }]} label={`Median ratio ${i4?.display.medianRatio}`}>
-            {i4?.display.medianRatio ?? formatNumber(validation.median ?? 0, 3)}
-          </SourcedNumber>
-          . Half of the tests fall between <span className="num">{formatNumber(validation.q1 ?? 0, 3)}</span> and <span className="num">{formatNumber(validation.q3 ?? 0, 3)}</span>. A point on the line means the law predicted that test exactly.
-        </p>
-        <div className="mt-3 max-w-[640px]">
-          <ChartFrame title="Predicted against measured burn time" description={`A scatter of ${validation.points.length} FLEX tests. Most points sit just under the one to one line.`} aspect={0.8} minHeight={280} maxHeight={480}>
-            {(size) => {
-              const box = { l: 46, t: 10, w: Math.max(60, size.width - 58), h: Math.max(60, size.height - 52) }
-              const max = Math.max(...validation.points.map((p) => Math.max(p.predicted, p.measured)), 1) * 1.05
-              const x = scaleLinear().domain([0, max]).range([box.l, box.l + box.w])
-              const y = scaleLinear().domain([0, max]).range([box.t + box.h, box.t])
-              return (
-                <svg width={size.width} height={size.height} className="absolute inset-0">
-                  <Axes x={x} y={y} box={box} xLabel="Measured burn time, seconds" yLabel="Predicted, seconds" xTicks={nice(max)} yTicks={nice(max)} />
-                  <line x1={x(0)} y1={y(0)} x2={x(max)} y2={y(max)} stroke="var(--muted)" strokeDasharray="4 4" aria-hidden="true" />
-                  {validation.points.map((p) => {
-                    const test = data.testById.get(p.testId) as Test
-                    return (
-                      <circle
-                        key={p.testId}
-                        cx={x(p.measured)}
-                        cy={y(p.predicted)}
-                        r={3.4}
-                        fill="var(--fuel-liquid)"
-                        fillOpacity={0.75}
-                        className="drillable"
-                        tabIndex={-1}
-                        data-nav=""
-                        {...props([{ kind: 'test', id: p.testId }], `FLEX test ${test.label}: predicted ${formatNumber(p.predicted, 1)} seconds, measured ${formatNumber(p.measured, 1)} seconds. Press Enter for the row.`)}
-                      >
-                        <title>{`${test.label}: predicted ${formatNumber(p.predicted, 1)} s, measured ${formatNumber(p.measured, 1)} s`}</title>
-                      </circle>
-                    )
-                  })}
-                </svg>
-              )
-            }}
-          </ChartFrame>
-        </div>
-      </section>
-
-      <Limits>
-        <li>The law assumes a round, steady flame around one droplet. Disrupted droplets and cool flames do not follow it.</li>
-        <li>The burning rate column lost its unit in the file. EMBER reads it as mm² per second. The team confirms this from the publication.</li>
-        <li>The burning rate is a median over nearby tests. It mixes pressures and droplet sizes.</li>
-        <li>The flame's size and colour in the picture are not inferred from the data. Only the droplet's size follows the row.</li>
-        <li>A visible flame going out does not prove that all burning has stopped.</li>
-      </Limits>
+      <Validation />
     </div>
   )
 }
+
+// The check of the law against every FLEX test. It does not depend on the inputs above, so it is
+// drawn once and the play clock never redraws it.
+const Validation = memo(function Validation() {
+  const data = useData()
+  const props = useDrillProps()
+  const validation = useMemo(() => validateDSquared(flexTests(data.tests)), [data.tests])
+  const i4 = data.insightById.I4
+  return (
+    <section className="card mt-6 p-4" aria-labelledby="validation-title">
+      <h3 id="validation-title" className="text-[18px]">
+        Does the law hold on the real tests?
+      </h3>
+      <ul className="m-0 mt-3 grid max-w-[640px] list-none grid-cols-3 gap-2 p-0">
+        <li className="stat-tile">
+          <span className="stat-label">FLEX tests</span>
+          <span className="text-[20px] leading-tight">
+            <SourcedNumber path={[{ kind: 'bin', chart: 'validation', key: 'all' }]} label={`${validation.points.length} FLEX tests with all four values`}>
+              {validation.points.length}
+            </SourcedNumber>
+          </span>
+        </li>
+        <li className="stat-tile">
+          <span className="stat-label">Predicted over measured</span>
+          <span className="text-[20px] leading-tight">
+            <SourcedNumber path={[{ kind: 'insight', id: 'I4', number: 'medianRatio' }]} label={`Median ratio ${i4?.display.medianRatio}`}>
+              {i4?.display.medianRatio ?? formatNumber(validation.median ?? 0, 3)}
+            </SourcedNumber>
+          </span>
+        </li>
+        <li className="stat-tile">
+          <span className="stat-label">Middle half</span>
+          <span className="num text-[20px] leading-tight">
+            {formatNumber(validation.q1 ?? 0, 2)} to {formatNumber(validation.q3 ?? 0, 2)}
+          </span>
+        </li>
+      </ul>
+      <div className="mt-3 max-w-[640px]">
+        <ChartFrame title="Predicted against measured burn time" description={`A scatter of ${validation.points.length} FLEX tests. Most points sit just under the one to one line.`} aspect={0.8} minHeight={280} maxHeight={480}>
+          {(size) => {
+            const box = { l: 46, t: 10, w: Math.max(60, size.width - 58), h: Math.max(60, size.height - 52) }
+            const max = Math.max(...validation.points.map((p) => Math.max(p.predicted, p.measured)), 1) * 1.05
+            const x = scaleLinear().domain([0, max]).range([box.l, box.l + box.w])
+            const y = scaleLinear().domain([0, max]).range([box.t + box.h, box.t])
+            return (
+              <svg width={size.width} height={size.height} className="absolute inset-0">
+                <Axes x={x} y={y} box={box} xLabel="Measured burn time, seconds" yLabel="Predicted, seconds" xTicks={nice(max)} yTicks={nice(max)} />
+                <line x1={x(0)} y1={y(0)} x2={x(max)} y2={y(max)} stroke="var(--muted)" strokeDasharray="4 4" aria-hidden="true" />
+                {validation.points.map((p) => {
+                  const test = data.testById.get(p.testId) as Test
+                  return (
+                    <circle
+                      key={p.testId}
+                      cx={x(p.measured)}
+                      cy={y(p.predicted)}
+                      r={3.4}
+                      fill="var(--fuel-liquid)"
+                      fillOpacity={0.75}
+                      className="drillable"
+                      tabIndex={-1}
+                      data-nav=""
+                      {...props([{ kind: 'test', id: p.testId }], `FLEX test ${test.label}: predicted ${formatNumber(p.predicted, 1)} seconds, measured ${formatNumber(p.measured, 1)} seconds. Press Enter for the row.`)}
+                    >
+                      <title>{`${test.label}: predicted ${formatNumber(p.predicted, 1)} s, measured ${formatNumber(p.measured, 1)} s`}</title>
+                    </circle>
+                  )
+                })}
+              </svg>
+            )
+          }}
+        </ChartFrame>
+      </div>
+    </section>
+  )
+})
 
 // Lab tool 2.
 function ExtinctionExplorer() {
@@ -369,10 +418,41 @@ function ExtinctionExplorer() {
   }, [data.tests])
   return (
     <div>
-      <p className="prose-width text-muted">
-        The extinction ratio is the diameter at which the visible flame went out, divided by the starting diameter. Near 1 means the flame went out almost at once. 0 means the droplet burned away. Each point is one FLEX test. The line joins the median of each oxygen bin, and the number on each bin is its count of tests.
-      </p>
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <ToolIntro line="Where each droplet flame went out, by oxygen level. Near 1 it went out at once. 0 means it burned away.">
+        <p className="text-muted">
+          The extinction ratio is the diameter at which the visible flame went out, divided by the starting diameter. Each point is one FLEX test. The line joins the median of each oxygen bin, and the number on each bin is its count of tests.
+        </p>
+        <div>
+          <h3 className="stat-label">What the plot shows</h3>
+          <ul className="m-0 mt-2 flex list-disc flex-col gap-2 pl-5">
+            {i5 ? (
+              <li>
+                {i5.headline} The median extinction ratio is <span className="num">{i5.display.medianRatioLow}</span> at 10 to 15% oxygen and <span className="num">{i5.display.medianRatioHigh}</span> at 28 to 36%.{' '}
+                <SourcedNumber path={[{ kind: 'insight', id: 'I5', number: i5.primary }]} label="The rows behind this count">
+                  Rows
+                </SourcedNumber>
+              </li>
+            ) : null}
+            {compare.length === 0 ? (
+              <li>No oxygen bin holds at least five nitrogen-only tests and five carbon dioxide tests of the same fuel. So EMBER makes no claim that one added gas beats another.</li>
+            ) : (
+              compare.map((c) => (
+                <li key={c.fuel + c.bin}>
+                  {c.fuel} at {c.bin} oxygen: median ratio <span className="num">{formatNumber(c.nitrogen, 2)}</span> in nitrogen only over <span className="num">{c.nitrogenN}</span> tests, and <span className="num">{formatNumber(c.co2, 2)}</span> with carbon dioxide over <span className="num">{c.co2N}</span> tests.
+                </li>
+              ))
+            )}
+            <li>Bins with a count of 0 are oxygen levels where FLEX burned no droplet of that fuel.</li>
+          </ul>
+        </div>
+        <Limits>
+          <li>The points mix pressures from about 0.7 to 3 atmospheres and droplet sizes. A bin median is a direction, not a limit.</li>
+          <li>A comparison between added gases is only stated where a bin holds at least five tests of each.</li>
+          <li>Tests with no extinction diameter in the table are not plotted.</li>
+          <li>Background on cool flames, where a droplet keeps burning with no visible flame, is on the <ScenarioLink to="/investigations/PSI-39">CFI</ScenarioLink> and <ScenarioLink to="/investigations/PSI-69">FLEX</ScenarioLink> pages.</li>
+        </Limits>
+      </ToolIntro>
+      <div className="grid gap-6 lg:grid-cols-2">
         {LAB_FUELS.map((fuel) => {
           const points = extinctionPoints(data.tests, fuel)
           const bins = extinctionBins(data.tests, fuel)
@@ -419,42 +499,6 @@ function ExtinctionExplorer() {
         ))}
         <LegendItem swatch={<span className="inline-block h-0.5 w-5 bg-ink" />}>Median of each oxygen bin</LegendItem>
       </div>
-
-      <section className="card mt-6 p-4" aria-labelledby="takeaways-title">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 id="takeaways-title" className="text-[18px]">
-            What the plot shows
-          </h3>
-          <SiTag />
-        </div>
-        <ul className="m-0 mt-3 flex list-disc flex-col gap-2 pl-5 text-[14px]">
-          {i5 ? (
-            <li>
-              {i5.headline} The median extinction ratio is <span className="num">{i5.display.medianRatioLow}</span> at 10 to 15% oxygen and <span className="num">{i5.display.medianRatioHigh}</span> at 28 to 36%.{' '}
-              <SourcedNumber path={[{ kind: 'insight', id: 'I5', number: i5.primary }]} label="The rows behind this count">
-                Rows
-              </SourcedNumber>
-            </li>
-          ) : null}
-          {compare.length === 0 ? (
-            <li>No oxygen bin holds at least five nitrogen-only tests and five carbon dioxide tests of the same fuel. So EMBER makes no claim that one added gas beats another.</li>
-          ) : (
-            compare.map((c) => (
-              <li key={c.fuel + c.bin}>
-                {c.fuel} at {c.bin} oxygen: median ratio <span className="num">{formatNumber(c.nitrogen, 2)}</span> in nitrogen only over <span className="num">{c.nitrogenN}</span> tests, and <span className="num">{formatNumber(c.co2, 2)}</span> with carbon dioxide over <span className="num">{c.co2N}</span> tests.
-              </li>
-            ))
-          )}
-          <li>Bins with a count of 0 are oxygen levels where FLEX burned no droplet of that fuel.</li>
-        </ul>
-      </section>
-
-      <Limits>
-        <li>The points mix pressures from about 0.7 to 3 atmospheres and droplet sizes. A bin median is a direction, not a limit.</li>
-        <li>A comparison between added gases is only stated where a bin holds at least five tests of each.</li>
-        <li>Tests with no extinction diameter in the table are not plotted.</li>
-        <li>Background on cool flames, where a droplet keeps burning with no visible flame, is on the <ScenarioLink to="/investigations/PSI-39">CFI</ScenarioLink> and <ScenarioLink to="/investigations/PSI-69">FLEX</ScenarioLink> pages.</li>
-      </Limits>
     </div>
   )
 }
@@ -468,10 +512,30 @@ function GravityBounds() {
   const i7 = data.insightById.I7
   return (
     <div>
-      <p className="prose-width text-muted">
-        Saffire-II burned the same samples in microgravity and in normal gravity. For each sample, the two burn lengths bound what could happen at a gravity level in between. The band between them is marked unknown, bounded.
-      </p>
-      <section className="card mt-6 p-4" aria-label="Burn length pairs">
+      <ToolIntro line="The same samples burned in microgravity and in normal gravity. The band between is unknown, bounded.">
+        <p className="text-muted">
+          Saffire-II burned the same samples in microgravity and in normal gravity. For each sample, the two burn lengths bound what could happen at a gravity level in between.
+        </p>
+        <p>No partial-gravity test data exists in PSI yet. The Lunar-g Combustion Investigation and the Flammability of Materials on the Moon experiment are expected to add it. Source: the challenge statement.</p>
+        {i7 ? (
+          <p className="text-muted">
+            {i7.headline}{' '}
+            <SourcedNumber path={[{ kind: 'insight', id: 'I7', number: 'shorterInMicrogravity' }]} label="The rows behind this count">
+              Rows
+            </SourcedNumber>
+          </p>
+        ) : null}
+        <p className="text-muted">
+          The challenge statement also notes that the ACME E-FIELD Flames experiment mimicked partial gravity through the pull of an electric field on the ions in a flame. <ScenarioLink to="/investigations/PSI-22">Open ACME E-FIELD Flames</ScenarioLink>
+        </p>
+        <Limits>
+          <li>This is {pairs.length} samples at one flow speed and one oxygen level, close to cabin air. It bounds the question and does not settle it.</li>
+          <li>The table gives lengths as text. "Complete" is read as the full sample length and "~ 10 cm" as 10 cm.</li>
+          <li>A gravity level between zero and one may not behave like a point between the two. No slider between them is offered.</li>
+          <li>One sample holds two materials and its two lengths describe different parts of it.</li>
+        </Limits>
+      </ToolIntro>
+      <section className="card p-4" aria-label="Burn length pairs">
         <ChartFrame title="Burn length in microgravity and in normal gravity" description={`${pairs.length} Saffire-II samples, each with a microgravity point and a normal gravity point joined by a band.`} aspect={0.5} minHeight={pairs.length * 38 + 60} maxHeight={pairs.length * 44 + 70}>
           {(size) => {
             const box = { l: Math.min(230, size.width * 0.42), t: 8, w: 0, h: Math.max(60, size.height - 48) }
@@ -520,27 +584,7 @@ function GravityBounds() {
           <LegendItem swatch={<svg width="12" height="12" viewBox="-7 -8 14 16"><path d={shapePath('diamond', 6)} fill="var(--ember)" /></svg>}>Normal gravity</LegendItem>
           <LegendItem swatch={<span className="inline-block h-3 w-6 rounded-full border border-dashed border-warn" />}>Unknown, bounded</LegendItem>
         </div>
-        <p className="prose-width mt-4 text-[14px]">
-          No partial-gravity test data exists in PSI yet. The Lunar-g Combustion Investigation and the Flammability of Materials on the Moon experiment are expected to add it. Source: the challenge statement.
-        </p>
-        {i7 ? (
-          <p className="prose-width mt-2 text-[14px] text-muted">
-            {i7.headline}{' '}
-            <SourcedNumber path={[{ kind: 'insight', id: 'I7', number: 'shorterInMicrogravity' }]} label="The rows behind this count">
-              Rows
-            </SourcedNumber>
-          </p>
-        ) : null}
-        <p className="prose-width mt-2 text-[14px] text-muted">
-          The challenge statement also notes that the ACME E-FIELD Flames experiment mimicked partial gravity through the pull of an electric field on the ions in a flame. <ScenarioLink to="/investigations/PSI-22">Open ACME E-FIELD Flames</ScenarioLink>
-        </p>
       </section>
-      <Limits>
-        <li>This is {pairs.length} samples at one flow speed and one oxygen level, close to cabin air. It bounds the question and does not settle it.</li>
-        <li>The table gives lengths as text. "Complete" is read as the full sample length and "~ 10 cm" as 10 cm.</li>
-        <li>A gravity level between zero and one may not behave like a point between the two. No slider between them is offered.</li>
-        <li>One sample holds two materials and its two lengths describe different parts of it.</li>
-      </Limits>
     </div>
   )
 }
@@ -550,13 +594,13 @@ export default function Lab() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const active = TOOLS.some((t) => t.value === tool) ? tool : 'droplet'
-  const ref = useRef<HTMLDivElement>(null)
   return (
-    <div className="page" ref={ref}>
-      <PageHeader title="Lab" lead="Three simple models, each fitted to the real test tables and checked against them. Every mark opens the tests behind it." />
-      <div className="mb-6 overflow-x-auto">
-        <Segmented label="Lab tool" value={active} options={TOOLS} onChange={(v) => navigate(`/lab/${v}${scenarioQuery(params)}`, { preventScrollReset: true })} />
-      </div>
+    <div className="page">
+      <PageHeader title="Lab" lead="Three models, each checked against the real tests">
+        <div className="hide-scrollbar max-w-full overflow-x-auto">
+          <Segmented label="Lab tool" value={active} options={TOOLS} onChange={(v) => navigate(`/lab/${v}${scenarioQuery(params)}`, { preventScrollReset: true })} />
+        </div>
+      </PageHeader>
       {active === 'droplet' ? <DropletCalculator /> : null}
       {active === 'extinction' ? <ExtinctionExplorer /> : null}
       {active === 'gravity' ? <GravityBounds /> : null}

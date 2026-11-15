@@ -1,24 +1,14 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The base component set. Built once and used on every screen.
 import { useEffect, useRef, useState } from 'react'
-import type { ButtonHTMLAttributes, KeyboardEvent, ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
-import { Check, Monitor, Moon, Sparkles, Sun } from 'lucide-react'
+import { Check, Moon, Sun } from 'lucide-react'
 import type { DrillPath } from '../types.ts'
 import { encodeDrill } from '../lib/drill.ts'
 import { scenarioQuery } from '../state/scenario.ts'
 import { useDrill } from '../state/hooks.ts'
-
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost'
-  size?: 'md' | 'sm'
-  icon?: boolean
-}
-
-export function Button({ variant = 'secondary', size = 'md', icon, className = '', type = 'button', ...rest }: ButtonProps) {
-  return <button type={type} className={`btn btn-${variant} ${size === 'sm' ? 'btn-sm' : ''} ${icon ? 'btn-icon' : ''} ${className}`} {...rest} />
-}
 
 export function Chip({
   children,
@@ -42,10 +32,6 @@ export function Chip({
   )
 }
 
-export function Card({ children, className = '', as: Tag = 'div' }: { children: ReactNode; className?: string; as?: 'div' | 'section' | 'article' | 'li' }) {
-  return <Tag className={`card ${className}`}>{children}</Tag>
-}
-
 // A link that keeps the habitat on every internal link and drops the screen-level parameters.
 export function ScenarioLink({ to, children, extra, ...rest }: Omit<LinkProps, 'to'> & { to: string; extra?: Record<string, string> }) {
   const [params] = useSearchParams()
@@ -56,7 +42,7 @@ export function ScenarioLink({ to, children, extra, ...rest }: Omit<LinkProps, '
   if (extra) for (const [key, value] of Object.entries(extra)) query.set(key, value)
   const text = query.toString()
   return (
-    <Link to={`${base}${text ? `?${text}` : ''}${hash ? `#${hash}` : ''}`} viewTransition {...rest}>
+    <Link to={`${base}${text ? `?${text}` : ''}${hash ? `#${hash}` : ''}`} {...rest}>
       {children}
     </Link>
   )
@@ -82,7 +68,7 @@ export function Segmented<T extends string>({
           role="radio"
           aria-checked={o.value === value}
           onClick={() => onChange(o.value)}
-          className={`min-h-9 rounded-[7px] px-3 text-[13px] font-semibold transition-colors ${
+          className={`min-h-9 whitespace-nowrap rounded-[7px] px-3 text-[13px] font-semibold transition-colors ${
             o.value === value ? 'bg-surface-2 text-ink' : 'text-muted hover:text-ink'
           }`}
         >
@@ -134,25 +120,6 @@ export function Slider({
   )
 }
 
-export function Banner({ children, icon }: { children: ReactNode; icon?: ReactNode }) {
-  return (
-    <div className="banner" role="status">
-      {icon}
-      <div>{children}</div>
-    </div>
-  )
-}
-
-// Marks every area of SI drafted text. Links to the SI disclosure on Methods.
-export function SiTag({ label = 'SI drafted, checked against PSI data' }: { label?: string }) {
-  return (
-    <ScenarioLink to="/methods?section=si" className="chip" title="How SI was used in EMBER">
-      <Sparkles size={12} aria-hidden="true" />
-      {label}
-    </ScenarioLink>
-  )
-}
-
 export function VerifiedMark({ level }: { level: 'snapshot' | 'snapshot and raw files' }) {
   const twice = level === 'snapshot and raw files'
   return (
@@ -176,35 +143,21 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
   )
 }
 
-export function QuietLine({ children }: { children: ReactNode }) {
-  return <p className="text-[13px] text-muted" role="status">{children}</p>
-}
-
 export function NotASafetyRating({ className = '' }: { className?: string }) {
   return <p className={`text-[12px] font-semibold uppercase tracking-wide text-muted ${className}`}>Not a safety rating</p>
 }
 
 const THEME_KEY = 'ember-theme'
-type ThemeChoice = 'light' | 'dark' | 'system'
+type ThemeChoice = 'light' | 'dark'
 
-function applyTheme(choice: ThemeChoice) {
-  const dark = choice === 'dark' || (choice === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-  window.dispatchEvent(new Event('ember-theme'))
-}
-
+// EMBER opens dark, to match the hero. The choice is kept for the next visit.
 export function ThemeToggle() {
-  const [choice, setChoice] = useState<ThemeChoice>('system')
+  const [choice, setChoice] = useState<ThemeChoice>('dark')
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(THEME_KEY) as ThemeChoice | null
-      if (saved === 'light' || saved === 'dark' || saved === 'system') setChoice(saved)
-    } catch {
-      // Storage can be blocked. The system setting is used.
-    }
+    setChoice(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark')
   }, [])
-  const next: ThemeChoice = choice === 'system' ? 'dark' : choice === 'dark' ? 'light' : 'system'
-  const Icon = choice === 'system' ? Monitor : choice === 'dark' ? Moon : Sun
+  const next: ThemeChoice = choice === 'dark' ? 'light' : 'dark'
+  const Icon = choice === 'dark' ? Moon : Sun
   return (
     <button
       type="button"
@@ -218,7 +171,8 @@ export function ThemeToggle() {
         } catch {
           // Storage can be blocked. The choice lasts for this visit.
         }
-        applyTheme(next)
+        document.documentElement.dataset.theme = next
+        window.dispatchEvent(new Event('ember-theme'))
       }}
     >
       <Icon size={18} aria-hidden="true" />
@@ -275,6 +229,11 @@ export function useCountUp(target: number, ms = 600): number {
     return () => cancelAnimationFrame(frame)
   }, [target, ms, reduced])
   return value
+}
+
+// A number that counts toward its new value. Only this text node redraws while it counts.
+export function CountUp({ value, format, ms = 600 }: { value: number; format: (value: number) => string; ms?: number }) {
+  return <>{format(useCountUp(value, ms))}</>
 }
 
 // Every chart mark and every sourced number is made clickable through this one helper.

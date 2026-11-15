@@ -4,38 +4,38 @@ For the person who records the 30 second cut and the person who signs off the nu
 
 ## The fastest way to see the demo path
 
-Press **Play the story** in the top bar. Five steps drive the real app in the order below. Every number in a caption is read from the data when the story runs.
+Press **Tour** at the top right of the dashboard. Five steps drive the real app in the order below. Every number in a caption is read from the data when the tour runs.
 
 ## The click path for a 30 second screen recording
 
-Record in the dark theme at 1920 by 1080. Keep the label "SI-generated illustration" inside the frame whenever a flame is on screen.
+Record in the dark theme at 1920 by 1080. Keep the small "SI" mark in the corner of the fireball and of the start page sky inside the frame whenever either is on screen.
 
 | Seconds | What to do | What to say |
 |---|---|---|
-| 0 to 3 | Open `https://ember-two-eta.vercel.app/` with the ISS cabin selected. Hold on the hero: the fireball seething, the small Earth flame beside it. | "On Earth a flame streams upward. In freefall it becomes a fireball." |
-| 3 to 9 | Pick the Exploration atmosphere card. The dial sweeps from 100 to 67, the bars shrink, the list reorders, the gravity banner slides in, and the fireball burns faster while its readout changes. | "Pick your habitat. A Moon Base runs richer in oxygen. The fire burns harder, and the evidence thins out." |
-| 9 to 16 | Open Map. Press "Focus the Moon Base region". Click the region caption. In the panel, click ACME CFI-G, then one test. The raw NASA row is on screen. | "Every mark is a real NASA test, one click away. Here there are 66, all gas flames. Solid material tests stop at 22.2 percent oxygen." |
-| 16 to 19 | Open Lab. Show the droplet calculator with FLEX test 20CAL10: 4.29 seconds from the model beside 5 seconds measured. | "Simple models, checked against 196 real burns." |
-| 19 to 27 | Open Ask. Tap the chip "What is missing for the Moon?". Then type one short question and let the live answer stream and earn its ticks. | "Ask in plain words. Every sentence is checked against its source." |
+| 0 to 3 | Open `https://ember-two-eta.vercel.app/`. Hold on the start page: the sky, the round flame in freefall and the name. Press "Open the dashboard". | "On Earth a flame streams upward. In freefall it becomes a sphere." |
+| 3 to 9 | On the dashboard, open the habitat dropdown at the bottom and pick the Exploration atmosphere. The ring glides on the map, the dial sweeps from 100 to 67, the bars shrink, the list reorders, and the fireball burns faster while its three numbers change. | "Pick your habitat. A Moon Base runs richer in oxygen. The fire burns harder, and the evidence thins out." |
+| 9 to 16 | Press "Moon zoom" on the map. Click the region caption. In the panel, click ACME CFI-G, then one test. The raw NASA row is on screen. | "Every mark is a real NASA test, one click away. Here there are 66, all gas flames. Solid material tests stop at 22.2 percent oxygen." |
+| 16 to 19 | Open Lab. Show the droplet model with FLEX test 20CAL10: 4.29 seconds from the model beside 5 seconds measured. | "Simple models, checked against 196 real burns." |
+| 19 to 27 | Press the robot at the bottom right. Tap "What is missing for the Moon?". Then type one short question and let the live answer stream in with its source chips. | "Ask in plain words. Every sentence is checked against its source." |
 | 27 to 30 | End card: the name, the tagline, the link. | "EMBER. Know what we know before we light the Moon." |
 
 Rules for the recording:
 
 - 30 seconds or less. One second over and the project cannot be judged globally. Aim for 28.
-- If Ask needs more time, cut the Lab beat first.
+- If the chat needs more time, cut the Lab beat first.
 - Never stage or edit in an answer the app did not produce.
 - The numbers spoken must be the numbers on screen.
 - No NASA logo, patch or footage.
 - The droplet in the Lab is still until the science lead confirms the burning rate unit. See `SETUP.md`, step 8.
-- The live answer needs the OpenRouter key in Vercel. Until then the Ask screen shows the evidence answer, which is also a fair thing to record.
+- The live answer needs the OpenRouter key in Vercel. Until then the chat panel shows the evidence as the answer, which is also a fair thing to record.
 
 ## Three deep links that are good for screenshots
 
-- `https://ember-two-eta.vercel.app/?h=exploration` : the Brief for the Exploration atmosphere, with the gravity banner and the three gap cards.
-- `https://ember-two-eta.vercel.app/map?h=exploration&zoom=moon&drill=region.moon~inv.PSI-159` : the map zoomed to the Moon Base region, with the drill panel open on 48 ACME CFI-G tests.
-- `https://ember-two-eta.vercel.app/lab/droplet` : the droplet calculator with FLEX test 20CAL10 and the validation scatter.
+- `https://ember-two-eta.vercel.app/dashboard?h=exploration` : the dashboard for the Exploration atmosphere, with the partial gravity note and the three gap findings.
+- `https://ember-two-eta.vercel.app/dashboard?h=exploration&zoom=moon&drill=region.moon~inv.PSI-159` : the map zoomed to the Moon Base region, with the drill panel open on 48 ACME CFI-G tests.
+- `https://ember-two-eta.vercel.app/lab/droplet` : the droplet model with FLEX test 20CAL10 and the validation scatter.
 
-Two more: `https://ember-two-eta.vercel.app/?h=suit` shows the fireball as a ghost, and `https://ember-two-eta.vercel.app/?h=exploration&drill=insight.I1.maxSolidO2Pct` opens the 129 BASS-II rows behind 22.2%.
+Two more: `https://ember-two-eta.vercel.app/dashboard?h=suit` shows the fireball as a ghost, and `https://ember-two-eta.vercel.app/dashboard?h=exploration&drill=insight.I1.maxSolidO2Pct` opens the 129 BASS-II rows behind 22.2%. The older addresses, such as `/map` and `/ask`, still work and redirect.
 
 ## The five real numbers to quote
 
@@ -57,15 +57,38 @@ The fireball's readout, also from the data: at the ISS cabin, burning rate 0.51 
 - The ranking is a heuristic with weights chosen by the team.
 - 722 tests rest on an assumed cabin air atmosphere. They are hollow on the map and count at half weight.
 - PSI holds no partial-gravity combustion tests, so nothing describes a flame on the Moon or Mars.
-- The six pinned answers are written but not yet reviewed, so a chip still makes a live call. See `REVIEW-CHECKLIST.md`.
+- The six pinned answers are written but not yet reviewed, so an example question in the chat still makes a live call. See `REVIEW-CHECKLIST.md`.
 - The evaluation counts are measured. The Meaning measure is still open: the science lead has not yet read the answers against their sources.
-- In the evaluation, the first choice refused "What is missing for the Moon?" in 2 of 3 rounds and answered it well in the third. If the chip gives the refusal sentence during a recording, tap it again, or record the evidence answer.
-- Search by meaning needs a download of about 51 MB on the first use of the question box. Until it is ready, search is by keyword with alias expansion, with no message.
+- In the evaluation, the first choice refused "What is missing for the Moon?" in 2 of 3 rounds and answered it well in the third. If the example gives the refusal sentence during a recording, tap it again, or record the evidence answer.
+- Search by meaning needs a download of about 51 MB the first time a question is typed in the chat. Until it is ready, search is by keyword with alias expansion, with no message.
 - The pillar mapping, the equipment tags, the plain summaries and the assumptions are SI drafts that wait on a human check.
 
-## Checks run on the build machine
+## Checks run on the redesign
 
-On 14 November 2026, against the local build, in Chrome. The checks against the production site are in the next section.
+On 14 November 2026, against the local production build of the redesign, in Chrome on an Apple M2. The site now has a start page, a dashboard, Investigations, a Lab and About, with the chat in a panel.
+
+| Check | Result |
+|---|---|
+| Unit tests, both levels of insight verification, server tests with stubbed models | 122 tests pass |
+| Every route renders in both themes, and every old address redirects | Pass, in the tests |
+| Every screen at 1440 pixels wide: start page, dashboard, Investigations, Detail, Compare, the three Lab models and the eight About tabs | All render. No console errors. No sideways scroll. |
+| Start page, dashboard, Investigations, Lab and About at 390 pixels wide | No sideways scroll |
+| The habitat dropdown: each preset, then custom sliders | The ring, the score, the fireball and the list all follow |
+| The chat panel with the local mock model: an example question and a typed question | The answer streams, is checked and lists its sources. The habitat follows the question. |
+| A question in the address, `/ask?q=`, from before the redesign | Redirects to the dashboard, opens the chat and asks it |
+| The tour, five steps | Pass. The last step opens the chat. |
+| Drill-through from the address: the region, then ACME CFI-G | 48 rows shown |
+| WebGL canvases on screen at once | One |
+| Frame rate at rest on the start page and the dashboard, CPU slowed 4 times | 60 frames a second |
+| Zoom to the Moon Base region, CPU slowed 4 times | About 250 ms of long frames. The site before the redesign took about 1,000 ms. |
+| Dragging the habitat ring, CPU slowed 4 times | No frame over 50 ms in most runs, the same as before the redesign. The average frame is longer than before, 26 ms against 19 ms, because the whole dashboard now follows the ring. |
+| Script loaded on a first visit to the start page | 634 kB unpacked, with no 3D code. The first screen before the redesign loaded 1,252 kB, 3D code included. |
+
+Not checked on the redesign yet: Lighthouse, Safari and Firefox, a real phone, and the live model on the production site.
+
+## Checks run before the redesign, on the build machine
+
+On 14 November 2026, against the local build, in Chrome. These name the screens as they were then: Brief, Map, Ask, Earth and Methods. The checks against the production site are in the next section.
 
 | Check | Result |
 |---|---|
@@ -82,7 +105,7 @@ On 14 November 2026, against the local build, in Chrome. The checks against the 
 | Ask with the local mock model: the answer streams, is checked and earns its ticks | Pass |
 | "Who won the World Cup?" | The refusal sentence. No model call. |
 
-## Checks run against the production site
+## Checks run against the production site before the redesign
 
 On 14 November 2026, against https://ember-two-eta.vercel.app, in Chrome.
 

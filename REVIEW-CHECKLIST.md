@@ -2,7 +2,7 @@
 
 Everything below was drafted by SI or written by a live model. None of it has been approved by a person. Each item says what to read, where it lives, and what to set once you agree with it.
 
-The site is at https://ember-two-eta.vercel.app. Nothing here blocks the site from working. Until an item is approved, the app keeps showing it with its "needs human check" or "SI drafted" label, or holds the feature back.
+The site is at https://ember-two-eta.vercel.app. Nothing here blocks the site from working. Until an item is approved, the About screen keeps listing it as "needs human check" or "SI drafted", or the app holds the feature back.
 
 ## How to record an approval
 
@@ -19,7 +19,7 @@ A status field takes one of three values: `needs human check`, `confirmed`, or `
 - **What it is:** six answers written by Claude Haiku 5.5 on the production site on 14 November 2026. Each passed the answer checker, which proves that ids and numbers match the evidence. It cannot prove that a sentence means what its source means. That part is yours.
 - **What to read:** every sentence of every answer, against the evidence cards named in its `cites` list. The text of each card is in `public/data/evidence.json`, under `items`, by its id.
 - **What to set when approved:** on that answer, `"reviewed": true` and a short `"reviewNote"` with your name and the date. Do this one answer at a time. Leave `"reviewed": false` on any answer you do not agree with, or delete the answer.
-- **What changes:** a chip shows its pinned answer at once, with the label "Pinned answer, reviewed by the team". Until then a chip makes a live call.
+- **What changes:** an example question in the chat panel shows its pinned answer at once. Until then it makes a live call.
 
 | Chip | Question | Sentences |
 |---|---|---|
@@ -38,9 +38,9 @@ Two sentences to look at with extra care, because each joins two facts:
 ## 2. The evaluation answers
 
 - **Files:** `eval-results/eval-2026-11-15-02-13.json` (first choice) and `eval-results/eval-2026-11-15-02-20-backup.json` (backup). The file names carry the time in UTC.
-- **What it is:** the full text of every answer from the two evaluation runs, with the checker's verdict on each sentence. The counts are on the Methods screen and in `src/config/evaluation.ts`. Both models answered 11 of 12 real questions and passed 5 of 5 trick questions. Claude Haiku 5.5 had 34 verified answers and GPT-6 Luna had 32.
+- **What it is:** the full text of every answer from the two evaluation runs, with the checker's verdict on each sentence. The counts are on the About screen, under Live answers, and in `src/config/evaluation.ts`. Both models answered 11 of 12 real questions and passed 5 of 5 trick questions. Claude Haiku 5.5 had 34 verified answers and GPT-6 Luna had 32.
 - **What to read:** every sentence with the status `kept` in every answer with the verdict `verified`. The pass bar for the Meaning measure is that no kept sentence misstates its source.
-- **What to set when approved:** in `src/config/evaluation.ts`, set `MEANING_CHECK` to a sentence that says who read the answers, when, and what was found. The Methods screen prints it.
+- **What to set when approved:** in `src/config/evaluation.ts`, set `MEANING_CHECK` to a sentence that says who read the answers, when, and what was found. The About screen prints it.
 - **If a kept sentence is wrong:** note the question number and the sentence. That is a finding about the checker, and the team decides whether to tighten it.
 
 ## 3. Two gates on the fireball and the Lab

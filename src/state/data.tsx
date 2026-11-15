@@ -80,7 +80,11 @@ export function StaticDataProvider({ data, children }: { data: Data; children: R
 
 type LoadState = { status: 'loading' } | { status: 'ready'; data: Data } | { status: 'error'; message: string }
 
-export function DataProvider({ children, skeleton }: { children: ReactNode; skeleton: ReactNode }) {
+const LoadContext = createContext<{ state: LoadState; retry: () => void } | null>(null)
+
+// Starts the download at once and holds its state. It renders its children straight away, so the
+// hero paints with no wait. Screens that need the data sit under a DataGate.
+export function DataProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
@@ -97,9 +101,18 @@ export function DataProvider({ children, skeleton }: { children: ReactNode; skel
       })
     return () => controller.abort()
   }, [attempt])
-  if (state.status === 'loading') return <>{skeleton}</>
-  if (state.status === 'error') return <LoadError message={state.message} onRetry={() => setAttempt((n) => n + 1)} />
-  return <DataContext.Provider value={state.data}>{children}</DataContext.Provider>
+  const value = useMemo(() => ({ state, retry: () => setAttempt((n) => n + 1) }), [state])
+  return <LoadContext.Provider value={value}>{children}</LoadContext.Provider>
+}
+
+// Shows the skeleton until the data is ready, then hands it to everything below.
+export function DataGate({ children, skeleton }: { children: ReactNode; skeleton: ReactNode }) {
+  const ready = useContext(DataContext)
+  const load = useContext(LoadContext)
+  if (ready) return <>{children}</>
+  if (!load || load.state.status === 'loading') return <>{skeleton}</>
+  if (load.state.status === 'error') return <LoadError message={load.state.message} onRetry={load.retry} />
+  return <DataContext.Provider value={load.state.data}>{children}</DataContext.Provider>
 }
 
 export function LoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
@@ -114,7 +127,7 @@ export function LoadError({ message, onRetry }: { message: string; onRetry: () =
   )
 }
 
-// The Ask files load when the browser is idle or on the first visit to Ask.
+// The chat files load the first time the chat panel opens.
 export type AskData = { evidence: EvidenceBundle; search: SearchIndexFile; pinned: PinnedAnswersFile }
 let askPromise: Promise<AskData> | null = null
 

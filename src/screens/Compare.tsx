@@ -103,7 +103,7 @@ export default function Compare() {
 
   return (
     <div className="page">
-      <PageHeader title="Compare investigations" lead="Two or three investigations side by side. A tinted row is the same across them. A marked row differs." />
+      <PageHeader title="Compare investigations" lead="Side by side. A tinted row is the same across them." />
       <section aria-label="Choose investigations" className="mb-6">
         <p className="field-label">Choose two or three</p>
         <ul className="m-0 flex list-none flex-wrap gap-2 p-0">

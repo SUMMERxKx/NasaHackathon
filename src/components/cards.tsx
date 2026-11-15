@@ -1,15 +1,14 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The cards: insight, ranked investigation, incident and spinoff.
+// The cards and rows: insight, ranked investigation, incident and spinoff.
 import type { ReactNode } from 'react'
-import { motion } from 'motion/react'
-import { ExternalLink } from 'lucide-react'
+import { ChevronDown, ExternalLink } from 'lucide-react'
 import type { ContextCard, Insight, Investigation, Scenario } from '../types.ts'
 import { markPath } from '../lib/mapLayout.ts'
 import { RANK_FORMULAS, RANK_WEIGHTS } from '../lib/ranking.ts'
 import type { RankParts, Ranked } from '../lib/ranking.ts'
-import { formatBytes } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
-import { Chip, ScenarioLink, SiTag, SourcedNumber, VerifiedMark, useDrillDescribed } from './ui.tsx'
+import { bar } from './Coverage.tsx'
+import { Chip, ScenarioLink, SourcedNumber, VerifiedMark, useDrillDescribed } from './ui.tsx'
 
 export const PILLAR_NAME: Record<string, string> = {
   prevention: 'Prevention',
@@ -58,9 +57,6 @@ export function InsightCard({ card, compact = false }: { card: Insight; compact?
       </p>
       <h3 className="text-[16px] font-semibold leading-snug">{card.headline}</h3>
       {!compact ? <p className="text-[14px] text-muted">{card.detail}</p> : null}
-      <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
-        <SiTag label={compact ? 'SI drafted' : undefined} />
-      </div>
     </article>
   )
 }
@@ -90,7 +86,7 @@ export function WhyRankBars({ ranked }: { ranked: Ranked }) {
                 <span className="num text-ink">{value.toFixed(2)}</span>
               </span>
               <span className="mt-0.5 block h-1.5 overflow-hidden rounded-full bg-line">
-                <span className="block h-full rounded-full bg-freefall" style={{ width: `${value * 100}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
+                <span className="block h-full bg-freefall" style={bar(value * 100)} />
               </span>
             </li>
           )
@@ -118,7 +114,7 @@ export function InformsChips({ inv }: { inv: Investigation }) {
   return (
     <>
       {inv.informs.map((id) => (
-        <span key={id} className="chip chip-ok" title="What this investigation informs. Drafted by SI, to be checked by the team.">
+        <span key={id} className="chip chip-ok" title="What this investigation informs">
           Informs: {snapshot.equipmentTags.find((t) => t.id === id)?.label.toLowerCase()}
         </span>
       ))}
@@ -145,61 +141,62 @@ export function Thumb({ inv, size = 64 }: { inv: Investigation; size?: number })
   )
 }
 
-export function RankedCard({
+// One investigation as a scannable row: rank, name, a few facts and its relevance for the habitat.
+// The parts of the ranking sit behind the arrow.
+export function InvestigationRow({
   inv,
   ranked,
   position,
-  compact = false,
+  open,
+  onToggle,
   selected,
   onSelect,
 }: {
   inv: Investigation
   ranked: Ranked
   position: number
-  compact?: boolean
-  selected?: boolean
-  onSelect?: (accession: string) => void
+  open: boolean
+  onToggle: () => void
+  selected: boolean
+  onSelect: (accession: string) => void
 }) {
   return (
-    <motion.article layout="position" transition={{ duration: 0.32, ease: [0.4, 0, 0.2, 1] }} className={`card flex flex-col gap-3 p-4 ${selected ? 'border-ember' : ''}`}>
-      <div className="flex items-start gap-3">
-        <span className="num w-6 shrink-0 pt-1 text-[14px] text-muted" aria-label={`Rank ${position}`}>
-          {position}
-        </span>
-        <Thumb inv={inv} size={compact ? 44 : 64} />
-        <div className="min-w-0 flex-1">
-          <h3 className="text-[16px] leading-tight">
-            <ScenarioLink to={`/investigations/${inv.accession}`} className="text-ink">
-              {inv.displayName}
-            </ScenarioLink>
-          </h3>
-          <p className="mt-0.5 line-clamp-2 text-[12px] text-muted">{inv.title}</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <span className="num block text-[22px] leading-none">{Math.round(ranked.score)}</span>
-          <span className="text-[10px] uppercase tracking-wide text-muted">relevance</span>
-        </div>
+    <li className={`border-b border-line last:border-b-0 ${selected ? 'bg-surface-2' : ''}`}>
+      <div className="flex items-center gap-1 pr-1 md:pr-2">
+        <ScenarioLink to={`/investigations/${inv.accession}`} className="row-link min-w-0 flex-1 !rounded-none !px-3 !py-2.5 md:!px-4">
+          <span className="num w-5 shrink-0 text-[12px] text-faint" aria-label={`Rank ${position}`}>
+            {position}
+          </span>
+          <Thumb inv={inv} size={36} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[15px] font-semibold text-ink">{inv.displayName}</span>
+            <span className="block truncate text-[12px] text-muted">
+              {PILLAR_NAME[inv.pillar]} · {FUEL_NAME[inv.fuelClass]} · <span className="num">{inv.testCount}</span> {inv.testCount === 1 ? 'test' : 'tests'} · {years(inv)}
+            </span>
+          </span>
+          <span className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-line md:block" aria-hidden="true">
+            <span className="block h-full bg-ember" style={bar(ranked.score)} />
+          </span>
+          <span className="num w-8 shrink-0 text-right text-[17px] text-ink" title="Relevance for this habitat, out of 100">
+            {Math.round(ranked.score)}
+          </span>
+        </ScenarioLink>
+        <button type="button" className="btn btn-ghost btn-icon btn-sm shrink-0" aria-expanded={open} aria-label={`Why ${inv.displayName} has this rank`} title="Why this rank" onClick={onToggle}>
+          <ChevronDown size={16} aria-hidden="true" className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        <input type="checkbox" name={`compare-${inv.accession}`} checked={selected} onChange={() => onSelect(inv.accession)} className="h-4 w-4 shrink-0 accent-[var(--ember)]" aria-label={`Select ${inv.displayName} to compare`} title="Select to compare" />
       </div>
-      {!compact ? (
-        <div className="flex flex-wrap gap-1.5">
-          <InvestigationChips inv={inv} />
-          <InformsChips inv={inv} />
+      {open ? (
+        <div className="flex flex-col gap-3 px-4 pb-4 pt-1 md:pl-[76px]">
+          <WhyRankBars ranked={ranked} />
+          <p className="text-[13px] text-muted">{ranked.reason}</p>
+          <div className="flex flex-wrap gap-1.5">
+            <InvestigationChips inv={inv} />
+            <InformsChips inv={inv} />
+          </div>
         </div>
       ) : null}
-      {!compact ? (
-        <p className="num text-[12px] text-muted">
-          {inv.testCount} {inv.testCount === 1 ? 'test' : 'tests'} · {years(inv)} · archive {formatBytes(inv.totalFileSizeBytes)}
-        </p>
-      ) : null}
-      <WhyRankBars ranked={ranked} />
-      <p className="text-[13px] text-muted">{ranked.reason}</p>
-      {onSelect ? (
-        <label className="mt-auto flex cursor-pointer items-center gap-2 text-[13px]">
-          <input type="checkbox" name={`compare-${inv.accession}`} checked={Boolean(selected)} onChange={() => onSelect(inv.accession)} className="h-4 w-4 accent-[var(--ember)]" />
-          Select to compare
-        </label>
-      ) : null}
-    </motion.article>
+    </li>
   )
 }
 

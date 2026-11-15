@@ -10,7 +10,7 @@ Do them in this order. Each says what you should see when it worked.
 - Step 4 is done. A burst of calls to `/api/ask` gets the answer 429 after the eighth.
 - Step 5 is the owner's. The build machine cannot see whether it was done.
 - Step 6 has been run. The six pinned answers are in the repository with `"reviewed": false`. They wait on the science lead.
-- Step 7 has been run for both models. The results are on the Methods screen. Both answered 11 of 12 real questions and passed 5 of 5 trick questions. The backup did not beat the first choice and no answer came back empty, so the model order and the settings in `server/config.ts` were left alone.
+- Step 7 has been run for both models. The results are on the About screen, under Live answers. Both answered 11 of 12 real questions and passed 5 of 5 trick questions. The backup did not beat the first choice and no answer came back empty, so the model order and the settings in `server/config.ts` were left alone.
 - Step 8 is open. `REVIEW-CHECKLIST.md` lists exactly what the science lead must read and what to set.
 
 ## 1. Put the site online with Vercel
@@ -47,7 +47,7 @@ Never paste the key into a chat, a file, a commit or a terminal on the build mac
 
 The name must never start with `VITE_`. Vite copies every variable with that prefix into the code the browser downloads.
 
-What you should see: `https://<your address>/api/health` returns `"configured": true`. On the Ask screen, a typed question now shows a "Live model answer" panel above the evidence, and the status line names the model.
+What you should see: `https://<your address>/api/health` returns `"configured": true`. Open the chat panel from the robot at the bottom right. A typed question is now answered by the live model in a few sentences, each with its source chips. The model that answered is named in the function's log line.
 
 Ask one question on the live site and read the function's log in Vercel before trusting it. The stream shape was read from OpenRouter's docs, not from a live call.
 
@@ -80,7 +80,7 @@ npm run eval:ask -- --site https://<your address>
 npm run eval:ask -- --site https://<your address> --use backup
 ```
 
-Each run posts 12 real questions and 5 trick questions three times, and costs under 2 cents. The script waits 8 seconds between calls to stay under the firewall limit, so a run takes about 7 minutes. Copy the summary lines into `src/config/evaluation.ts` so the Methods screen shows them. The full answers are written to `eval-results` for the science lead to read. If the backup beats the first choice, swap the two ids in `server/config.ts`. If answers come back empty, set `reasoningEffort` to `low` and `maxTokens` to 1500 in the same file.
+Each run posts 12 real questions and 5 trick questions three times, and costs under 2 cents. The script waits 8 seconds between calls to stay under the firewall limit, so a run takes about 7 minutes. Copy the summary lines into `src/config/evaluation.ts` so the About screen shows them. The full answers are written to `eval-results` for the science lead to read. If the backup beats the first choice, swap the two ids in `server/config.ts`. If answers come back empty, set `reasoningEffort` to `low` and `maxTokens` to 1500 in the same file.
 
 ## 8. Checks that wait on the science lead
 
