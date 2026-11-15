@@ -82,7 +82,7 @@ On 14 November 2026, against the local production build of the redesign, in Chro
 | Frame rate at rest on the start page and the dashboard, CPU slowed 4 times | 60 frames a second |
 | Zoom to the Moon Base region, CPU slowed 4 times | About 250 ms of long frames. The site before the redesign took about 1,000 ms. |
 | Dragging the habitat ring, CPU slowed 4 times | No frame over 50 ms in most runs, the same as before the redesign. The average frame is longer than before, 26 ms against 19 ms, because the whole dashboard now follows the ring. |
-| Entry JavaScript | 366 kB. It was 560 kB with every screen in one file. |
+| Script loaded on a first visit to the start page | 634 kB unpacked, with no 3D code. The first screen before the redesign loaded 1,252 kB, 3D code included. |
 
 Not checked on the redesign yet: Lighthouse, Safari and Firefox, a real phone, and the live model on the production site.
 
