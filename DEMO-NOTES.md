@@ -13,8 +13,8 @@ Record at 1920 by 1080. Keep the small "SI" mark in the corner of the fireball a
 | Seconds | What to do | What to say |
 |---|---|---|
 | 0 to 3 | Open `https://ember-two-eta.vercel.app/`. Hold on the start page: the sky, the round flame in freefall and the name. Press "Open the dashboard". | "On Earth a flame streams upward. In freefall it becomes a sphere." |
-| 3 to 9 | On the dashboard, open the habitat picker at the top right and pick the Exploration atmosphere. The ring glides on the map, the dial sweeps from 100 to 67, the bars shrink, the list reorders, and the fireball burns faster while its three numbers change. | "Pick your habitat. A Moon Base runs richer in oxygen. The fire burns harder, and the evidence thins out." |
-| 9 to 16 | Press "Moon zoom" on the map. Click the region caption. In the panel, click ACME CFI-G, then one test. The raw NASA row is on screen. | "Every mark is a real NASA test, one click away. Here there are 66, all gas flames. Solid material tests stop at 22.2 percent oxygen." |
+| 3 to 9 | On the dashboard, open the habitat picker at the top right and pick the Exploration atmosphere. The count of nearby NASA test records falls from 1,093 to 24, the solid and smoke rows read "No nearby rows", the gap statement changes and the three investigations reorder. | "Pick your habitat. A Moon Base runs richer in oxygen. The fire burns harder, and the evidence thins out." |
+| 9 to 16 | Scroll down to the map and press "Moon zoom". Click the region caption. In the panel, click ACME CFI-G, then one test. The raw NASA row is on screen. | "Every mark is a real NASA test, one click away. Here there are 66, all gas flames. Solid material tests stop at 22.2 percent oxygen." |
 | 16 to 19 | Open Lab. Show the droplet model with FLEX test 20CAL10: 4.29 seconds from the model beside 5 seconds measured. | "Simple models, checked against 196 real burns." |
 | 19 to 27 | Press the robot at the bottom right. Tap "What is missing for the Moon?". Then type one short question and let the live answer stream in with its source chips. | "Ask in plain words. Every sentence is checked against its source." |
 | 27 to 30 | End card: the name, the tagline, the link. | "EMBER. Know what we know before we light the Moon." |
@@ -31,11 +31,11 @@ Rules for the recording:
 
 ## Three deep links that are good for screenshots
 
-- `https://ember-two-eta.vercel.app/dashboard?h=exploration` : the dashboard for the Exploration atmosphere, with the partial gravity note and the three gap findings.
+- `https://ember-two-eta.vercel.app/dashboard?h=exploration` : the dashboard for the Exploration atmosphere, with the counts by fuel class, the gap statement and the three investigations to read first.
 - `https://ember-two-eta.vercel.app/dashboard?h=exploration&zoom=moon&drill=region.moon~inv.PSI-159` : the map zoomed to the Moon Base region, with the drill panel open on 48 ACME CFI-G tests.
 - `https://ember-two-eta.vercel.app/lab/droplet` : the droplet model with FLEX test 20CAL10 and the validation scatter.
 
-Two more: `https://ember-two-eta.vercel.app/dashboard?h=suit` shows the fireball as a ghost, and `https://ember-two-eta.vercel.app/dashboard?h=exploration&drill=insight.I1.maxSolidO2Pct` opens the 129 BASS-II rows behind 22.2%. The older addresses, such as `/map` and `/ask`, still work and redirect.
+Three more: `https://ember-two-eta.vercel.app/dashboard?h=suit` shows the empty state, with "No nearby rows" in all four classes, `https://ember-two-eta.vercel.app/lab/flame?h=suit` shows the fireball as a ghost, and `https://ember-two-eta.vercel.app/dashboard?h=exploration&drill=insight.I1.maxSolidO2Pct` opens the 129 BASS-II rows behind 22.2%. The older addresses, such as `/map` and `/ask`, still work and redirect.
 
 ## The five real numbers to quote
 
@@ -49,7 +49,9 @@ Copied from `public/data/insights.json`. The build recomputes them, and four are
 | Highest oxygen tested anywhere | 85%, in 131 inverse gas flame tests. It is the oxidizer stream, not a cabin. | I10 |
 | Evidence Coverage | 100 near the ISS cabin, 67 near the Exploration atmosphere, 0 near the spacesuit atmosphere | I12 |
 
-The fireball's readout, also from the data: at the ISS cabin, burning rate 0.51 over 39 FLEX tests and 111 of 165 nearby tests ended in extinction. At the Exploration atmosphere, 0.715 over 8 tests and 0 of 9.
+The nearby counts on the dashboard, from the same data: 1,093 test records near the ISS cabin, of which 849 rest on assumed coordinates, 43 near the Shuttle EVA preparation atmosphere, all liquid fuels, 24 near the Exploration and the Mars atmospheres, 14 near the Moon Base bound and 0 near the spacesuit atmosphere. Only the ISS cabin has a solid-material or a smoke test nearby.
+
+The fireball's readout in the Lab, also from the data: at the ISS cabin, burning rate 0.51 over 39 FLEX tests and 111 of 165 nearby tests ended in extinction. At the Exploration atmosphere, 0.715 over 8 tests and 0 of 9.
 
 ## Known limitations
 
@@ -62,6 +64,26 @@ The fireball's readout, also from the data: at the ISS cabin, burning rate 0.51 
 - In the evaluation, the first choice refused "What is missing for the Moon?" in 2 of 3 rounds and answered it well in the third. If the example gives the refusal sentence during a recording, tap it again, or record the evidence answer.
 - Search by meaning needs a download of about 51 MB the first time a question is typed in the chat. Until it is ready, search is by keyword with alias expansion, with no message.
 - The pillar mapping, the equipment tags, the plain summaries and the assumptions are SI drafts that wait on a human check.
+
+## Checks run on the counts-first dashboard
+
+On 15 November 2026, against the local production build, in Chrome on an Apple M2. The dashboard now leads with the counts of nearby NASA test records. The coverage score sits in About and the fireball in the Lab.
+
+| Check | Result |
+|---|---|
+| Unit tests, both levels of insight verification, server tests with stubbed models | 140 tests pass |
+| The nearby counts of all six presets against a separate audit of the snapshot | All match: 1,093, 43, 24, 14, 24 and 0, with the same four class counts |
+| 23 addresses at 1440 pixels wide: start page, the dashboard for each preset, Investigations, Detail, Compare, the four Lab tools and the About tabs | All render. No console errors. No sideways scroll. |
+| The same 23 addresses at 390 pixels wide | No console errors. No sideways scroll. Every class name and count of the chart fits inside it. |
+| A class count opens only its own rows: Liquid fuels for the Exploration atmosphere | 9 rows, all FLEX liquid fuel tests |
+| From a class count to an assumed row: Solid materials at the ISS cabin, then BASS, then test 1 | 229 rows, then 122, then the raw NASA row with the note that its atmosphere is assumed |
+| From a caveat count to an inverse flame: the Exploration atmosphere | 2 rows. Test 22024L2 of ACME Flame Design says its oxygen value is the oxidizer stream. |
+| An empty class: Solid materials for the spacesuit atmosphere | A panel that states the rule, calls it an evidence gap and links to the investigations, the findings and the definition |
+| Keyboard: Tab to a row of the count chart, press Enter | The panel opens on that class |
+| The tour, five steps | Pass. Step three brings the map into view. |
+| Script loaded on a first visit to the start page, the entry file and the one file it preloads | 380 kB unpacked, against 376 kB before. The charting library is 314 kB in a file of its own, fetched with the dashboard and never by the start page. |
+
+Not checked: Lighthouse, Safari and Firefox, a real phone, and the live model on the production site.
 
 ## Checks run on the redesign
 

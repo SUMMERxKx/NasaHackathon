@@ -112,6 +112,7 @@ Installed versions, from `package-lock.json`.
 | `d3-dsv` | 3.0.2 | ISC |
 | `d3-interpolate` | 3.0.2 | ISC |
 | `d3-scale` | 4.0.3 | ISC |
+| `class-variance-authority` | 0.7.1 | Apache-2.0 |
 | `clsx` | 2.1.1 | MIT |
 | `d3-shape` | 3.2.1 | ISC |
 | `framer-motion` | 14.14.0 | MIT |
@@ -121,6 +122,7 @@ Installed versions, from `package-lock.json`.
 | `react` | 19.3.1 | MIT |
 | `react-dom` | 19.3.1 | MIT |
 | `react-router-dom` | 7.18.5 | MIT |
+| `recharts` | 3.10.1 | MIT |
 | `tailwind-merge` | 3.7.0 | MIT |
 | `three` | 0.187.0 | MIT |
 | `@tailwindcss/vite` | 4.3.5 | MIT |

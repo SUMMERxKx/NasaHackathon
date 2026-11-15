@@ -1,6 +1,7 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The Lab: three simple models, each fitted to and checked against the real test tables.
-// Each tool shows one short line. The model, its notes and its limits sit behind the Notes button.
+// The Lab: three simple models, each fitted to and checked against the real test tables, and the
+// flame picture for the chosen habitat. Each tool shows one short line. The model, its notes and
+// its limits sit behind the Notes button.
 import { memo, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -13,7 +14,8 @@ import { DILUENT_FAMILIES, EXTINCTION_BINS, LAB_FUELS, burnLengthPairs, dropletK
 import { median } from '../lib/stats.ts'
 import { formatNumber, formatPercent } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
-import { scenarioQuery } from '../state/scenario.ts'
+import { useScenario } from '../state/hooks.ts'
+import { gravityLabel, scenarioQuery } from '../state/scenario.ts'
 import { GATES } from '../three/flameParams.ts'
 import { PageHeader } from '../components/AppShell.tsx'
 import { ChartFrame, LegendItem } from '../components/ChartFrame.tsx'
@@ -23,7 +25,8 @@ import { ScenarioLink, Segmented, Slider, SourcedNumber, useDrillProps, usePrefe
 const TOOLS = [
   { value: 'droplet', label: 'Droplet burn' },
   { value: 'extinction', label: 'Extinction' },
-  { value: 'gravity', label: 'Gravity bounds' },
+  { value: 'gravity', label: 'Gravity pairs' },
+  { value: 'flame', label: 'Habitat flame' },
 ]
 
 const FAMILY_STYLE: Record<DiluentFamily, { color: string; shape: 'circle' | 'square' | 'triangle' | 'diamond' }> = {
@@ -356,6 +359,9 @@ const Validation = memo(function Validation() {
           </span>
         </li>
       </ul>
+      <p className="mt-3 max-w-[640px] text-[13px] text-muted">
+        The first number is a median ratio, not an error bound for any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model.
+      </p>
       <div className="mt-3 max-w-[640px]">
         <ChartFrame title="Predicted against measured burn time" description={`A scatter of ${validation.points.length} FLEX tests. Most points sit just under the one to one line.`} aspect={0.8} minHeight={280} maxHeight={480}>
           {(size) => {
@@ -512,9 +518,9 @@ function GravityBounds() {
   const i7 = data.insightById.I7
   return (
     <div>
-      <ToolIntro line="The same samples burned in microgravity and in normal gravity. The band between is unknown, bounded.">
+      <ToolIntro line="The same samples burned in microgravity and in normal gravity. No gravity level in between was measured.">
         <p className="text-muted">
-          Saffire-II burned the same samples in microgravity and in normal gravity. For each sample, the two burn lengths bound what could happen at a gravity level in between.
+          Saffire-II burned the same samples in microgravity and in normal gravity. Each sample gives two observations, one at 0 g and one at 1 g. The line that joins them only pairs the two. It is not a measured or predicted range for Moon or Mars gravity.
         </p>
         <p>No partial-gravity test data exists in PSI yet. The Lunar-g Combustion Investigation and the Flammability of Materials on the Moon experiment are expected to add it. Source: the challenge statement.</p>
         {i7 ? (
@@ -529,14 +535,14 @@ function GravityBounds() {
           The challenge statement also notes that the ACME E-FIELD Flames experiment mimicked partial gravity through the pull of an electric field on the ions in a flame. <ScenarioLink to="/investigations/PSI-22">Open ACME E-FIELD Flames</ScenarioLink>
         </p>
         <Limits>
-          <li>This is {pairs.length} samples at one flow speed and one oxygen level, close to cabin air. It bounds the question and does not settle it.</li>
+          <li>This is {pairs.length} samples at one flow speed and one oxygen level, close to cabin air. It frames the question and does not settle it.</li>
           <li>The table gives lengths as text. "Complete" is read as the full sample length and "~ 10 cm" as 10 cm.</li>
-          <li>A gravity level between zero and one may not behave like a point between the two. No slider between them is offered.</li>
+          <li>A gravity level between zero and one may not behave like a point between the two, and may fall outside them. No slider between them is offered.</li>
           <li>One sample holds two materials and its two lengths describe different parts of it.</li>
         </Limits>
       </ToolIntro>
       <section className="card p-4" aria-label="Burn length pairs">
-        <ChartFrame title="Burn length in microgravity and in normal gravity" description={`${pairs.length} Saffire-II samples, each with a microgravity point and a normal gravity point joined by a band.`} aspect={0.5} minHeight={pairs.length * 38 + 60} maxHeight={pairs.length * 44 + 70}>
+        <ChartFrame title="Burn length in microgravity and in normal gravity" description={`${pairs.length} Saffire-II samples, each with a microgravity point and a normal gravity point. A thin line pairs the two points of a sample. Intermediate gravity was not measured.`} aspect={0.5} minHeight={pairs.length * 38 + 60} maxHeight={pairs.length * 44 + 70}>
           {(size) => {
             const box = { l: Math.min(230, size.width * 0.42), t: 8, w: 0, h: Math.max(60, size.height - 48) }
             box.w = Math.max(60, size.width - box.l - 16)
@@ -569,7 +575,7 @@ function GravityBounds() {
                       <text x={8} y={cy + 12} fontSize={11} fill="var(--muted)">
                         {p.thickness} {p.mixed ? '· two materials' : ''}
                       </text>
-                      {both ? <rect x={Math.min(x(p.ug as number), x(p.g1 as number))} y={cy - 6} width={Math.max(2, Math.abs(x(p.g1 as number) - x(p.ug as number)))} height={12} fill="var(--warn)" fillOpacity={0.22} stroke="var(--warn)" strokeDasharray="3 3" strokeOpacity={0.7} /> : null}
+                      {both ? <line x1={x(p.ug as number)} x2={x(p.g1 as number)} y1={cy} y2={cy} stroke="var(--faint)" strokeWidth={1.5} /> : null}
                       {p.ug != null ? <circle cx={x(p.ug)} cy={cy} r={6} fill="var(--freefall)" /> : null}
                       {p.g1 != null ? <path d={shapePath('diamond', 6)} transform={`translate(${x(p.g1)},${cy})`} fill="var(--ember)" /> : null}
                     </g>
@@ -582,8 +588,47 @@ function GravityBounds() {
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
           <LegendItem swatch={<span className="inline-block h-3 w-3 rounded-full bg-freefall" />}>Microgravity</LegendItem>
           <LegendItem swatch={<svg width="12" height="12" viewBox="-7 -8 14 16"><path d={shapePath('diamond', 6)} fill="var(--ember)" /></svg>}>Normal gravity</LegendItem>
-          <LegendItem swatch={<span className="inline-block h-3 w-6 border border-dashed border-warn" />}>Unknown, bounded</LegendItem>
+          <LegendItem swatch={<span className="inline-block h-0 w-6 border-t-2 border-faint" />}>Paired observations at 0 g and 1 g. Intermediate gravity not measured</LegendItem>
         </div>
+      </section>
+    </div>
+  )
+}
+
+// The flame picture for the chosen habitat, with its three sourced readouts. It moved here from
+// the dashboard, whole. The habitat dropdown on this screen drives it.
+function HabitatFlame() {
+  const { scenario, name } = useScenario()
+  return (
+    <div>
+      <ToolIntro line="How the flame picture responds to the chosen habitat. It is an illustration, not a simulation of that cabin.">
+        <p className="text-muted">
+          The picture is drawn in the browser and carries a small SI mark. Oxygen, air flow and gravity change it. The three numbers under it come from NASA tables and each opens its rows.
+        </p>
+        <div>
+          <h3 className="stat-label">What the three numbers are</h3>
+          <ul className="m-0 mt-2 flex list-disc flex-col gap-2 pl-5">
+            <li>Burn rate is the median burning rate of the nitrogen-diluted FLEX tests within 3 points of the chosen oxygen level. {GATES.burningRateUnitConfirmed ? 'It is in mm² per second.' : 'Its unit still waits on a check by the team.'}</li>
+            <li>Went out counts the FLEX tests within 3 points of oxygen where the visible flame went out. It ignores pressure, so it is not the nearby count of the dashboard, and it is not a success rate for an extinguisher.</li>
+            <li>Flame temp is a calculated temperature listed for ACME gas flames within 5 points of oxygen. It is not a measured cabin temperature.</li>
+          </ul>
+        </div>
+        <Limits>
+          <li>The temperature colours are an illustrative scale with two labelled ends. The pattern between them is drawn, not computed.</li>
+          <li>No shape between the Earth flame and the fireball is drawn, because no partial-gravity test exists in the snapshot.</li>
+          <li>
+            What each control changes, and on what basis, is listed under <ScenarioLink to="/about?section=drivers">What drives the fireball</ScenarioLink>.
+          </li>
+        </Limits>
+      </ToolIntro>
+      <section className="card max-w-[760px] p-4" aria-label="The fireball for this habitat">
+        <p className="mb-3 text-[14px]">
+          <span className="font-semibold">{name}</span>{' '}
+          <span className="num text-[13px] text-muted">
+            {formatPercent(scenario.o2)} oxygen · {formatNumber(scenario.pressurePsi, 1)} psi · {gravityLabel(scenario.gravity)} · air flow {scenario.flowCmS} cm/s
+          </span>
+        </p>
+        <FireballStage />
       </section>
     </div>
   )
@@ -596,7 +641,7 @@ export default function Lab() {
   const active = TOOLS.some((t) => t.value === tool) ? tool : 'droplet'
   return (
     <div className="page">
-      <PageHeader title="Lab" lead="Three models, each checked against the real tests">
+      <PageHeader title="Lab" lead="Three models, each checked against the real tests, and the flame picture for your habitat">
         <div className="hide-scrollbar max-w-full overflow-x-auto">
           <Segmented label="Lab tool" value={active} options={TOOLS} onChange={(v) => navigate(`/lab/${v}${scenarioQuery(params)}`, { preventScrollReset: true })} />
         </div>
@@ -604,6 +649,7 @@ export default function Lab() {
       {active === 'droplet' ? <DropletCalculator /> : null}
       {active === 'extinction' ? <ExtinctionExplorer /> : null}
       {active === 'gravity' ? <GravityBounds /> : null}
+      {active === 'flame' ? <HabitatFlame /> : null}
     </div>
   )
 }

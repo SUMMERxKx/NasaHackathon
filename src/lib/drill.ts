@@ -6,10 +6,12 @@ import type {
   DrillPath,
   DrillResult,
   DrillStep,
+  FuelClass,
   Habitat,
   Insight,
   Investigation,
   MethodConstants,
+  NearbySubset,
   Pillar,
   Scenario,
   Test,
@@ -29,6 +31,7 @@ import type { PillarLookup, Point } from './coverage.ts'
 import { D_SQUARED_FORMULA, validateDSquared } from './droplet.ts'
 import { flameLookup } from './flame.ts'
 import { burnLengthPairs, dropletSelection, extinctionBins, flexTests, parseDropletKey } from './lab.ts'
+import { FUEL_FILTERS, FUEL_LABEL, FUEL_WORD, NEARBY_FUELS, NEARBY_RULE, NEARBY_SUBSETS, isInverseFlame, nearbyTests } from './nearby.ts'
 import { RANK_FORMULAS } from './ranking.ts'
 import { inMoonRegion, onMoonEdge } from './regions.ts'
 import { byAccession, countBy } from './stats.ts'
@@ -58,7 +61,7 @@ export function encodeStep(step: DrillStep): string {
   switch (step.kind) {
     case 'coverage': return `coverage.${step.pillar}`
     case 'region': return `region.${step.id}`
-    case 'near': return `near.${n4(step.o2)},${n4(step.pressureAtm)}`
+    case 'near': return `near.${n4(step.o2)},${n4(step.pressureAtm)}${step.fuel ? `,${step.fuel}` : ''}${step.only ? `,${step.only}` : ''}`
     case 'stack': return `stack.${n4(step.o2)},${n4(step.pressureAtm)}`
     case 'rank': return `rank.${step.accession},${step.part}`
     case 'insight': return `insight.${step.id}.${step.number}`
@@ -96,10 +99,16 @@ function decodeStep(text: string): DrillStep | null {
         return value === 'moon' ? { kind, id: 'moon' } : null
       case 'near':
       case 'stack': {
-        const [a, b] = value.split(',')
+        const [a, b, ...rest] = value.split(',')
         const o2 = num(a)
         const p = num(b)
-        return o2 != null && p != null && o2 >= 0 && o2 <= 1 && p > 0 && p < 10 ? { kind, o2, pressureAtm: p } : null
+        if (o2 == null || p == null || o2 < 0 || o2 > 1 || p <= 0 || p >= 10) return null
+        if (kind === 'stack') return rest.length === 0 ? { kind, o2, pressureAtm: p } : null
+        // A nearby step may name one fuel class, then one subset. Anything else does not decode.
+        const step: Extract<DrillStep, { kind: 'near' }> = { kind, o2, pressureAtm: p }
+        if (FUEL_FILTERS.includes(rest[0] as FuelClass)) step.fuel = rest.shift() as FuelClass
+        if (NEARBY_SUBSETS.includes(rest[0] as NearbySubset)) step.only = rest.shift() as NearbySubset
+        return rest.length === 0 ? step : null
       }
       case 'rank': {
         const [accession, part] = value.split(',')
@@ -162,6 +171,7 @@ type Mark = {
   edge: Test[]
   highlight: string | null
   effective?: Record<string, number>
+  links?: { label: string; to: string }[]
 }
 
 const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
@@ -175,6 +185,21 @@ function classCounts(tests: Test[]): string {
   const c = countBy(tests, (t) => t.fuelClass)
   return `${c.solid || 0} solid, ${c.liquid || 0} liquid, ${c.gas || 0} gas`
 }
+
+// All four classes, so the parts add up to the total in the title.
+function nearbyClassCounts(tests: Test[]): string {
+  const c = countBy(tests, (t) => t.fuelClass)
+  const parts = NEARBY_FUELS.map((fuel) => `${c[fuel] || 0} ${fuel === 'aerosol' ? 'smoke and aerosol' : fuel}`)
+  if (c.unknown) parts.push(`${c.unknown} not classed`)
+  return parts.join(', ')
+}
+
+// Where to go from a nearby subset with no rows in it.
+const EMPTY_NEARBY_LINKS = [
+  { label: 'All investigations', to: '/investigations' },
+  { label: 'Evidence gap findings', to: '/about?section=findings' },
+  { label: 'How nearby is defined', to: '/about?section=nearby' },
+]
 
 export function pointLabel(point: Point): string {
   return `${formatPercent(point.o2)} oxygen and ${formatNumber(atmToPsi(point.pressureAtm), 1)} psi`
@@ -233,21 +258,37 @@ export function resolveMark(step: DrillStep, data: DrillData, scenario: Scenario
     }
     case 'near': {
       const at = { o2: step.o2, pressureAtm: step.pressureAtm }
-      const list = byNearest(
-        data.tests.filter((t) => {
-          const d = distance(t, at, m)
-          return d != null && d <= 1
-        }),
-        at,
-        m,
-      )
+      const list = byNearest(nearbyTests(data.tests, at, { fuel: step.fuel, only: step.only }, m), at, m)
+      const where = `within one unit of ${pointLabel(at)}`
+      // The words for this subset, as they read before the word test.
+      const kind = [step.fuel ? FUEL_WORD[step.fuel] : '', step.only === 'inverse' ? 'inverse-flame' : ''].filter(Boolean).join(' ')
+      const tail = step.only === 'assumed' ? ' with an assumed oxygen or pressure value' : ''
+      const narrowed = Boolean(step.fuel || step.only)
+      const inverse = list.filter(isInverseFlame).length
+      const title = narrowed
+        ? list.length === 0
+          ? `No ${kind ? `${kind} ` : ''}test${tail} ${where}.`
+          : `${plural(list.length, `${kind ? `${kind} ` : ''}test`)}${tail} ${where}.`
+        : `${plural(list.length, 'test')} ${where}: ${nearbyClassCounts(list)}.`
+      const note =
+        list.length === 0
+          ? `${narrowed ? 'No row of this kind' : 'No test record'} in the snapshot meets the nearby rule here. That is an evidence gap, not proof of safety or danger.`
+          : step.only === 'inverse'
+            ? 'An inverse flame burns a jet of oxidizer inside fuel. The oxygen value of these rows is the oxidizer stream, not a cabin atmosphere.'
+            : step.only === 'assumed'
+              ? 'The tables for these tests do not state an atmosphere. EMBER places them with a declared assumption.'
+              : inverse > 0
+                ? `${inverse} of these ${inverse === 1 ? 'is an inverse flame' : 'are inverse flames'}. Their oxygen value is the oxidizer stream, not a cabin atmosphere.`
+                : null
+      const labelParts = [step.fuel ? FUEL_LABEL[step.fuel].toLowerCase() : '', step.only === 'assumed' ? 'assumed values' : step.only === 'inverse' ? 'inverse flames' : ''].filter(Boolean)
       return {
         ...empty,
-        title: `${plural(list.length, 'test')} within one unit of ${pointLabel(at)}: ${classCounts(list)}.`,
-        label: `Near ${formatPercent(at.o2)}, ${formatNumber(atmToPsi(at.pressureAtm), 1)} psi`,
-        formula: 'One unit of distance is 4 points of oxygen or about 25 percent in pressure.',
-        note: list.length === 0 ? 'No flight test sits within one unit of this point.' : null,
+        title,
+        label: `Near ${formatPercent(at.o2)}, ${formatNumber(atmToPsi(at.pressureAtm), 1)} psi${labelParts.length > 0 ? `, ${labelParts.join(', ')}` : ''}`,
+        formula: NEARBY_RULE,
+        note,
         tests: list,
+        links: list.length === 0 ? EMPTY_NEARBY_LINKS : [],
       }
     }
     case 'stack': {
@@ -475,6 +516,7 @@ export function resolveDrill(path: DrillPath, data: DrillData, scenario: Scenari
     highlightTestId: mark.highlight,
     test: null,
     crumbs,
+    links: mark.links ?? [],
   }
   let scope = [...mark.tests, ...mark.edge]
   let trail: DrillPath = base
@@ -488,6 +530,7 @@ export function resolveDrill(path: DrillPath, data: DrillData, scenario: Scenari
     result.testIds = scope.map((t) => t.id)
     result.total = scope.length
     result.note = scope.length === 0 ? 'None of this investigation\'s tests lie behind this mark.' : null
+    result.links = []
   } else if (first.kind === 'investigation') {
     result.level = 'investigation'
   }
@@ -503,6 +546,7 @@ export function resolveDrill(path: DrillPath, data: DrillData, scenario: Scenari
     result.title = test ? `Test ${test.label} of ${data.invByAcc[test.accession]?.displayName ?? test.accession}` : 'This test is not in the current data.'
     result.note = test ? null : 'Nothing to show.'
     result.formula = null
+    result.links = []
   }
   return result
 }

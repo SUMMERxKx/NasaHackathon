@@ -1,9 +1,8 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The habitat picker. It sits at the right end of the top bar and drives everything under it.
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, SlidersHorizontal } from 'lucide-react'
 import type { Gravity, Scenario } from '../types.ts'
-import { computeCoverage, scenarioPoint } from '../lib/coverage.ts'
 import { formatNumber, formatPercent } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
 import { useScenario } from '../state/hooks.ts'
@@ -58,7 +57,6 @@ function HabitatList({ onPick }: { onPick: () => void }) {
   const data = useData()
   const { scenario, setScenario } = useScenario()
   const [custom, setCustom] = useState(scenario.presetId == null)
-  const scores = useMemo(() => Object.fromEntries(data.habitats.map((h) => [h.id, Math.round(computeCoverage(data.tests, data.lookup, scenarioPoint(h)).overall)])), [data])
   return (
     <div className="p-2">
       <ul className="m-0 flex list-none flex-col p-0" role="listbox" aria-label="Habitats">
@@ -80,9 +78,6 @@ function HabitatList({ onPick }: { onPick: () => void }) {
                   <span className="num block truncate text-[11px] leading-tight text-muted">
                     {habitatFacts(h)} · {GRAVITY_SHORT[String(h.gravity)]}
                   </span>
-                </span>
-                <span className="num shrink-0 text-[15px]" title="Evidence Coverage, out of 100. Not a safety rating.">
-                  {scores[h.id]}
                 </span>
               </button>
             </li>

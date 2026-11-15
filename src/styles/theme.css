@@ -228,7 +228,8 @@
   .data-table tr:last-child td { border-bottom: 0; }
   .data-table td:first-child, .data-table th:first-child { position: sticky; left: 0; background: var(--surface); z-index: 1; }
   .data-table th:first-child { background: var(--surface-2); z-index: 3; }
-  .data-table tr.row-link { cursor: pointer; }
+  /* A table row that opens something. It stays a table row and takes none of the layout of the link rows below. */
+  .data-table tr.row-link { cursor: pointer; display: table-row; padding: 0; border-radius: 0; }
   .data-table tr.row-link:hover td, .data-table tr.row-link:focus-visible td { background: var(--surface-2); }
   .data-table tr.row-hi td { background: color-mix(in srgb, var(--ember) 14%, var(--surface)); }
 
@@ -323,6 +324,9 @@
   .mark { transition: opacity var(--t-standard); }
   .mark-dim { opacity: 0.12; }
   .drillable { cursor: pointer; }
+  /* A row of the count chart. Orange marks the row under the pointer or the keyboard, nothing else. */
+  .count-row .count-bar { transition: fill var(--t-micro); }
+  .count-row:hover .count-bar, .count-row:focus-visible .count-bar { fill: var(--ember); }
   .drillable:focus-visible { outline: 2px solid var(--freefall); outline-offset: 2px; }
 
   .caret::after { content: ""; display: inline-block; width: 7px; height: 1em; margin-left: 2px; vertical-align: text-bottom; background: var(--ember); animation: blink 1s steps(2) infinite; }

@@ -2,12 +2,14 @@
 import { describe, expect, it } from 'vitest'
 import type { DrillStep, EvidenceItem } from '../types.ts'
 import { applyScenario, parseScenario, scenarioLine, scenarioParams } from '../state/scenario.ts'
-import { computeCoverage, scenarioPoint } from './coverage.ts'
+import { computeCoverage, isAssumed, scenarioPoint } from './coverage.ts'
 import { countBehind, decodeDrill, encodeDrill, resolveDrill, resolveMark } from './drill.ts'
 import { fieldGroups, overallFromGroups } from './field.ts'
 import { REFUSAL, checkAnswer, numbersIn, splitByCitations } from './grounding.ts'
 import { MAP_DOMAIN, STACK_RADIUS, layoutMap, mapScales } from './mapLayout.ts'
 import { EMBED_DIM, chunksFor, decodeVectors, encodeVectors, scoreMeaning } from './meaning.ts'
+import { NEARBY_FUELS, NO_PARTIAL_GRAVITY, gapStatement, isInverseFlame, nearbyDescription, nearbyReason, nearbyRows, nearbyTests, summarizeNearby } from './nearby.ts'
+import { rankAll } from './ranking.ts'
 import { buildEngine, namedInvestigations, retrieve } from './retrieve.ts'
 import { flameParams } from '../three/flameParams.ts'
 import { RAMP, SI_LABEL, SI_MARK, rampBytes, rampColorAt, rampGradient } from '../three/ramp.ts'
@@ -61,6 +63,10 @@ describe('drill codec', () => {
     { kind: 'investigation', accession: 'PSI-159' },
     { kind: 'test', id: 'PSI-159:1:12' },
     { kind: 'test', id: 'PSI-20:0:1b' },
+    { kind: 'near', o2: 0.34, pressureAtm: 0.558, fuel: 'liquid' },
+    { kind: 'near', o2: 0.21, pressureAtm: 1.0003, fuel: 'aerosol' },
+    { kind: 'near', o2: 0.21, pressureAtm: 1.0003, only: 'assumed' },
+    { kind: 'near', o2: 0.3, pressureAtm: 0.6941, fuel: 'gas', only: 'inverse' },
   ]
   it('round trips every kind of step', () => {
     for (const step of steps) expect(decodeDrill(encodeDrill([step]))).toEqual([step])
@@ -68,8 +74,15 @@ describe('drill codec', () => {
     expect(encodeDrill(path)).toBe('region.moon~inv.PSI-159~test.PSI-159:1:12')
     expect(decodeDrill(encodeDrill(path))).toEqual(path)
   })
+  it('keeps the address of the whole nearby subset and adds the fuel class after it', () => {
+    expect(encodeDrill([{ kind: 'near', o2: 0.34, pressureAtm: 0.558 }])).toBe('near.0.34,0.558')
+    expect(encodeDrill([{ kind: 'near', o2: 0.34, pressureAtm: 0.558, fuel: 'liquid' }])).toBe('near.0.34,0.558,liquid')
+    expect(encodeDrill([{ kind: 'near', o2: 0.34, pressureAtm: 0.558, fuel: 'gas', only: 'inverse' }])).toBe('near.0.34,0.558,gas,inverse')
+    // A step with no fuel class decodes with no fuel key at all, so it is the same step as before.
+    expect(Object.keys(decodeDrill('near.0.34,0.558')?.[0] ?? {})).toEqual(['kind', 'o2', 'pressureAtm'])
+  })
   it('decodes broken text to nothing', () => {
-    for (const text of ['', 'nonsense', 'region.mars', 'test.', 'coverage.fun', 'rank.PSI-1,Z', 'near.a,b', 'a~b~c~d~e', 'test.DROP TABLE']) {
+    for (const text of ['', 'nonsense', 'region.mars', 'test.', 'coverage.fun', 'rank.PSI-1,Z', 'near.a,b', 'near.0.3,0.5,wood', 'near.0.3,0.5,assumed,liquid', 'near.0.3,0.5,liquid,gas', 'near.0.3,0.5,liquid,inverse,x', 'stack.0.21,1,gas', 'a~b~c~d~e', 'test.DROP TABLE']) {
       expect(decodeDrill(text)).toBeNull()
     }
   })
@@ -134,6 +147,164 @@ describe('drill counts', () => {
     const top = resolveDrill([{ kind: 'insight', id: 'I1', number: 'maxSolidO2Pct' }], data, preset('iss'))
     expect(top.total).toBe(129)
     expect(top.highlightTestId).not.toBeNull()
+  })
+})
+
+// The six rows of the audit in the dashboard critique: total, solid, liquid, gas, smoke and aerosol,
+// investigations with a nearby row, nearby rows with an assumed value, inverse-flame rows.
+const NEARBY_AUDIT: Record<string, [number, number, number, number, number, number, number, number]> = {
+  iss: [1093, 229, 127, 618, 119, 15, 849, 11],
+  'shuttle-eva': [43, 0, 43, 0, 0, 1, 0, 0],
+  exploration: [24, 0, 9, 15, 0, 3, 0, 2],
+  'moon-bound': [14, 0, 8, 6, 0, 2, 0, 6],
+  mars: [24, 0, 9, 15, 0, 3, 0, 2],
+  suit: [0, 0, 0, 0, 0, 0, 0, 0],
+}
+
+describe('nearby counts', () => {
+  const at = (id: string) => scenarioPoint(preset(id))
+  const near = (id: string) => ({ kind: 'near' as const, o2: at(id).o2, pressureAtm: at(id).pressureAtm })
+  it('reproduce the audited counts for every preset', () => {
+    expect(snapshot.habitats.map((h) => h.id).sort()).toEqual(Object.keys(NEARBY_AUDIT).sort())
+    for (const [id, [total, solid, liquid, gas, aerosol, investigations, assumed, inverse]] of Object.entries(NEARBY_AUDIT)) {
+      const s = summarizeNearby(data.tests, at(id))
+      expect([s.total, s.byFuel.solid, s.byFuel.liquid, s.byFuel.gas, s.byFuel.aerosol, s.investigations, s.assumed, s.inverse], id).toEqual([total, solid, liquid, gas, aerosol, investigations, assumed, inverse])
+      expect(s.byFuel.unknown, id).toBe(0)
+    }
+  })
+  it('agree with the coverage result, whose formula they do not touch', () => {
+    for (const h of snapshot.habitats) {
+      const s = summarizeNearby(data.tests, at(h.id))
+      const coverage = computeCoverage(data.tests, data.lookup, at(h.id))
+      expect(s.total, h.id).toBe(coverage.nearbyTotal)
+      for (const fuel of NEARBY_FUELS) expect(s.byFuel[fuel], `${h.id} ${fuel}`).toBe(coverage.nearbyByFuelClass[fuel] ?? 0)
+    }
+  })
+  it('do not change when only gravity changes', () => {
+    const exploration = snapshot.habitats.find((h) => h.id === 'exploration')
+    const mars = snapshot.habitats.find((h) => h.id === 'mars')
+    expect(exploration?.gravity).not.toBe(mars?.gravity)
+    expect(summarizeNearby(data.tests, at('mars'))).toEqual(summarizeNearby(data.tests, at('exploration')))
+    expect(resolveDrill([near('mars')], data, preset('mars')).testIds).toEqual(resolveDrill([near('exploration')], data, preset('exploration')).testIds)
+  })
+  it('open exactly the rows each class count prints, and the classes add up to the total', () => {
+    for (const h of snapshot.habitats) {
+      const scenario = preset(h.id)
+      const s = summarizeNearby(data.tests, at(h.id))
+      const all = resolveDrill([near(h.id)], data, scenario)
+      expect(all.total, h.id).toBe(s.total)
+      const seen: string[] = []
+      for (const fuel of NEARBY_FUELS) {
+        const step: DrillStep = { ...near(h.id), fuel }
+        const result = resolveDrill([step], data, scenario)
+        expect(result.total, `${h.id} ${fuel}`).toBe(s.byFuel[fuel])
+        expect(countBehind(step, data, scenario), `${h.id} ${fuel}`).toBe(s.byFuel[fuel])
+        expect(result.groups.reduce((a, g) => a + g.count, 0), `${h.id} ${fuel}`).toBe(s.byFuel[fuel])
+        for (const id of result.testIds) expect(data.testById.get(id)?.fuelClass, id).toBe(fuel)
+        seen.push(...result.testIds)
+      }
+      // No row is in two classes and no row is left out.
+      expect(new Set(seen).size, h.id).toBe(seen.length)
+      expect([...seen].sort(), h.id).toEqual([...all.testIds].sort())
+    }
+  })
+  it('give the chart one row for each class, each with its own address and its own words', () => {
+    for (const h of snapshot.habitats) {
+      const scenario = preset(h.id)
+      const s = summarizeNearby(data.tests, at(h.id))
+      const rows = nearbyRows(s, at(h.id))
+      expect(rows.map((r) => r.fuel), h.id).toEqual(['solid', 'liquid', 'gas', 'aerosol'])
+      expect(rows.map((r) => r.label), h.id).toEqual(['Solid materials', 'Liquid fuels', 'Gas flames', 'Smoke and aerosols'])
+      for (const row of rows) {
+        const address = encodeDrill([row.step])
+        expect(address, h.id).toBe(`${encodeDrill([near(h.id)])},${row.fuel}`)
+        const result = resolveDrill(decodeDrill(address) ?? [], data, scenario)
+        expect(result.total, `${h.id} ${row.fuel}`).toBe(row.count)
+        expect(row.describe).toContain(row.count === 0 ? 'no nearby rows. Press Enter to see why.' : `${row.count} nearby test record`)
+      }
+    }
+    const exploration = summarizeNearby(data.tests, at('exploration'))
+    expect(nearbyDescription(exploration, at('exploration'), 'Exploration atmosphere')).toBe('24 NASA test records near Exploration atmosphere. Solid materials: no nearby rows. Liquid fuels: 9. Gas flames: 15. Smoke and aerosols: no nearby rows.')
+  })
+  it('never link a class count to the whole nearby subset', () => {
+    const scenario = preset('exploration')
+    const liquid = resolveDrill([{ ...near('exploration'), fuel: 'liquid' }], data, scenario)
+    expect(liquid.total).toBe(9)
+    expect(liquid.total).toBeLessThan(resolveDrill([near('exploration')], data, scenario).total)
+    expect(liquid.title).toMatch(/^9 liquid-fuel tests within one unit of 34% oxygen and 8\.2 psi/)
+  })
+  it('lead from a class count to an assumed ISS row, with the raw row and the note that it is assumed', () => {
+    const scenario = preset('iss')
+    const step: DrillStep = { ...near('iss'), fuel: 'solid' }
+    const solid = resolveDrill([step], data, scenario)
+    const id = solid.testIds.find((testId) => isAssumed(data.testById.get(testId) as never))
+    expect(id).toBeDefined()
+    expect(solid.groups.some((g) => g.assumed > 0)).toBe(true)
+    const test = data.testById.get(id as string)
+    const row = resolveDrill([step, { kind: 'investigation', accession: test?.accession as string }, { kind: 'test', id: id as string }], data, scenario)
+    expect(row.level).toBe('test')
+    expect(row.test?.id).toBe(id)
+    expect(Object.keys(row.test?.raw ?? {}).length).toBeGreaterThan(0)
+    expect(row.test?.rowIndex).toBeGreaterThanOrEqual(0)
+    expect(row.crumbs.length).toBe(3)
+    const assumed = resolveDrill([{ ...near('iss'), only: 'assumed' }], data, scenario)
+    expect(assumed.total).toBe(849)
+    expect(assumed.testIds).toContain(id)
+  })
+  it('lead from the gas count to an inverse-flame row and say what its oxygen value is', () => {
+    const scenario = preset('exploration')
+    const gas = resolveDrill([{ ...near('exploration'), fuel: 'gas' }], data, scenario)
+    const inverse = gas.testIds.filter((id) => isInverseFlame(data.testById.get(id) as never))
+    expect(inverse.length).toBe(2)
+    expect(gas.note).toMatch(/2 of these are inverse flames/)
+    expect(gas.note).toMatch(/oxidizer stream, not a cabin atmosphere/)
+    const only = resolveDrill([{ ...near('exploration'), only: 'inverse' }], data, scenario)
+    expect([...only.testIds].sort()).toEqual([...inverse].sort())
+    for (const id of only.testIds) expect(data.testById.get(id)?.fuelClass).toBe('gas')
+    expect(data.testById.get(inverse[0])?.flags).toContain('oxidizer-stream')
+    // Every inverse flame in the snapshot is flagged the same way in both places the pipeline writes.
+    expect(data.tests.filter(isInverseFlame).length).toBe(data.tests.filter((t) => t.extra.inverse).length)
+    expect(resolveDrill([{ ...near('moon-bound'), only: 'inverse' }], data, preset('moon-bound')).total).toBe(6)
+  })
+  it('open a clear empty state for the Spacesuit, with the rule and a way on', () => {
+    const scenario = preset('suit')
+    for (const step of [near('suit'), ...NEARBY_FUELS.map((fuel) => ({ ...near('suit'), fuel }))] as DrillStep[]) {
+      const result = resolveDrill([step], data, scenario)
+      expect(result.total).toBe(0)
+      expect(result.groups).toEqual([])
+      expect(result.title).toMatch(/^(0 tests|No .*test) within one unit of 100% oxygen and 4\.3 psi/)
+      expect(result.note).toMatch(/evidence gap, not proof of safety or danger/)
+      expect(result.formula).toMatch(/4 points of oxygen or about 25 percent in pressure/)
+      expect(result.links.map((l) => l.to)).toEqual(['/investigations', '/about?section=findings', '/about?section=nearby'])
+    }
+    // A subset with rows in it offers no way out, because the rows are the way on.
+    expect(resolveDrill([near('iss')], data, preset('iss')).links).toEqual([])
+  })
+  it('state one gap line for each preset, built from its counts', () => {
+    const line = (id: string) => gapStatement(summarizeNearby(data.tests, at(id)), [0.166, 0.38].includes(preset(id).gravity)).join(' ')
+    expect(line('iss')).toBe('Nearby evidence spans all four fuel classes. Most of these rows use assumed coordinates.')
+    expect(line('shuttle-eva')).toBe('Nearby evidence is limited to liquid-fuel tests.')
+    expect(line('exploration')).toBe(`No nearby solid-material or smoke tests. ${NO_PARTIAL_GRAVITY}`)
+    expect(line('moon-bound')).toBe(`No nearby solid-material or smoke tests. ${NO_PARTIAL_GRAVITY}`)
+    expect(line('mars')).toBe(line('exploration'))
+    expect(line('suit')).toBe('No test records meet the nearby oxygen-pressure rule. This is an evidence gap, not proof of safety or danger.')
+    for (const h of snapshot.habitats) expect(line(h.id)).not.toMatch(/probab|risk score|safety rating|\bsafe\b/i)
+  })
+  it('give each of the top three investigations the count its rows open to', () => {
+    for (const h of snapshot.habitats) {
+      const scenario = preset(h.id)
+      const top = rankAll(snapshot.investigations, data.testsByAcc, at(h.id), null).slice(0, 3)
+      for (const ranked of top) {
+        const behind = resolveDrill([near(h.id), { kind: 'investigation', accession: ranked.accession }], data, scenario)
+        expect(behind.total, `${h.id} ${ranked.accession}`).toBe(ranked.nearbyCount)
+      }
+    }
+    const suit = rankAll(snapshot.investigations, data.testsByAcc, at('suit'), null).slice(0, 3)
+    expect(suit.every((r) => r.nearbyCount === 0)).toBe(true)
+    expect(nearbyReason(0, 129, 'solid', true)).toBe('Solid materials. Background evidence. None of its 129 tests are nearby.')
+    expect(nearbyReason(13, 131, 'gas', true)).toBe('Gas flames. 13 of its 131 tests are nearby.')
+    expect(nearbyReason(1, 1, 'liquid', true)).toBe('Liquid fuels. 1 of its 1 test is nearby.')
+    expect(nearbyTests(data.tests, at('exploration'), { fuel: 'liquid' }).length).toBe(9)
   })
 })
 

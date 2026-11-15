@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "bundleId": "f6c46dba",
+ "bundleId": "67bec530",
  "generatedBy": "Built from the PSI snapshot and the insight cards. Wording drafted by SI and reviewed by the team.",
  "items": {
   "I1": {
@@ -27,8 +27,8 @@
   "I4": {
    "id": "I4",
    "kind": "insight",
-   "title": "The d-squared law predicts FLEX burn times to within about 5%: the median of predicted over measured is 0.951.",
-   "text": "The d-squared law predicts FLEX burn times to within about 5%: the median of predicted over measured is 0.951. For the 196 FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of 0.951. Half of the tests fall between 0.916 and 0.975. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.",
+   "title": "The d-squared law's predicted FLEX burn time has a median of 0.951 times the measured one, across 196 tests. That is a median ratio, not an error bound.",
+   "text": "The d-squared law's predicted FLEX burn time has a median of 0.951 times the measured one, across 196 tests. That is a median ratio, not an error bound. For the 196 FLEX tests that list a starting diameter, an extinction diameter, a burning rate and a burn time, the predicted burn time divided by the measured one has a median of 0.951. Half of the tests fall between 0.916 and 0.975. The median shows where the middle of the tests sits and says nothing about the error of any one test. Each prediction uses the burning rate and the diameters from its own row, so this checks that the table agrees with the law. It is not an independent test of a fire model. The burning rate column lost its unit in the file. EMBER reads it as mm² per second.",
    "href": "/?drill=insight.I4.medianRatio"
   },
   "I5": {

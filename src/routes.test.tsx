@@ -12,7 +12,8 @@ import { data, evidence, preset, snapshot } from './lib/testData.ts'
 import { makeRoutes, movedTo, pageName } from './routes.tsx'
 import About, { ABOUT_TABS, aboutTab } from './screens/About.tsx'
 import Compare from './screens/Compare.tsx'
-import Dashboard, { NO_PARTIAL_GRAVITY } from './screens/Dashboard.tsx'
+import { NO_NEARBY, NO_PARTIAL_GRAVITY } from './lib/nearby.ts'
+import Dashboard from './screens/Dashboard.tsx'
 import Hero from './screens/Hero.tsx'
 import InvestigationDetail from './screens/InvestigationDetail.tsx'
 import Investigations from './screens/Investigations.tsx'
@@ -50,9 +51,19 @@ const URLS = [
   '/lab/droplet',
   '/lab/extinction',
   '/lab/gravity',
+  '/lab/flame',
+  '/lab/flame?h=suit',
   '/about',
   ...ABOUT_TABS.map((t) => `/about?section=${t.id}`),
   '/about?section=assumptions',
+  '/about?section=coverage&h=exploration',
+  '/about?section=nearby',
+  '/dashboard?h=shuttle-eva',
+  '/dashboard?h=moon-bound',
+  '/dashboard?h=mars',
+  '/dashboard?h=exploration&drill=near.0.34,0.558,liquid',
+  '/dashboard?h=suit&drill=near.1,0.2926,solid',
+  '/dashboard?drill=near.0.21,1.0003,solid~inv.PSI-25',
   '/dashboard?drill=region.moon~inv.PSI-159',
   '/dashboard?drill=test.PSI-69:0:2',
   '/dashboard?drill=not-a-real-path',
@@ -93,15 +104,92 @@ describe('routes', () => {
     expect(html).not.toContain('top-bar')
     expect(render('/?h=suit')).toContain('href="/dashboard?h=suit"')
   })
-  it('show the not a safety rating line beside the score', () => {
-    expect(render('/dashboard').toLowerCase()).toContain('not a safety rating')
+  it('lead the dashboard with the five counts, each labelled, and write out a zero', () => {
+    const text = (url: string) => render(url).replace(/<!-- -->/g, '')
+    const iss = text('/dashboard')
+    expect(iss).toMatch(/>1,093<\/button>\s*nearby NASA test records/)
+    // The chart itself is drawn in the browser. Its accessible name carries the four class counts.
+    expect(iss).toContain('1,093 NASA test records near ISS cabin. Solid materials: 229. Liquid fuels: 127. Gas flames: 618. Smoke and aerosols: 119.')
+    expect(iss).toContain('View the 1,093 NASA rows')
+    expect(iss).not.toContain(NO_NEARBY.toLowerCase())
+    const exploration = text('/dashboard?h=exploration')
+    expect(exploration).toMatch(/>24<\/button>\s*nearby NASA test records/)
+    expect(exploration).toContain('data-drill="near.0.34,0.558"')
+    // Until the bars arrive the same rows stand as plain text, each with the address of its own class.
+    for (const fuel of ['solid', 'liquid', 'gas', 'aerosol']) expect(exploration).toContain(`data-drill="near.0.34,0.558,${fuel}"`)
+    expect(exploration).toContain('aria-label="Liquid fuels: 9 nearby test records. Press Enter for the rows."')
+    expect(exploration).toContain('aria-label="Solid materials: no nearby rows. Press Enter to see why."')
+    expect(exploration.match(new RegExp(`>${NO_NEARBY}<`, 'g'))?.length).toBe(2)
+    expect(exploration).toContain('24 NASA test records near Exploration atmosphere. Solid materials: no nearby rows. Liquid fuels: 9. Gas flames: 15. Smoke and aerosols: no nearby rows.')
+    expect(text('/dashboard?h=mars')).toContain('24 NASA test records near Mars surface habitat. Solid materials: no nearby rows. Liquid fuels: 9. Gas flames: 15. Smoke and aerosols: no nearby rows.')
+    expect(text('/dashboard?h=shuttle-eva')).toContain('43 NASA test records near Shuttle EVA preparation. Solid materials: no nearby rows. Liquid fuels: 43. Gas flames: no nearby rows. Smoke and aerosols: no nearby rows.')
+    expect(text('/dashboard?h=moon-bound')).toContain('14 NASA test records near Moon Base bound. Solid materials: no nearby rows. Liquid fuels: 8. Gas flames: 6. Smoke and aerosols: no nearby rows.')
+    const suit = text('/dashboard?h=suit')
+    expect(suit).toMatch(/>0<\/button>\s*nearby NASA test records/)
+    expect(suit).toContain('0 NASA test records near Spacesuit. Solid materials: no nearby rows. Liquid fuels: no nearby rows. Gas flames: no nearby rows. Smoke and aerosols: no nearby rows.')
+    expect(suit).toContain('Why there are none')
+    expect(suit.match(new RegExp(`>${NO_NEARBY}<`, 'g'))?.length).toBe(4)
+    expect(suit).toContain('No nearby test records. Background investigations below.')
+    expect(suit).not.toContain('Start with these investigations')
+  })
+  it('put one gap statement and its caveats beside the counts', () => {
+    const exploration = render('/dashboard?h=exploration').replace(/<!-- -->/g, '')
+    expect(exploration).toContain('No nearby solid-material or smoke tests. No partial-gravity data in this snapshot.')
+    expect(exploration).toContain('not proof of safety')
+    expect(exploration).toContain('data-drill="near.0.34,0.558,inverse"')
+    expect(exploration).toMatch(/inverse-flame rows\. Their oxygen value is the oxidizer stream, not cabin air\./)
+    expect(exploration).toContain('Gravity does not change these counts')
+    const iss = render('/dashboard').replace(/<!-- -->/g, '')
+    expect(iss).toContain('Nearby evidence spans all four fuel classes. Most of these rows use assumed coordinates.')
+    expect(iss).toMatch(/>849<\/button>\s*rows with assumed coordinates/)
+    expect(render('/dashboard?h=shuttle-eva')).toContain('Nearby evidence is limited to liquid-fuel tests.')
+  })
+  it('list three investigations with their nearby counts and no relevance bar', () => {
+    const exploration = render('/dashboard?h=exploration').replace(/<!-- -->/g, '')
+    expect(exploration).toContain('Start with these investigations')
+    expect(exploration.match(/aria-label="Rank \d"/g)).toEqual(['aria-label="Rank 1"', 'aria-label="Rank 2"', 'aria-label="Rank 3"'])
+    expect(exploration).toContain('data-drill="near.0.34,0.558~inv.PSI-159"')
+    expect(exploration).not.toContain('Relevance, out of 100')
+    const shuttle = render('/dashboard?h=shuttle-eva').replace(/<!-- -->/g, '')
+    expect(shuttle).toContain('Liquid fuels. 43 of its')
+    expect(shuttle.match(/Background evidence\./g)?.length).toBe(2)
+  })
+  it('keep the score, the flame and the findings off the dashboard and within one link of it', () => {
+    const dashboard = render('/dashboard?h=exploration')
+    expect(dashboard).not.toContain('coverage dial')
+    expect(dashboard).not.toContain('SI-generated illustration')
+    expect(dashboard.toLowerCase()).not.toContain('not a safety rating')
+    expect(dashboard).toContain('href="/lab/flame?h=exploration"')
+    expect(dashboard).toMatch(/href="\/about\?h=exploration&amp.section=coverage"/)
+    expect(dashboard).toMatch(/href="\/about\?h=exploration&amp.section=findings"/)
+    const score = render('/about?section=coverage&h=exploration')
+    expect(score).toContain('Exploration atmosphere coverage dial')
+    expect(score.toLowerCase()).toContain('not a safety rating')
+    expect(score).toContain('data-drill="coverage.overall"')
+    for (const pillar of ['prevention', 'detection', 'suppression']) expect(score).toContain(`data-drill="coverage.${pillar}"`)
+    expect(aboutTab('coverage')).toBe('methods')
+    expect(aboutTab('nearby')).toBe('methods')
+    const flame = render('/lab/flame?h=exploration')
+    expect(flame).toContain('SI-generated illustration')
+    expect(flame).toContain('data-drill="fireball.burningRate"')
+    expect(flame).toContain('data-drill="fireball.outcomes"')
+    expect(flame).toContain('data-drill="fireball.flameTemperature"')
+    expect(render('/lab/flame?h=suit')).toContain('data-drill="fireball.nearest"')
+    expect(render('/about?section=findings').match(/Verified/g)?.length).toBeGreaterThanOrEqual(12)
+  })
+  it('draw the gravity pairs with no band and say that nothing in between was measured', () => {
+    const gravity = render('/lab/gravity')
+    expect(gravity).toContain('Paired observations at 0 g and 1 g. Intermediate gravity not measured')
+    expect(gravity).not.toMatch(/bounded|Unknown, /)
+    expect(data.insightById.I4.headline).toContain('median ratio, not an error bound')
+    expect(data.insightById.I4.headline).not.toMatch(/within about/)
   })
   it('flag partial gravity only for Moon and Mars gravity', () => {
     expect(render('/dashboard?h=exploration')).toContain(NO_PARTIAL_GRAVITY)
     expect(render('/dashboard?h=iss')).not.toContain(NO_PARTIAL_GRAVITY)
   })
   it('carry a small SI mark on the fireball and on the hero sky, with the words behind it', () => {
-    for (const url of ['/', '/dashboard', '/lab/droplet']) {
+    for (const url of ['/', '/lab/flame', '/lab/droplet']) {
       const html = render(url)
       expect(html, url).toContain('SI-generated illustration')
       expect(html, url).toMatch(/>SI</)

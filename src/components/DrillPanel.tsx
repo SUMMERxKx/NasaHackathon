@@ -273,6 +273,15 @@ export function DrillPanel({ pageName }: { pageName: string }) {
             </h2>
             {result.formula ? <p className="num mt-3 bg-surface-2 px-3 py-2 text-[12px] text-muted">{result.formula}</p> : null}
             {result.note ? <p className="mt-3 text-[14px] text-muted">{result.note}</p> : null}
+            {result.links.length > 0 ? (
+              <p className="mt-4 flex flex-wrap gap-2">
+                {result.links.map((link) => (
+                  <ScenarioLink key={link.to} to={link.to} className="btn btn-secondary btn-sm">
+                    {link.label}
+                  </ScenarioLink>
+                ))}
+              </p>
+            ) : null}
           </div>
           {result.level === 'test' && result.test ? <TestDetail test={result.test} /> : null}
           {showGroups ? <Groups title="Investigations behind this mark" groups={result.groups} base={base} hrefFor={hrefFor} /> : null}
