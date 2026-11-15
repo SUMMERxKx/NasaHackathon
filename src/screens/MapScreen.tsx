@@ -101,7 +101,7 @@ export default function MapScreen() {
         <div className="flex flex-wrap items-end gap-3">
           <label className="w-full sm:w-56">
             <span className="field-label">Investigation</span>
-            <select className="select" value={inv} onChange={(e) => set('inv', e.target.value)}>
+            <select className="select" name="inv" value={inv} onChange={(e) => set('inv', e.target.value)}>
               <option value="">All investigations</option>
               {snapshot.investigations.filter((i) => i.testCount > 0).map((i) => (
                 <option key={i.accession} value={i.accession}>
@@ -112,7 +112,7 @@ export default function MapScreen() {
           </label>
           <label className="w-full sm:w-64">
             <span className="field-label">Hardware</span>
-            <select className="select" value={hw} onChange={(e) => set('hw', e.target.value)}>
+            <select className="select" name="hw" value={hw} onChange={(e) => set('hw', e.target.value)}>
               <option value="">All hardware</option>
               {snapshot.hardwareFamilies.filter((f) => f.id !== 'ground').map((f) => (
                 <option key={f.id} value={f.id}>

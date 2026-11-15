@@ -88,7 +88,7 @@ export default function Investigations() {
           </div>
           <label className="w-full sm:w-60">
             <span className="field-label">Hardware</span>
-            <select className="select" value={hw} onChange={(e) => set('hw', e.target.value)}>
+            <select className="select" name="hw" value={hw} onChange={(e) => set('hw', e.target.value)}>
               <option value="">All hardware</option>
               {snapshot.hardwareFamilies.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -99,7 +99,7 @@ export default function Investigations() {
           </label>
           <label className="w-full sm:w-56">
             <span className="field-label">Project type</span>
-            <select className="select" value={type} onChange={(e) => set('type', e.target.value)}>
+            <select className="select" name="type" value={type} onChange={(e) => set('type', e.target.value)}>
               <option value="">All types</option>
               {types.map((t) => (
                 <option key={t} value={t}>

@@ -309,7 +309,7 @@ export function useDrillDescribed() {
 
 // A number from NASA data. One click opens the rows it came from.
 export function SourcedNumber({ path, label, children, className = '' }: { path: DrillPath; label: string; children: ReactNode; className?: string }) {
-  const props = useDrillDescribed()(path, `${label}. Press Enter for its rows.`)
+  const props = useDrillDescribed()(path, `${label.replace(/\.$/, '')}. Press Enter for its rows.`)
   return (
     <button type="button" className={`sourced ${className}`} {...props} role={undefined}>
       {children}

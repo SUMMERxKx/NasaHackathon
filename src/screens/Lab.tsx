@@ -162,7 +162,7 @@ function DropletCalculator() {
           <Slider label="Oxygen" min={12} max={36} step={0.5} value={Math.round(o2 * 1000) / 10} display={formatPercent(o2)} onChange={(v) => set('lo2', String(v))} />
           <label>
             <span className="field-label">Added gas</span>
-            <select className="select" value={family} onChange={(e) => set('gas', e.target.value)}>
+            <select className="select" name="gas" value={family} onChange={(e) => set('gas', e.target.value)}>
               {DILUENT_FAMILIES.map((f) => (
                 <option key={f} value={f}>
                   {f[0].toUpperCase() + f.slice(1)}
@@ -186,7 +186,7 @@ function DropletCalculator() {
           {withAll.length > 0 ? (
             <label>
               <span className="field-label">Drive it with one FLEX row</span>
-              <select className="select" value={chosen?.id ?? ''} onChange={(e) => set('test', e.target.value)}>
+              <select className="select" name="test" value={chosen?.id ?? ''} onChange={(e) => set('test', e.target.value)}>
                 {withAll.map((test) => (
                   <option key={test.id} value={test.id}>
                     {test.label}, {formatPercent(test.o2 ?? 0)} oxygen
@@ -269,7 +269,7 @@ function DropletCalculator() {
                 <button type="button" className="btn btn-ghost btn-sm" onClick={() => (setPlaying(false), setT(0))}>
                   <RotateCcw size={14} aria-hidden="true" /> Reset
                 </button>
-                <input type="range" className="slider max-w-[220px]" min={0} max={end} step={end / 200} value={Math.min(t, end)} onChange={(e) => (setPlaying(false), setT(Number(e.target.value)))} aria-label="Scrub the burn" />
+                <input type="range" name="scrub" className="slider max-w-[220px]" min={0} max={end} step={end / 200} value={Math.min(t, end)} onChange={(e) => (setPlaying(false), setT(Number(e.target.value)))} aria-label="Scrub the burn" />
                 <span className="num text-[13px]">
                   t = {formatNumber(t, 2)} s, d = {formatNumber(diameter, 2)} mm
                 </span>
