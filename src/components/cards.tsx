@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { ExternalLink } from 'lucide-react'
 import type { ContextCard, Insight, Investigation, Scenario } from '../types.ts'
+import { markPath } from '../lib/mapLayout.ts'
 import { RANK_FORMULAS, RANK_WEIGHTS } from '../lib/ranking.ts'
 import type { RankParts, Ranked } from '../lib/ranking.ts'
 import { formatBytes } from '../lib/units.ts'
@@ -132,15 +133,16 @@ export function years(inv: Investigation): string {
   return a ?? b ?? 'dates not listed'
 }
 
+// A neutral tile for each investigation: the shape and colour of its fuel class.
+// EMBER uses no NASA logo, badge or patch, so no image from the record is shown here.
 export function Thumb({ inv, size = 64 }: { inv: Investigation; size?: number }) {
-  if (!inv.thumbnail) {
-    return (
-      <span className="flex shrink-0 items-center justify-center rounded-control bg-surface-2 text-center text-[10px] font-semibold text-muted" style={{ width: size, height: size }} aria-hidden="true">
-        {inv.displayName.slice(0, 10)}
-      </span>
-    )
-  }
-  return <img src={inv.thumbnail} alt="" loading="lazy" width={size} height={size} className="shrink-0 rounded-control object-cover" style={{ width: size, height: size }} />
+  return (
+    <span className="flex shrink-0 items-center justify-center rounded-control border border-line bg-surface-2" style={{ width: size, height: size }} aria-hidden="true">
+      <svg width={size * 0.5} height={size * 0.5} viewBox="-10 -10 20 20">
+        <path d={markPath(inv.fuelClass, 6.5)} fill={inv.fuelClass === 'unknown' ? 'none' : `var(--fuel-${inv.fuelClass})`} stroke={`var(--fuel-${inv.fuelClass})`} strokeWidth={1.5} fillOpacity={/microgravity/i.test(inv.projectType) ? 0.9 : 0.15} />
+      </svg>
+    </span>
+  )
 }
 
 export function RankedCard({

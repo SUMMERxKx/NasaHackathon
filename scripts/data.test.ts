@@ -52,6 +52,9 @@ describe('snapshot', () => {
     expect(snapshot.tests.filter((t) => t.o2Source === 'assumed').length).toBe(rows)
     expect(snapshot.counts.testsWithAssumedOxygen).toBe(rows)
   })
+  it('shows no image from a NASA record, because the PSI image is a NASA program badge', () => {
+    for (const inv of snapshot.investigations) expect(inv.thumbnail).toBeNull()
+  })
   it('keeps the raw cell beside every test', () => {
     for (const t of snapshot.tests) expect(Object.keys(t.raw).length).toBeGreaterThan(0)
   })

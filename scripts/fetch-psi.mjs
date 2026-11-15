@@ -156,15 +156,9 @@ async function main() {
       tableCount += 1
     }
 
-    const imageUrl = `${BASE}/investigations/${accession}/image`
-    try {
-      const image = await get(imageUrl)
-      const isPng = image.bytes.length > 8 && image.bytes.subarray(1, 4).toString('latin1') === 'PNG'
-      if (isPng) await save(`public/img/psi/${accession}.png`, image.bytes, imageUrl, image.status)
-      else console.log(`  ${accession}: thumbnail is not a PNG, skipped`)
-    } catch {
-      console.log(`  ${accession}: no thumbnail`)
-    }
+    // The image endpoint is not fetched. On 14 November 2026 it returned the same NASA program badge
+    // for every record. That is NASA branding, which the event rules bar, so EMBER draws its own
+    // neutral tile for each investigation instead.
     console.log(`${accession} done, ${trimmed.experimentalTable.length} table(s)`)
   }
   if (tableCount < 18) throw new Error('Tripwire: fewer than 18 tables')

@@ -11,7 +11,6 @@ The NASA Physical Sciences Informatics (PSI) repository, psi.nasa.gov. Snapshot 
 | `https://psi.nasa.gov/geode-py/ws/repo/search?source=psi&type=investigation&from=0&size=300` | The list of investigations |
 | `https://psi.nasa.gov/geode-py/ws/repo/investigations/{ACCESSION}` | One investigation record |
 | `https://psi.nasa.gov/geode-py/ws/studies/{ACCESSION}/download?source=datamanager&file={FILE}` | One experimental table, as CSV |
-| `https://psi.nasa.gov/geode-py/ws/investigations/{ACCESSION}/image` | The thumbnail image of a record |
 
 Every fetched file is listed in `data/raw/manifest.json` with its address, size and hash.
 
@@ -44,7 +43,7 @@ Every fetched file is listed in `data/raw/manifest.json` with its address, size 
 | PSI-142 | Cool flame counterflow study | Quantitative Studies of Cool Flame Transitions at Radiation / Stretch Extinction Using Counterflow Flames | `10.60555/80qf-vj95` | CC0-1.0 |
 | PSI-159 | ACME CFI-G | Advanced Combustion via Microgravity Experiments / Cool Flames Investigation with Gases | `10.60555/cyt1-kh64` | CC0-1.0 |
 
-The thumbnail images in `public/img/psi` are the representative images of these PSI records.
+No image from a PSI record is shown in EMBER. The image endpoint of PSI returned the same NASA program badge for every record, which is NASA branding, so EMBER draws its own neutral tile for each investigation.
 
 ## The ten challenge resources
 

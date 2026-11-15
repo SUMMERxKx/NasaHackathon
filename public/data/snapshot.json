@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "buildId": "57291b09",
+ "buildId": "4b3955ad",
  "fetchedAt": "2026-11-14T22:26:52Z",
  "generatedBy": "Built from the NASA PSI repository by the EMBER pipeline. Code and plain summaries were SI drafted and reviewed by the team.",
  "counts": {
@@ -278,7 +278,7 @@
     }
    },
    "totalFileSizeBytes": 2180435304347,
-   "thumbnail": "/img/psi/PSI-10.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -449,7 +449,7 @@
     }
    },
    "totalFileSizeBytes": 2035568427496,
-   "thumbnail": "/img/psi/PSI-20.png",
+   "thumbnail": null,
    "pillar": "prevention",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -625,7 +625,7 @@
     }
    },
    "totalFileSizeBytes": 2005536295241,
-   "thumbnail": "/img/psi/PSI-21.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -827,7 +827,7 @@
    ],
    "files": null,
    "totalFileSizeBytes": 950212491107,
-   "thumbnail": "/img/psi/PSI-22.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -1145,7 +1145,7 @@
     }
    },
    "totalFileSizeBytes": 782172126062,
-   "thumbnail": "/img/psi/PSI-23.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -1341,7 +1341,7 @@
     }
    },
    "totalFileSizeBytes": 274631106141,
-   "thumbnail": "/img/psi/PSI-25.png",
+   "thumbnail": null,
    "pillar": "prevention",
    "secondaryPillars": [],
    "fuelClass": "solid",
@@ -1496,7 +1496,7 @@
     }
    },
    "totalFileSizeBytes": 163551372412,
-   "thumbnail": "/img/psi/PSI-26.png",
+   "thumbnail": null,
    "pillar": "prevention",
    "secondaryPillars": [
     "suppression"
@@ -1649,7 +1649,7 @@
     }
    },
    "totalFileSizeBytes": 718889568684,
-   "thumbnail": "/img/psi/PSI-39.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "liquid",
@@ -1752,7 +1752,7 @@
     }
    },
    "totalFileSizeBytes": 41765333,
-   "thumbnail": "/img/psi/PSI-47.png",
+   "thumbnail": null,
    "pillar": "detection",
    "secondaryPillars": [],
    "fuelClass": "aerosol",
@@ -1839,7 +1839,7 @@
     }
    },
    "totalFileSizeBytes": 7743,
-   "thumbnail": "/img/psi/PSI-60.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -1934,7 +1934,7 @@
     }
    },
    "totalFileSizeBytes": 9694,
-   "thumbnail": "/img/psi/PSI-62.png",
+   "thumbnail": null,
    "pillar": "prevention",
    "secondaryPillars": [],
    "fuelClass": "solid",
@@ -2281,7 +2281,7 @@
    ],
    "files": null,
    "totalFileSizeBytes": 1224752113090,
-   "thumbnail": "/img/psi/PSI-68.png",
+   "thumbnail": null,
    "pillar": "suppression",
    "secondaryPillars": [],
    "fuelClass": "liquid",
@@ -2638,7 +2638,7 @@
    ],
    "files": null,
    "totalFileSizeBytes": 923832535657,
-   "thumbnail": "/img/psi/PSI-69.png",
+   "thumbnail": null,
    "pillar": "suppression",
    "secondaryPillars": [],
    "fuelClass": "liquid",
@@ -2751,7 +2751,7 @@
     }
    },
    "totalFileSizeBytes": 12250600201,
-   "thumbnail": "/img/psi/PSI-98.png",
+   "thumbnail": null,
    "pillar": "prevention",
    "secondaryPillars": [],
    "fuelClass": "solid",
@@ -2857,7 +2857,7 @@
    ],
    "files": null,
    "totalFileSizeBytes": 16931016137,
-   "thumbnail": "/img/psi/PSI-99.png",
+   "thumbnail": null,
    "pillar": "prevention",
    "secondaryPillars": [],
    "fuelClass": "solid",
@@ -2955,7 +2955,7 @@
     }
    },
    "totalFileSizeBytes": 35210765052,
-   "thumbnail": "/img/psi/PSI-100.png",
+   "thumbnail": null,
    "pillar": "prevention",
    "secondaryPillars": [],
    "fuelClass": "solid",
@@ -3106,7 +3106,7 @@
     }
    },
    "totalFileSizeBytes": 6308124750,
-   "thumbnail": "/img/psi/PSI-101.png",
+   "thumbnail": null,
    "pillar": "detection",
    "secondaryPillars": [],
    "fuelClass": "aerosol",
@@ -3299,7 +3299,7 @@
     }
    },
    "totalFileSizeBytes": 657608178,
-   "thumbnail": "/img/psi/PSI-102.png",
+   "thumbnail": null,
    "pillar": "detection",
    "secondaryPillars": [],
    "fuelClass": "aerosol",
@@ -3417,7 +3417,7 @@
     }
    },
    "totalFileSizeBytes": 72914598688,
-   "thumbnail": "/img/psi/PSI-106.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -3555,7 +3555,7 @@
     }
    },
    "totalFileSizeBytes": 6946864573,
-   "thumbnail": "/img/psi/PSI-107.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -3633,7 +3633,7 @@
     }
    },
    "totalFileSizeBytes": 264404901,
-   "thumbnail": "/img/psi/PSI-115.png",
+   "thumbnail": null,
    "pillar": "detection",
    "secondaryPillars": [],
    "fuelClass": "aerosol",
@@ -3764,7 +3764,7 @@
     }
    },
    "totalFileSizeBytes": 70820870,
-   "thumbnail": "/img/psi/PSI-117.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "liquid",
@@ -3911,7 +3911,7 @@
     }
    },
    "totalFileSizeBytes": 748117,
-   "thumbnail": "/img/psi/PSI-142.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
@@ -4031,7 +4031,7 @@
     }
    },
    "totalFileSizeBytes": 2085592429259,
-   "thumbnail": "/img/psi/PSI-159.png",
+   "thumbnail": null,
    "pillar": "fundamentals",
    "secondaryPillars": [],
    "fuelClass": "gas",
