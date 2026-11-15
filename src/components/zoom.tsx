@@ -34,7 +34,9 @@ export function useZoomState({ axes, base, onZoom }: { axes: ZoomAxes; base?: Zo
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latest = useRef({ axes, onZoom })
   latest.current = { axes, onZoom }
-  useEffect(() => {
+  // Before paint, so a chart whose axes just changed never shows a frame of the old view, which
+  // would flash the reset button and move the card.
+  useLayoutEffect(() => {
     if (pending.current) clearTimeout(pending.current)
     pending.current = null
     setView((v) => (sameView(v, start, axes) ? v : start))
