@@ -1,35 +1,31 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The Atmosphere Map. Every test is a mark on oxygen against pressure, beside the habitat.
-// On the dashboard it zooms: Ctrl or Command with the wheel, or a trackpad pinch, zooms around
-// the pointer, a drag pans a zoomed map, Shift and a drag zooms to a box, and the zoom buttons
-// and the reset sit in the map's toolbar. A gesture moves the drawn layers by one transform and
-// the marks are laid out again only once it rests.
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+// Given onZoom it zooms with the zoom every chart shares (zoom.tsx): Ctrl or Command with the
+// wheel, or a trackpad pinch, zooms around the pointer, a drag pans a zoomed map, Shift and a drag
+// zooms to a box, and the zoom buttons and the reset sit in the map's toolbar. A gesture moves the
+// drawn layers by one transform and the marks are laid out again only once it rests.
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 'react'
-import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 import type { DrillPath, Habitat, Scenario, Test } from '../types.ts'
 import { fieldGroups, overallFromGroups } from '../lib/field.ts'
 import {
   MAP_DOMAIN,
   STACK_RADIUS,
-  boxDomain,
-  clampDomain,
   encodeZoom,
+  fromView,
   layoutMap,
+  mapAxes,
   mapScales,
   markPath,
   markPathAt,
   normoxicPoints,
   oxygenTicks,
-  panBy,
   plottable,
   pointGroups,
   pressureTicks,
   ringRadii,
-  roundDomain,
   sameDomain,
-  viewTransform,
-  zoomAt,
+  toView,
 } from '../lib/mapLayout.ts'
 import type { MapBox, MapDomain, MapMark, MapStack } from '../lib/mapLayout.ts'
 import { inScope } from '../lib/mapScope.ts'
@@ -43,18 +39,11 @@ import { ChartFrame } from './ChartFrame.tsx'
 import type { FrameSize } from './ChartFrame.tsx'
 import { oxygenText, pressureText } from './DrillPanel.tsx'
 import { drillProps, usePrefersReducedMotion } from './ui.tsx'
+import { ZoomBoxRect, ZoomControls, ZoomHint, useZoomGestures, useZoomState } from './zoom.tsx'
+import type { ZoomDomain } from '../lib/zoom.ts'
 
 export const MOON_DOMAIN: MapDomain = { psi: [3, 17], o2Pct: [22, 100] }
-// A zoom button doubles or halves the view. The address catches up once a gesture has rested.
-const ZOOM_STEP = 2
-const ADDRESS_DELAY = 250
-const SETTLE_DELAY = 160
-
-type Gesture =
-  | { kind: 'pan'; startX: number; startY: number; moved: boolean; next: MapDomain | null }
-  | { kind: 'box'; startX: number; startY: number; moved: boolean; endX: number; endY: number }
-  | { kind: 'wheel'; next: MapDomain }
-  | null
+const MAP_AXES = mapAxes()
 
 type Hover =
   | { kind: 'mark'; mark: MapMark; x: number; y: number }
@@ -222,50 +211,10 @@ export function AtmosphereMap({
   // The view the map shows. It follows the address, and it moves first when the map is zoomed,
   // so the address is written once a gesture rests rather than on every step of it.
   const base = zoom ?? (zoomMoon ? MOON_DOMAIN : MAP_DOMAIN)
-  const baseKey = encodeZoom(base)
-  const [view, setView] = useState<MapDomain>(base)
-  const pending = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const report = useRef(onZoom)
-  report.current = onZoom
-  useEffect(() => {
-    if (pending.current) clearTimeout(pending.current)
-    pending.current = null
-    setView((v) => (sameDomain(v, base) ? v : base))
-    // The key stands for the domain, so the effect runs only when the address really changed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseKey])
-  useEffect(() => () => {
-    if (pending.current) clearTimeout(pending.current)
-  }, [])
-  const zoomTo = useCallback((next: MapDomain | null, delay = 0) => {
-    const target = next ? roundDomain(clampDomain(next)) : MAP_DOMAIN
-    setView((v) => (sameDomain(v, target) ? v : target))
-    if (pending.current) clearTimeout(pending.current)
-    const write = () => {
-      pending.current = null
-      report.current?.(sameDomain(target, MAP_DOMAIN) ? null : target)
-    }
-    if (delay > 0) pending.current = setTimeout(write, delay)
-    else write()
-  }, [])
+  const zoomState = useZoomState({ axes: MAP_AXES, base: toView(base), onZoom: onZoom ? (next) => onZoom(next ? fromView(next) : null) : undefined })
+  const view = useMemo(() => fromView(zoomState.view), [zoomState.view])
   const zoomable = Boolean(onZoom)
-  const whole = sameDomain(view, MAP_DOMAIN)
-  const deepest = sameDomain(zoomAt(view, 0.5, 0.5, ZOOM_STEP), view)
-  const controls = zoomable ? (
-    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Map zoom">
-      <button type="button" className="chip" onClick={() => zoomTo(zoomAt(view, 0.5, 0.5, ZOOM_STEP))} disabled={deepest} aria-label="Zoom in" title="Zoom in. Or hold Ctrl or Command and scroll over the map, or pinch.">
-        <ZoomIn size={13} aria-hidden="true" />
-      </button>
-      <button type="button" className="chip" onClick={() => zoomTo(zoomAt(view, 0.5, 0.5, 1 / ZOOM_STEP))} disabled={whole} aria-label="Zoom out" title="Zoom out">
-        <ZoomOut size={13} aria-hidden="true" />
-      </button>
-      {!whole ? (
-        <button type="button" className="chip chip-on" onClick={() => zoomTo(null)}>
-          <RotateCcw size={13} aria-hidden="true" /> Reset to all tests
-        </button>
-      ) : null}
-    </div>
-  ) : null
+  const controls = zoomable ? <ZoomControls axes={MAP_AXES} label="Map zoom" noun="map" reset="Reset to all tests" {...zoomState} /> : null
   const bar = controls ? (
     <div className="flex flex-wrap items-center gap-1.5">
       {controls}
@@ -286,7 +235,7 @@ export function AtmosphereMap({
           colorOf={colorOf}
           showField={showField}
           domain={view}
-          onView={zoomable ? zoomTo : null}
+          onView={zoomable ? zoomState.zoomTo : null}
           showRegion={showRegion}
           showRing={showRing}
           showPresets={showPresets}
@@ -320,7 +269,7 @@ function MapBody({
   colorOf?: (accession: string) => string
   showField: boolean
   domain: MapDomain
-  onView: ((next: MapDomain, delay?: number) => void) | null
+  onView: ((next: ZoomDomain, delay?: number) => void) | null
   showRegion: boolean
   showRing: boolean
   showPresets: boolean
@@ -506,131 +455,24 @@ function MapBody({
   }
 
   // ---- zoom gestures --------------------------------------------------------
-  const gesture = useRef<Gesture>(null)
   const dataLayer = useRef<HTMLDivElement>(null)
   const labelLayer = useRef<SVGGElement>(null)
   const ringLayer = useRef<HTMLDivElement>(null)
   const fieldLayer = useRef<HTMLDivElement>(null)
-  const boxRect = useRef<SVGRectElement>(null)
   const surface = useRef<SVGRectElement>(null)
-  const frame = useRef(0)
-  const settle = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [hint, setHint] = useState(false)
-  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  // Move every drawn layer to where it sits in the next view, with one transform each and no render.
-  const preview = useCallback(
-    (next: MapDomain | null) => {
-      const svgLayers = [labelLayer.current]
-      const htmlLayers = [dataLayer.current, ringLayer.current, fieldLayer.current]
-      if (!next) {
-        for (const el of svgLayers) el?.removeAttribute('transform')
-        for (const el of htmlLayers) if (el) el.style.transform = ''
-        return
-      }
-      const { kx, ky, tx, ty } = viewTransform(domain, next, box)
-      for (const el of svgLayers) el?.setAttribute('transform', `matrix(${kx},0,0,${ky},${tx},${ty})`)
-      // The ring and the glow are laid out from the corner of the plot, not of the chart.
-      const ox = kx * box.left + tx - box.left
-      const oy = ky * box.top + ty - box.top
-      for (const el of htmlLayers) if (el) el.style.transform = `matrix(${kx},0,0,${ky},${ox},${oy})`
-    },
-    [domain, box],
-  )
-  // At most one preview a frame, of wherever the gesture has got to by then.
-  const schedule = () => {
-    if (frame.current) return
-    frame.current = requestAnimationFrame(() => {
-      frame.current = 0
-      const g = gesture.current
-      const target = g?.kind === 'wheel' || g?.kind === 'pan' ? g.next : null
-      if (target) preview(target)
-    })
-  }
-  // A new view has been drawn, so the layers drop their stand-in transform before it is shown.
-  useLayoutEffect(() => {
-    preview(null)
-  }, [preview])
-  useEffect(
-    () => () => {
-      if (frame.current) cancelAnimationFrame(frame.current)
-      if (settle.current) clearTimeout(settle.current)
-      if (hintTimer.current) clearTimeout(hintTimer.current)
-    },
-    [],
-  )
-  const land = useCallback(
-    (next: MapDomain) => {
-      if (!onView) return
-      if (sameDomain(roundDomain(clampDomain(next)), domain)) preview(null)
-      onView(next, ADDRESS_DELAY)
-    },
-    [onView, domain, preview],
-  )
-  // The wheel zooms only with Ctrl or Command held, which is also how a trackpad pinch arrives,
-  // so scrolling the page over the map still scrolls the page.
-  useEffect(() => {
-    const el = surface.current
-    if (!el || !onView) return
-    const onWheel = (event: WheelEvent) => {
-      if (!(event.ctrlKey || event.metaKey)) {
-        if (!hint) setHint(true)
-        if (hintTimer.current) clearTimeout(hintTimer.current)
-        hintTimer.current = setTimeout(() => setHint(false), 1400)
-        return
-      }
-      const rect = el.ownerSVGElement?.getBoundingClientRect()
-      const px = event.clientX - (rect?.left ?? 0)
-      const py = event.clientY - (rect?.top ?? 0)
-      if (!inBox(px, py)) return
-      event.preventDefault()
-      const scale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 400 : 1
-      const dy = event.deltaY * scale
-      const factor = Math.exp(-dy * (Math.abs(dy) < 50 ? 0.01 : 0.002))
-      const g = gesture.current
-      const from = g?.kind === 'wheel' ? g.next : domain
-      const next = zoomAt(from, (px - box.left) / box.width, 1 - (py - box.top) / box.height, factor)
-      gesture.current = { kind: 'wheel', next }
-      setHover(null)
-      schedule()
-      if (settle.current) clearTimeout(settle.current)
-      settle.current = setTimeout(() => {
-        settle.current = null
-        const done = gesture.current
-        gesture.current = null
-        if (done?.kind === 'wheel') land(done.next)
-      }, SETTLE_DELAY)
-    }
-    el.addEventListener('wheel', onWheel, { passive: false })
-    return () => el.removeEventListener('wheel', onWheel)
+  const zoomGestures = useZoomGestures({
+    axes: MAP_AXES,
+    domain: toView(domain),
+    box,
+    onView,
+    surface,
+    layers: { svg: [labelLayer], html: [dataLayer, ringLayer, fieldLayer] },
+    onStart: () => setHover(null),
   })
 
   const onMove = (event: ReactPointerEvent<SVGRectElement>) => {
     const { px, py } = local(event)
-    const g = gesture.current
-    if (g && g.kind !== 'wheel') {
-      if (!g.moved && Math.hypot(px - g.startX, py - g.startY) > 4) {
-        g.moved = true
-        setHover(null)
-        event.currentTarget.style.cursor = g.kind === 'pan' ? 'grabbing' : 'crosshair'
-      }
-      if (!g.moved) return
-      if (g.kind === 'pan') {
-        g.next = panBy(domain, (px - g.startX) / box.width, (py - g.startY) / box.height)
-        schedule()
-      } else {
-        g.endX = Math.min(box.left + box.width, Math.max(box.left, px))
-        g.endY = Math.min(box.top + box.height, Math.max(box.top, py))
-        const r = boxRect.current
-        if (r) {
-          r.setAttribute('x', String(Math.min(g.startX, g.endX)))
-          r.setAttribute('y', String(Math.min(g.startY, g.endY)))
-          r.setAttribute('width', String(Math.abs(g.endX - g.startX)))
-          r.setAttribute('height', String(Math.abs(g.endY - g.startY)))
-          r.setAttribute('visibility', 'visible')
-        }
-      }
-      return
-    }
+    if (zoomGestures.move(event, px, py)) return
     if (dragState.current) {
       if (Math.hypot(px - dragState.current.startX, py - dragState.current.startY) > 4) dragState.current.moved = true
       if (dragState.current.moved) {
@@ -658,27 +500,10 @@ function MapBody({
       return
     }
     // Shift and a drag draws a box to zoom to. A plain drag pans, once the map is zoomed in.
-    if (!onView || event.button > 0 || !inBox(px, py)) return
-    if (event.shiftKey) gesture.current = { kind: 'box', startX: px, startY: py, moved: false, endX: px, endY: py }
-    else if (zoomed) gesture.current = { kind: 'pan', startX: px, startY: py, moved: false, next: null }
-    else return
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }
-  const endGesture = (event: ReactPointerEvent<SVGRectElement>): boolean => {
-    const g = gesture.current
-    if (!g || g.kind === 'wheel') return false
-    gesture.current = null
-    event.currentTarget.style.cursor = ''
-    if (g.kind === 'box') boxRect.current?.setAttribute('visibility', 'hidden')
-    if (!g.moved) return false
-    if (g.kind === 'pan' && g.next) land(g.next)
-    if (g.kind === 'box' && Math.abs(g.endX - g.startX) > 6 && Math.abs(g.endY - g.startY) > 6) {
-      land(boxDomain(domain, box, { x: g.startX, y: g.startY }, { x: g.endX, y: g.endY }))
-    }
-    return true
+    zoomGestures.down(event, px, py)
   }
   const onUp = (event: ReactPointerEvent<SVGRectElement>) => {
-    if (endGesture(event)) return
+    if (zoomGestures.end(event)) return
     const { px, py } = local(event)
     const wasDrag = dragState.current?.moved
     const grabbed = dragState.current != null
@@ -831,13 +656,10 @@ function MapBody({
           onPointerMove={onMove}
           onPointerDown={onDown}
           onPointerUp={onUp}
-          onPointerCancel={(event) => {
-            endGesture(event)
-            preview(null)
-          }}
+          onPointerCancel={zoomGestures.cancel}
           onPointerLeave={() => setHover(null)}
         />
-        {onView ? <rect ref={boxRect} visibility="hidden" pointerEvents="none" fill="var(--ember)" fillOpacity={0.08} stroke="var(--ember)" strokeDasharray="4 3" /> : null}
+        {onView ? <ZoomBoxRect boxRect={zoomGestures.boxRect} /> : null}
         <g ref={labelLayer}>
         {/* The habitat presets sit above the clipped marks, so a label at the edge of the plot is
             never cut. Only presets inside the view are drawn. */}
@@ -923,11 +745,7 @@ function MapBody({
           </div>
         </div>
       ) : null}
-      {hint ? (
-        <div className="card card-solid pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 px-3 py-2 text-[13px]" role="status">
-          Hold Ctrl or Command and scroll to zoom, or pinch
-        </div>
-      ) : null}
+      <ZoomHint show={zoomGestures.hint} />
       {tip ? (
         <div
           className="card card-solid pointer-events-none absolute z-10 max-w-[260px] px-3 py-2 text-[12px]"

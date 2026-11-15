@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Investigation, Test } from '../types.ts'
-import { unplottedNote } from '../lib/mapLayout.ts'
+import { encodeZoom, parseZoom, unplottedNote } from '../lib/mapLayout.ts'
 import { materialFamily } from '../lib/parse.ts'
 import { countBy } from '../lib/stats.ts'
 import { atmToPsi, formatNumber, formatPercent } from '../lib/units.ts'
@@ -13,6 +13,7 @@ import { PageHeader } from '../components/AppShell.tsx'
 import { AtmosphereMap, MapLegend } from '../components/AtmosphereMap.tsx'
 import { FUEL_NAME, PILLAR_NAME, years } from '../components/cards.tsx'
 import { EmptyState, ScenarioLink } from '../components/ui.tsx'
+import { useZoomParam } from '../components/zoom.tsx'
 
 const SERIES = ['var(--fuel-gas)', 'var(--fuel-aerosol)', 'var(--warn)']
 
@@ -28,6 +29,7 @@ type Row = { label: string; cells: (inv: Investigation, tests: Test[]) => string
 export default function Compare() {
   const { snapshot, invByAcc, testsByAcc } = useData()
   const [params, setParams] = useSearchParams()
+  const [zoom, setZoom] = useZoomParam('zoom', parseZoom, encodeZoom)
   const ids = (params.get('ids') ?? '').split(',').filter((id) => invByAcc[id]).slice(0, 3)
   const toggle = (accession: string) => {
     const next = ids.includes(accession) ? ids.filter((a) => a !== accession) : [...ids, accession].slice(-3)
@@ -172,6 +174,8 @@ export default function Compare() {
               <AtmosphereMap
                 tests={tests}
                 colorOf={colorOf}
+                zoom={zoom}
+                onZoom={setZoom}
                 title="Their tests on one map"
                 footer={
                   <div className="mt-3 flex flex-col gap-2">
