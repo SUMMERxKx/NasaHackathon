@@ -40,3 +40,13 @@ export function viewCsvName(filters: (string | null | undefined)[]): string {
     .replace(/-+$/, '')
   return `ember-${slug || 'plotted'}-tests.csv`
 }
+
+// Hands the viewer a CSV file made in the browser. Nothing is sent anywhere.
+export function downloadCsv(name: string, text: string) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = name
+  link.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}

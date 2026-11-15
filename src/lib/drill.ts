@@ -73,7 +73,8 @@ export function encodeStep(step: DrillStep): string {
     case 'bin': return `bin.${step.chart},${esc(step.key)}`
     case 'investigation': return `inv.${step.accession}`
     case 'test': return `test.${step.id}`
-    case 'scope': return `scope.${step.pillar ?? ''},${step.fuel ?? ''},${step.inv ?? ''},${step.hw ?? ''}`
+    // The search, when there is one, is a fifth part written q=, so a four-part address still reads.
+    case 'scope': return `scope.${step.pillar ?? ''},${step.fuel ?? ''},${step.inv ?? ''},${step.hw ?? ''}${step.q ? `,q=${esc(step.q)}` : ''}`
   }
 }
 
@@ -145,11 +146,13 @@ function decodeStep(text: string): DrillStep | null {
       case 'test':
         return TEST_ID.test(value) ? { kind: 'test', id: value } : null
       case 'scope': {
-        const [pillar, fuel, inv, hw, ...rest] = value.split(',')
+        const [pillar, fuel, inv, hw, search, ...rest] = value.split(',')
         if (rest.length > 0 || hw == null) return null
-        const scope = makeScope({ pillar, fuel, inv, hw })
+        if (search != null && !/^q=./.test(search)) return null
+        const q = search == null ? '' : decodeURIComponent(search.slice(2))
+        const scope = makeScope({ pillar, fuel, inv, hw, q })
         // Every part given must be well formed, and at least one must be given.
-        const given = [pillar, fuel, inv, hw].filter(Boolean).length
+        const given = [pillar, fuel, inv, hw, q].filter(Boolean).length
         if (!scopeActive(scope) || Object.keys(scope).length !== given) return null
         return { kind: 'scope', ...scope }
       }

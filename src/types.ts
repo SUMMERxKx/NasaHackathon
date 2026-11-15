@@ -267,7 +267,7 @@ export type DrillStep =
   | { kind: 'investigation'; accession: string }
   | { kind: 'test'; id: string }
   // The map filter a mark was drawn under. It narrows the mark before it to the tests of the filter.
-  | { kind: 'scope'; pillar?: PillarOrFundamentals; fuel?: FuelClass; inv?: string; hw?: string }
+  | { kind: 'scope'; pillar?: PillarOrFundamentals; fuel?: FuelClass; inv?: string; hw?: string; q?: string }
 
 export type DrillPath = DrillStep[]
 

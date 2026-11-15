@@ -5,10 +5,11 @@
 // The coverage score, the flame picture and the general findings live in About and the Lab.
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowRight, Flame, Focus, Gauge, Lightbulb, Play, SlidersHorizontal, Sun, Table2 } from 'lucide-react'
+import { ArrowRight, Download, Flame, Focus, Gauge, Lightbulb, Play, SlidersHorizontal, Sun, Table2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardToolbar } from '@/components/ui/card.tsx'
 import type { Test } from '../types.ts'
 import { distance } from '../lib/coverage.ts'
+import { downloadCsv, testsToCsv, viewCsvName } from '../lib/csv.ts'
 import { FUEL_CLASSES, encodeZoom, parseZoom, plottable } from '../lib/mapLayout.ts'
 import type { MapDomain } from '../lib/mapLayout.ts'
 import { NEARBY_FUELS, gapStatement, nearbyReason, summarizeNearby } from '../lib/nearby.ts'
@@ -25,7 +26,7 @@ import type { Column } from '../components/DataTable.tsx'
 import { oxygenText, pressureText } from '../components/DrillPanel.tsx'
 import { NearbyCounts } from '../components/NearbyCounts.tsx'
 import { PILLAR_NAME } from '../components/cards.tsx'
-import { Chip, ScenarioLink, SourcedNumber } from '../components/ui.tsx'
+import { Chip, EmptyState, ScenarioLink, SearchBox, SourcedNumber } from '../components/ui.tsx'
 
 const PILLAR_FILTERS = ['prevention', 'detection', 'suppression', 'fundamentals']
 const NEAR_CLASSES = FUEL_CLASSES.filter((c) => c.id !== 'unknown')
@@ -40,16 +41,19 @@ function MapCard() {
   const fuel = params.get('fuel') ?? ''
   const inv = params.get('inv') ?? ''
   const hw = params.get('hw') ?? ''
+  const query = params.get('q') ?? ''
   const table = params.get('view') === 'table'
   // The coverage glow is a scientific layer drawn as a soft glow, so it waits to be asked for.
   const field = params.get('field') === '1'
   const zoomParam = params.get('zoom')
   const zoom = zoomParam === 'moon'
   const zoomView = useMemo(() => parseZoom(zoomParam), [zoomParam])
-  // One scope for the heading, the table and everything on the map, drills included.
-  const scope = useMemo(() => makeScope({ pillar, fuel, inv, hw }), [pillar, fuel, inv, hw])
+  // One scope for the heading, the table, the CSV and everything on the map, drills included.
+  // The search is one part of it, so search and filters always count the same tests.
+  const scope = useMemo(() => makeScope({ pillar, fuel, inv, hw, q: query }), [pillar, fuel, inv, hw, query])
   const filtered = scopeActive(scope)
-  const [showFilters, setShowFilters] = useState(filtered)
+  const categorical = Boolean(scope.pillar || scope.fuel || scope.inv || scope.hw)
+  const [showFilters, setShowFilters] = useState(categorical)
   const set = useCallback(
     (key: string, value: string) => {
       setParams(
@@ -64,10 +68,39 @@ function MapCard() {
     },
     [setParams],
   )
+  const clearAll = () =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        for (const key of ['q', 'pillar', 'fuel', 'inv', 'hw']) next.delete(key)
+        return next
+      },
+      { replace: true, preventScrollReset: true },
+    )
   const onZoom = useCallback((next: MapDomain | null) => set('zoom', next ? encodeZoom(next) : ''), [set])
   const plotted = useMemo(() => data.tests.filter(plottable), [data.tests])
   const shown = useMemo(() => scopeTests(plotted, invByAcc, scope), [plotted, invByAcc, scope])
   const drillScope = useMemo(() => scopeStep(scope), [scope])
+  const label = scopeLabel(scope, invByAcc, data.hardwareName)
+  // Exactly the tests in view, nearest first as the table opens, with the coordinate source columns.
+  const downloadView = () => {
+    const names = Object.fromEntries(snapshot.investigations.map((i) => [i.accession, i.displayName]))
+    const rows = [...shown].sort((a, b) => (distance(a, point) ?? Infinity) - (distance(b, point) ?? Infinity))
+    downloadCsv(viewCsvName([label]), testsToCsv(rows, names))
+  }
+  const heading = (
+    <span className="font-display text-[16px] font-semibold">
+      {shown.length} of {plotted.length} tests
+    </span>
+  )
+  const empty = (
+    <EmptyState title={scope.q ? `No plotted test matches "${scope.q}"${categorical ? ' with these filters' : ''}` : 'No plotted test matches these filters'}>
+      {scope.q ? 'Search looks in test ids and labels, investigations, fuels or materials, fuel classes, outcomes and table names. ' : 'Clear a filter to see more. '}
+      <button type="button" className="btn btn-secondary btn-sm mt-3" onClick={clearAll}>
+        {scope.q && categorical ? 'Clear the search and filters' : scope.q ? 'Clear the search' : 'Clear the filters'}
+      </button>
+    </EmptyState>
+  )
   const columns: Column<Test>[] = [
     { key: 'inv', header: 'Investigation', cell: (t) => invByAcc[t.accession].displayName, sort: (t) => invByAcc[t.accession].displayName },
     { key: 'label', header: 'Test', cell: (t) => t.label, sort: (t) => t.label },
@@ -88,13 +121,27 @@ function MapCard() {
       <button type="button" className="chip" aria-pressed={table} onClick={() => set('view', table ? '' : 'table')}>
         <Table2 size={13} aria-hidden="true" /> Table
       </button>
-      <button type="button" className={`chip ${filtered ? 'chip-on' : ''}`} aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>
+      <button type="button" className={`chip ${categorical ? 'chip-on' : ''}`} aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>
         <SlidersHorizontal size={13} aria-hidden="true" /> Filters
       </button>
     </div>
   )
   return (
-    <section id="atmosphere-map" className="card scroll-mt-24 p-3 md:p-4 lg:col-span-12" aria-label="Atmosphere map">
+    <section id="atmosphere-map" className="card min-w-0 scroll-mt-24 p-3 md:p-4 lg:col-span-12" aria-label="Atmosphere map">
+      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <SearchBox
+          className="w-full sm:w-80"
+          value={query}
+          onChange={(v) => set('q', v)}
+          label="Search the plotted tests by id, investigation, fuel or material"
+          placeholder="Search test id, investigation, fuel"
+        />
+        {scope.q ? (
+          <span className="num text-[12px] text-muted" role="status">
+            {shown.length} of {plotted.length} match "{scope.q}"{categorical ? ' within the filters' : ''}
+          </span>
+        ) : null}
+      </div>
       {showFilters ? (
         <div className="mb-3 flex flex-col gap-2 border-b border-line pb-3" role="group" aria-label="Map filters">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -130,12 +177,23 @@ function MapCard() {
           </div>
         </div>
       ) : null}
-      {table ? (
+      {shown.length === 0 ? (
         <>
           <div className="panel-head">
-            <span className="font-display text-[16px] font-semibold">
-              {shown.length} of {plotted.length} tests
-            </span>
+            {heading}
+            {toolbar}
+          </div>
+          {empty}
+        </>
+      ) : table ? (
+        <>
+          <div className="panel-head">
+            <div className="flex flex-wrap items-center gap-2">
+              {heading}
+              <button type="button" className="btn btn-secondary btn-sm" onClick={downloadView} title={`Saves ${viewCsvName([label])}`}>
+                <Download size={14} aria-hidden="true" /> Download this view (CSV)
+              </button>
+            </div>
             {toolbar}
           </div>
           <DataTable
@@ -166,7 +224,7 @@ function MapCard() {
               <MapLegend />
               {filtered ? (
                 <p className="text-[12px] text-muted">
-                  Only the {shown.length} tests of the filter are drawn: {scopeLabel(scope, invByAcc, data.hardwareName)}. The Moon Base counts and every drill count these tests only.
+                  Only the {shown.length} tests of the filter are drawn: {label}. The Moon Base counts and every drill count these tests only.
                 </p>
               ) : null}
             </div>

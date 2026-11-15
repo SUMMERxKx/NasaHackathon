@@ -5,7 +5,7 @@ import { useEffect, useMemo } from 'react'
 import { Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { Download, ExternalLink } from 'lucide-react'
 import type { ColumnProfile, Investigation, TableProfile, Test } from '../types.ts'
-import { testsToCsv } from '../lib/csv.ts'
+import { downloadCsv, testsToCsv } from '../lib/csv.ts'
 import { formatBytes, formatNumber } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
 import { useDrill } from '../state/hooks.ts'
@@ -15,15 +15,6 @@ import type { Column } from '../components/DataTable.tsx'
 import { oxygenText, pressureText } from '../components/DrillPanel.tsx'
 import { InformsChips, InvestigationChips, Thumb, years } from '../components/cards.tsx'
 import { ScenarioLink, useDrillDescribed } from '../components/ui.tsx'
-
-export function downloadCsv(name: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }))
-  const link = document.createElement('a')
-  link.href = url
-  link.download = name
-  link.click()
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
 
 const CLASS_WORDS: Record<string, string> = { constant: 'Fixed', factor: 'Varied in steps', continuous: 'Varied', identifier: 'Identifier', notes: 'Notes' }
 

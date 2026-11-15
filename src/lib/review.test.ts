@@ -2,12 +2,15 @@
 // Search matching, the CSV of a filtered view, the note on tests that are not plotted and the
 // thickness kept as NASA wrote it.
 import { describe, expect, it } from 'vitest'
-import type { Test } from '../types.ts'
+import type { DrillStep, Test } from '../types.ts'
 import { CSV_COLUMNS, testsToCsv, viewCsvName } from './csv.ts'
 import { ambiguousThickness, burnLengthPairs } from './lab.ts'
 import { plottable, unplottedNote, unplottedReason } from './mapLayout.ts'
 import { investigationSearchText, matchesTerms, searchTerms, testSearchText } from './search.ts'
-import { data, snapshot } from './testData.ts'
+import { decodeDrill, encodeDrill, resolveDrill } from './drill.ts'
+import { makeScope, scopeFromParams, scopeLabel, scopeStep, scopeTests } from './mapScope.ts'
+import { moonCounts } from './regions.ts'
+import { data, preset, snapshot } from './testData.ts'
 
 const makeTest = (over: Partial<Test>): Test => ({
   id: 'X:0:1', accession: 'X', table: 't', rowIndex: 1, label: '1', fuel: 'PMMA', fuelClass: 'solid',
@@ -114,5 +117,40 @@ describe('thickness kept as written', () => {
     const flagged = burnLengthPairs(data.tests).filter((p) => p.thicknessLikely)
     expect(flagged.map((p) => p.label)).toEqual(['2-4', '2-5', '2-6'])
     expect(flagged.every((p) => p.thickness === '037 mm')).toBe(true)
+  })
+})
+
+describe('search inside the map filter scope', () => {
+  const plotted = data.tests.filter(plottable)
+  it('reads the search from the dashboard address and narrows the same set as the filters', () => {
+    const scope = scopeFromParams(new URLSearchParams('inv=PSI-69&q=  Heptane  '))
+    expect(scope).toEqual({ inv: 'PSI-69', q: 'Heptane' })
+    const view = scopeTests(plotted, data.invByAcc, scope)
+    expect(view.length).toBeGreaterThan(0)
+    expect(view.every((t) => t.accession === 'PSI-69' && /heptane/i.test(t.fuel ?? ''))).toBe(true)
+    expect(view.length).toBeLessThan(scopeTests(plotted, data.invByAcc, makeScope({ inv: 'PSI-69' })).length)
+    expect(scopeLabel(scope, data.invByAcc)).toBe('FLEX, matching "Heptane"')
+    expect(viewCsvName([scopeLabel(scope, data.invByAcc)])).toBe('ember-FLEX-matching-Heptane-tests.csv')
+    expect(makeScope({ q: '   ' })).toEqual({})
+  })
+  it('gives the Moon Base drill the same tests as the searched view', () => {
+    const scope = makeScope({ q: 'heptane' })
+    const view = scopeTests(data.tests, data.invByAcc, scope)
+    const result = resolveDrill([{ kind: 'region', id: 'moon' }, scopeStep(scope) as DrillStep], data, preset('iss'))
+    expect(result.total).toBe(moonCounts(view).total)
+    expect(result.title).toContain('matching "heptane"')
+  })
+  it('writes the search into the drill address and reads it back', () => {
+    const path: DrillStep[] = [{ kind: 'region', id: 'moon' }, scopeStep(makeScope({ inv: 'PSI-69', q: 'n-heptane, 50%' })) as DrillStep]
+    const text = encodeDrill(path)
+    expect(text).toBe('region.moon~scope.,,PSI-69,,q=n-heptane%2C%2050%25')
+    expect(decodeDrill(text)).toEqual(path)
+    expect(decodeDrill('region.moon~scope.,,,,q=silicone')).toEqual([{ kind: 'region', id: 'moon' }, { kind: 'scope', q: 'silicone' }])
+    for (const bad of ['region.moon~scope.,,,,x', 'region.moon~scope.,,,,q=', 'region.moon~scope.,,,,q=%20']) expect(decodeDrill(bad)).toBeNull()
+  })
+  it('exports the searched view as exactly its rows', () => {
+    const view = scopeTests(plotted, data.invByAcc, makeScope({ q: 'saffire' }))
+    const rows = testsToCsv(view, Object.fromEntries(snapshot.investigations.map((i) => [i.accession, i.displayName]))).trimEnd().split('\n').slice(1)
+    expect(rows.map((r) => r.split(',')[0]).sort()).toEqual(view.map((t) => t.id).sort())
   })
 })
