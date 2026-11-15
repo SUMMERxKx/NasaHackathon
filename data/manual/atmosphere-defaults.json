@@ -1,0 +1,17 @@
+{
+  "generatedBy": "Drafted by SI from the build brief and the PSI record text. Every entry needs a human check by the team.",
+  "defaults": [
+    { "accession": "PSI-26", "o2": 0.21, "pressureAtm": 1.0, "reason": "BASS ran in the Microgravity Science Glovebox in cabin air. Some tests used nitrogen to suppress the flame.", "status": "needs human check" },
+    { "accession": "PSI-102", "o2": 0.21, "pressureAtm": 1.0, "reason": "SAME generated and measured smoke in cabin air on the ISS.", "status": "needs human check" },
+    { "accession": "PSI-101", "o2": 0.21, "pressureAtm": 1.0, "reason": "SAME-R used the SAME hardware in cabin air on the ISS.", "status": "needs human check" },
+    { "accession": "PSI-47", "o2": 0.21, "pressureAtm": 1.0, "reason": "DAFT sampled ISS cabin air. Nothing was burned.", "status": "needs human check" },
+    { "accession": "PSI-107", "o2": 0.21, "pressureAtm": 1.0, "reason": "SPICE burned gas jet flames in a coflow of cabin air in the glovebox.", "status": "needs human check" },
+    { "accession": "PSI-106", "o2": 0.21, "pressureAtm": 1.0, "reason": "SLICE used the same flow duct as SPICE, in cabin air.", "status": "needs human check" },
+    { "accession": "PSI-98", "o2": null, "pressureAtm": 1.0, "reason": "Saffire-I ran in a Cygnus cargo vehicle cabin, near one atmosphere. Oxygen comes from the table.", "status": "needs human check" },
+    { "accession": "PSI-99", "o2": null, "pressureAtm": 1.0, "reason": "Saffire-II ran in a Cygnus cargo vehicle cabin, near one atmosphere. Oxygen comes from the table.", "status": "needs human check" },
+    { "accession": "PSI-100", "o2": null, "pressureAtm": 1.0, "reason": "Saffire-III ran in a Cygnus cargo vehicle cabin, near one atmosphere. Its table has no oxygen column.", "status": "needs human check" },
+    { "accession": "PSI-25", "o2": null, "pressureAtm": 1.0, "reason": "BASS-II ran in the Microgravity Science Glovebox at cabin pressure. Oxygen comes from the table.", "status": "needs human check" },
+    { "accession": "PSI-20", "o2": null, "pressureAtm": 1.0, "reason": "The ACME BRE table lists oxygen levels for each test day and no pressure. One atmosphere is assumed.", "status": "needs human check" },
+    { "accession": "PSI-23", "o2": null, "pressureAtm": 1.0, "reason": "A note in the ACME s-Flame table says the atmosphere is about 1 atm. Oxygen comes from the table.", "status": "needs human check" }
+  ]
+}

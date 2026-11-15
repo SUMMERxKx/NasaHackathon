@@ -1,0 +1,11 @@
+{
+  "generatedBy": "Chosen by the team from the challenge statement and NASA exploration atmosphere reports. Wording drafted by SI.",
+  "habitats": [
+    { "id": "iss", "name": "ISS cabin", "o2": 0.21, "pressurePsi": 14.7, "gravity": 0, "gravityLabel": "microgravity", "source": "Challenge statement, sea level pressure" },
+    { "id": "shuttle-eva", "name": "Shuttle EVA preparation", "o2": 0.265, "pressurePsi": 10.2, "gravity": 0, "gravityLabel": "microgravity", "source": "NASA exploration atmosphere reports, NTRS 20130013505" },
+    { "id": "exploration", "name": "Exploration atmosphere", "o2": 0.34, "pressurePsi": 8.2, "gravity": 0.166, "gravityLabel": "Moon gravity 0.166 g", "source": "NASA Exploration Atmospheres Working Group, NTRS 20130013505 and NTRS 20150021491" },
+    { "id": "moon-bound", "name": "Moon Base bound", "o2": 0.3, "pressurePsi": 10.2, "gravity": 0.166, "gravityLabel": "Moon gravity 0.166 g", "source": "Challenge statement: 30% or greater at 10.2 psi or less" },
+    { "id": "mars", "name": "Mars surface habitat", "o2": 0.34, "pressurePsi": 8.2, "gravity": 0.38, "gravityLabel": "Mars gravity 0.38 g", "source": "The same exploration atmosphere, with Mars gravity" },
+    { "id": "suit", "name": "Spacesuit", "o2": 1.0, "pressurePsi": 4.3, "gravity": 0, "gravityLabel": "any gravity", "source": "Challenge statement" }
+  ]
+}

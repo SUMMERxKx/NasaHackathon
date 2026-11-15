@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>EMBER: what do we really know about fire where you are going?</title>
+    <meta name="description" content="EMBER maps NASA's microgravity fire evidence for the crew habitat you care about. Pick a habitat, see what the flight tests cover, and see where the gaps are. Built with NASA open data from the PSI repository." />
+    <meta property="og:title" content="EMBER: a fire evidence map for crew habitats" />
+    <meta property="og:description" content="Pick a habitat. See what NASA's microgravity fire tests cover, what they tell us, and where the gaps are." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0b1120" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // Sets the theme before the first paint, so there is no flash.
+      try {
+        var choice = localStorage.getItem('ember-theme') || 'system'
+        var dark = choice === 'dark' || (choice !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (error) {
+        document.documentElement.dataset.theme = 'dark'
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>EMBER needs JavaScript to draw its charts. The data is NASA open data from the PSI repository at psi.nasa.gov.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

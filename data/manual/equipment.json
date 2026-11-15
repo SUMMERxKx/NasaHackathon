@@ -1,0 +1,28 @@
+{
+  "generatedBy": "Drafted by SI from the PSI records. Every entry needs a human check by the team.",
+  "tags": [
+    { "id": "detectors", "label": "Smoke and fire detectors" },
+    { "id": "extinguishers", "label": "Extinguishers and suppressants" },
+    { "id": "materials", "label": "Material selection and flammability screening" },
+    { "id": "atmosphere", "label": "Habitat atmosphere and ventilation design" }
+  ],
+  "informs": [
+    { "accession": "PSI-102", "tags": ["detectors"], "basis": "The record says SAME will provide technology for an advanced fire detector for future spacecraft.", "status": "needs human check" },
+    { "accession": "PSI-101", "tags": ["detectors"], "basis": "The record says SAME-R results can lead to technology for an advanced fire detector.", "status": "needs human check" },
+    { "accession": "PSI-47", "tags": ["detectors"], "basis": "The record says this research will impact the development of novel fire and smoke detection systems.", "status": "needs human check" },
+    { "accession": "PSI-115", "tags": ["detectors"], "basis": "The record says its smoke particle models would lead to better smoke detection devices.", "status": "needs human check" },
+    { "accession": "PSI-69", "tags": ["extinguishers", "atmosphere"], "basis": "The record says FLEX measured the effectiveness of gaseous fire suppressants. Its table varies oxygen and pressure.", "status": "needs human check" },
+    { "accession": "PSI-68", "tags": ["extinguishers", "atmosphere"], "basis": "FLEX-2 extended FLEX. Its table lists oxygen from 0.17 to 0.3 and pressure from 0.5 to 3 atm.", "status": "needs human check" },
+    { "accession": "PSI-26", "tags": ["extinguishers", "materials"], "basis": "The BASS record covers burning and suppression of solids and the link to the NASA-STD-6001 Test 1 screening method.", "status": "needs human check" },
+    { "accession": "PSI-25", "tags": ["materials", "atmosphere"], "basis": "The record says BASS-II helps engineers select the safest materials. Its table varies oxygen and flow.", "status": "needs human check" },
+    { "accession": "PSI-98", "tags": ["materials"], "basis": "The record compares low gravity flammability limits with NASA's normal gravity screening test.", "status": "needs human check" },
+    { "accession": "PSI-99", "tags": ["materials"], "basis": "The record compares low gravity flammability limits with NASA's normal gravity screening test.", "status": "needs human check" },
+    { "accession": "PSI-100", "tags": ["materials"], "basis": "The record compares low gravity flammability limits with NASA's normal gravity screening test.", "status": "needs human check" },
+    { "accession": "PSI-20", "tags": ["materials", "atmosphere"], "basis": "The record says BRE emulates the burning of condensed materials such as PMMA and Nylon. Its table varies oxygen.", "status": "needs human check" },
+    { "accession": "PSI-62", "tags": ["materials"], "basis": "The record says this research provides predictive tools for screening new materials' flammability limits.", "status": "needs human check" },
+    { "accession": "PSI-39", "tags": ["atmosphere"], "basis": "The CFI table varies oxygen, helium and pressure for droplet flames.", "status": "needs human check" },
+    { "accession": "PSI-10", "tags": ["atmosphere"], "basis": "The Flame Design tables vary oxygen and pressure for gas flames.", "status": "needs human check" },
+    { "accession": "PSI-159", "tags": ["atmosphere"], "basis": "The CFI-G tables vary oxygen and pressure for gas flames.", "status": "needs human check" },
+    { "accession": "PSI-23", "tags": ["atmosphere"], "basis": "The s-Flame table lists oxygen near 21 and 30 percent.", "status": "needs human check" }
+  ]
+}

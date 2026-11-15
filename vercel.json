@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run ci",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/ask.ts": { "maxDuration": 60, "includeFiles": "public/data/evidence.json" },
+    "api/health.ts": { "maxDuration": 10, "includeFiles": "public/data/evidence.json" }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
