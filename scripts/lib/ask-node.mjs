@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { buildEngine, retrieve } from '../../src/lib/retrieve.ts'
+import { buildTopicVocab, screenQuestion } from '../../src/lib/topic.ts'
 import { fromHabitat, scenarioLine } from '../../src/state/scenario.ts'
 import { ROOT } from './util.mjs'
 
@@ -13,7 +14,7 @@ export function loadLocal() {
   const evidence = read('public/data/evidence.json')
   const search = read('public/data/search-index.json')
   const evalSet = read('data/manual/eval-questions.json')
-  return { snapshot, evidence, search, evalSet, engine: buildEngine(search) }
+  return { snapshot, evidence, search, evalSet, engine: buildEngine(search), topic: buildTopicVocab(search) }
 }
 
 export function siteArg() {
@@ -27,6 +28,11 @@ export function siteArg() {
 }
 
 // The same retrieval code as the app, in keyword mode so the result is repeatable.
+// The same topic screen as the chat panel and the server. A question it stops is never sent.
+export function passesTopic(local, question) {
+  return screenQuestion(question, local.topic).ok
+}
+
 export function prepare(local, question, habitatId) {
   const habitat = local.snapshot.habitats.find((h) => h.id === (habitatId || 'iss'))
   const scenario = fromHabitat(habitat)
@@ -37,8 +43,8 @@ export function prepare(local, question, habitatId) {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-// The firewall allows 8 requests a minute from one address, so calls are spaced out.
-const GAP_MS = 8000
+// The site allows 6 questions a minute and 60 an hour from one address, so calls are spaced out.
+const GAP_MS = 10500
 let lastCallAt = 0
 
 async function post(site, body) {
@@ -46,7 +52,7 @@ async function post(site, body) {
     const wait = lastCallAt + GAP_MS - Date.now()
     if (wait > 0) await sleep(wait)
     lastCallAt = Date.now()
-    const response = await fetch(`${site}/api/ask`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(40000) })
+    const response = await fetch(`${site}/api/ask`, { method: 'POST', headers: { 'content-type': 'application/json', origin: site }, body: JSON.stringify(body), signal: AbortSignal.timeout(40000) })
     if (response.status !== 429 || attempt >= 3) return response
     await response.arrayBuffer()
     await sleep(60000)

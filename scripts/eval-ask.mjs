@@ -5,7 +5,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { checkAnswer, hasVerdictLanguage } from '../src/lib/grounding.ts'
-import { askSite, loadLocal, prepare, siteArg } from './lib/ask-node.mjs'
+import { askSite, loadLocal, passesTopic, prepare, siteArg } from './lib/ask-node.mjs'
 import { ROOT, toJson } from './lib/util.mjs'
 
 const site = siteArg()
@@ -20,6 +20,10 @@ let keptSentences = 0
 let verdictSlips = 0
 
 for (const q of [...local.evalSet.real, ...local.evalSet.trick]) {
+  if (!passesTopic(local, q.question)) {
+    rows.push({ n: q.n, verdict: 'gate', kept: 0, removed: 0, model: 'none', note: 'Stopped by the topic screen. No model call.' })
+    continue
+  }
   const prepared = prepare(local, q.question, q.habitat)
   if (!prepared.result.hasEvidence) {
     rows.push({ n: q.n, verdict: 'gate', kept: 0, removed: 0, model: 'none', note: 'Stopped by the no-evidence gate. No model call.' })

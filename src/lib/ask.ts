@@ -6,7 +6,7 @@ import type { AskRequest } from '../types.ts'
 export const FIRST_WORD_MS = 12000
 export const TOTAL_MS = 30000
 
-export type LiveFailure = 'timeout' | 'network' | 'rate_limited' | 'error'
+export type LiveFailure = 'timeout' | 'network' | 'rate_limited' | 'off_topic' | 'error'
 export type LiveMeta = { model: string; label: string; bundleId: string; evidenceIds: string[] }
 export type LiveResult = { ok: true; text: string; meta: LiveMeta } | { ok: false; reason: LiveFailure }
 
@@ -60,6 +60,8 @@ export async function askLive(
       body: JSON.stringify(request),
     })
     if (response.status === 429) return { ok: false, reason: 'rate_limited' }
+    // The server's topic screen refused the question before any model call.
+    if (response.status === 422) return { ok: false, reason: 'off_topic' }
     if (!response.ok || !response.body || !(response.headers.get('content-type') ?? '').includes('text/event-stream')) {
       return { ok: false, reason: 'error' }
     }

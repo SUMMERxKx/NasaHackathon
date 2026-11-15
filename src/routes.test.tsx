@@ -5,7 +5,7 @@ import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { AppShell } from './components/AppShell.tsx'
 import { RouteError } from './components/RouteError.tsx'
-import ChatPanel, { CHAT_NOTE, CHIPS } from './components/chat/ChatPanel.tsx'
+import ChatPanel, { CHAT_NOTE, CHAT_SCOPE, CHIPS } from './components/chat/ChatPanel.tsx'
 import { decodeDrill, resolveDrill } from './lib/drill.ts'
 import { appHref } from './lib/links.ts'
 import { data, evidence, preset, snapshot } from './lib/testData.ts'
@@ -283,14 +283,16 @@ describe('chat panel', () => {
       </StaticDataProvider>,
     )
   }
-  it('shows the example questions and one small line, and no account of how answers are made', () => {
+  it('shows the example questions, what it answers and one small line, and no account of how answers are made', () => {
     const html = panel()
     for (const chip of CHIPS) expect(html).toContain(chip.question)
     expect(CHAT_NOTE).toContain('They can make mistakes, so check the sources.')
     expect(html).toContain('They can make mistakes, so check the sources.')
     expect(html).not.toContain('How an answer is made')
     expect(html).not.toContain('OpenRouter')
-    expect(html.match(/<p[ >]/g)?.length ?? 0).toBeLessThanOrEqual(2)
+    expect(CHAT_SCOPE).toBe("Ask about NASA's microgravity fire tests in EMBER")
+    expect(html).toContain('microgravity fire tests in EMBER')
+    expect(html.match(/<p[ >]/g)?.length ?? 0).toBeLessThanOrEqual(3)
   })
   it('stays closed until it is opened, behind a small launcher', () => {
     const html = render('/dashboard')
