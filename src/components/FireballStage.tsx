@@ -1,15 +1,16 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The fireball's stage: the poster or the live view, the temperature scale, the view switch,
-// the readout of sourced numbers and the visible SI label. Nothing is conveyed by the canvas alone.
+// three sourced numbers and the small SI mark. Nothing is conveyed by the canvas alone.
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { Play } from 'lucide-react'
-import { formatNumber, formatPercent } from '../lib/units.ts'
+import type { ReactNode } from 'react'
+import { Camera, Flame, Play } from 'lucide-react'
+import { formatNumber } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
 import { useScenario } from '../state/hooks.ts'
 import { GATES, flameParams } from '../three/flameParams.ts'
 import type { FlameParams } from '../three/flameParams.ts'
-import { CAMERA, SCALE, SCALE_NOTE, SI_LABEL, kelvinToT, rampCss, rampGradient } from '../three/ramp.ts'
-import { Segmented, SourcedNumber, useCountUp, usePrefersReducedMotion } from './ui.tsx'
+import { CAMERA, SCALE, SI_LABEL, SI_MARK, STAGE, kelvinToT, rampCss, rampGradient } from '../three/ramp.ts'
+import { SourcedNumber, useCountUp, usePrefersReducedMotion } from './ui.tsx'
 
 const LiveFireball = lazy(() => import('../three/Fireball.tsx'))
 
@@ -78,124 +79,106 @@ export function FireballPoster({ params, view, droplet = null, showEarth = true 
           </text>
         </g>
       ) : null}
-      <g transform="translate(8,214)">
-        <rect width="150" height="20" rx="5" fill="var(--label-bg)" stroke="var(--line)" />
-        <text x="8" y="14" fontSize="11" fontWeight="600" fill="var(--label-ink)">
-          {SI_LABEL}
+      <g transform="translate(332,218)">
+        <rect width="22" height="15" rx="4" fill="var(--label-bg)" fillOpacity="0.7" stroke="var(--line)" />
+        <text x="11" y="11" textAnchor="middle" fontSize="9" fontWeight="600" fill="var(--label-ink)">
+          {SI_MARK}
         </text>
       </g>
     </svg>
   )
 }
 
-// The scale is plain HTML beside the canvas, with two labelled ends from NASA's guide.
+// The scale is plain HTML under the canvas, with two labelled ends from NASA's guide.
 export function TemperatureScale({ params }: { params: FlameParams }) {
   const flameAt = kelvinToT(SCALE.flameK) * 100
   const markAt = params.tempTopKelvin != null && GATES.tadConfirmed ? kelvinToT(params.tempTopKelvin) * 100 : null
   return (
-    <div className="flex h-full min-h-[180px] gap-2" aria-label="Temperature scale in kelvin">
-      <div className="relative w-3 rounded-full border border-line" style={{ background: rampGradient('to top') }} data-ramp={rampGradient('to top')}>
-        <span className="absolute -right-1 h-px w-5 bg-ink" style={{ bottom: `${flameAt}%` }} aria-hidden="true" />
-        <span className="absolute -right-1 bottom-0 h-px w-5 bg-ink" aria-hidden="true" />
-        {markAt != null ? <span className="absolute -left-1.5 h-0.5 w-6 bg-freefall" style={{ bottom: `${markAt}%`, transition: 'bottom var(--t-scene) var(--ease-out)' }} aria-hidden="true" /> : null}
+    <div aria-label="Temperature scale in kelvin" title="Illustrative temperature pattern. The two labelled ends are from NASA's guide to combustion science.">
+      <div className="relative h-1.5 rounded-full" style={{ background: rampGradient('to right') }} data-ramp={rampGradient('to right')}>
+        <span className="absolute -top-0.5 h-2.5 w-px bg-ink" style={{ left: `${flameAt}%` }} aria-hidden="true" />
+        {markAt != null ? <span className="absolute -top-1 h-3.5 w-0.5 bg-freefall" style={{ left: `${markAt}%`, transition: 'left var(--t-scene) var(--ease-out)' }} aria-hidden="true" /> : null}
       </div>
-      <div className="relative w-[112px] text-[11px] leading-tight text-muted">
-        <span className="absolute left-0 -translate-y-1/2" style={{ top: `${100 - flameAt}%` }}>
-          <span className="num block text-ink">about 2,300 K</span>a typical flame
-        </span>
-        <span className="absolute bottom-0 left-0">
-          <span className="num block text-ink">about 300 K</span>cabin air
+      <div className="num relative mt-1 h-4 text-[10px] text-muted">
+        <span className="absolute left-0">300 K</span>
+        <span className="absolute -translate-x-1/2" style={{ left: `${flameAt}%` }}>
+          2,300 K
         </span>
       </div>
     </div>
   )
 }
 
-const BASIS = {
+function Tile({ label, note, children }: { label: string; note: string; children: ReactNode }) {
+  return (
+    <li className="stat-tile">
+      <span className="stat-label">{label}</span>
+      <span className="whitespace-nowrap text-[16px] leading-tight">{children}</span>
+      <span className="truncate text-[11px] text-muted" title={note}>
+        {note}
+      </span>
+    </li>
+  )
+}
+
+// Three numbers, each sourced. A click opens the NASA rows behind it.
+export function FireballReadout({ params }: { params: FlameParams }) {
+  const look = params.lookup
+  const rate = useCountUp(look.burningRate.value ?? 0, 400)
+  const temp = useCountUp(look.flameTemperature.value ?? 0, 400)
+  if (params.ghost) {
+    return (
+      <p className="text-[13px]">
+        <strong>No droplet test near this atmosphere.</strong>{' '}
+        {params.nearestText ? (
+          <>
+            Nearest:{' '}
+            <SourcedNumber path={[{ kind: 'fireball', readout: 'nearest' }]} label={`The nearest droplet test ran at ${params.nearestText}`}>
+              {params.nearestText}
+            </SourcedNumber>
+            .
+          </>
+        ) : null}
+      </p>
+    )
+  }
+  return (
+    <ul className="m-0 grid list-none grid-cols-3 gap-2 p-0">
+      <Tile label="Burn rate" note={look.burningRate.tests.length > 0 ? `${look.burningRate.tests.length} FLEX tests` : 'between tests'}>
+        {look.burningRate.tests.length > 0 ? (
+          <SourcedNumber path={[{ kind: 'fireball', readout: 'burningRate' }]} label={`Burning rate ${formatNumber(look.burningRate.value ?? 0, 3)}, the median of ${look.burningRate.tests.length} FLEX tests`}>
+            {formatNumber(rate, 3)}
+          </SourcedNumber>
+        ) : (
+          <span className="num">{look.burningRate.value != null ? formatNumber(look.burningRate.value, 2) : 'none'}</span>
+        )}
+      </Tile>
+      <Tile label="Went out" note="FLEX tests">
+        <SourcedNumber path={[{ kind: 'fireball', readout: 'outcomes' }]} label={`${look.extinction.ended.length} of ${look.extinction.of.length} nearby FLEX tests ended in extinction`}>
+          {look.extinction.ended.length} of {look.extinction.of.length}
+        </SourcedNumber>
+      </Tile>
+      <Tile label="Flame temp" note={look.flameTemperature.value != null ? `${look.flameTemperature.tests.length} ACME tests` : 'no test nearby'}>
+        {look.flameTemperature.value != null ? (
+          <SourcedNumber path={[{ kind: 'fireball', readout: 'flameTemperature' }]} label={`Listed flame temperature ${Math.round(look.flameTemperature.value)} kelvin, the median of ${look.flameTemperature.tests.length} ACME tests`}>
+            {Math.round(temp).toLocaleString('en-US')} K
+          </SourcedNumber>
+        ) : (
+          <span className="num">none</span>
+        )}
+      </Tile>
+    </ul>
+  )
+}
+
+export const BASIS = {
   tables: 'From the NASA tables',
   direction: 'Direction from a NASA source',
   definition: 'By definition',
 }
 
-// Three lines, each a sourced number that drills through to its rows.
-export function FireballReadout({ params }: { params: FlameParams }) {
-  const { scenario } = useScenario()
-  const look = params.lookup
-  const rate = useCountUp(look.burningRate.value ?? 0, 400)
-  const temp = useCountUp(look.flameTemperature.value ?? 0, 400)
-  const o2 = formatPercent(scenario.o2)
-  if (params.ghost) {
-    return (
-      <div className="flex flex-col gap-2 text-[14px]">
-        <p>
-          <strong>No droplet test within range of this atmosphere.</strong>{' '}
-          {params.nearestText ? (
-            <>
-              The nearest ran at{' '}
-              <SourcedNumber path={[{ kind: 'fireball', readout: 'nearest' }]} label={`The nearest droplet test ran at ${params.nearestText}`}>
-                {params.nearestText}
-              </SourcedNumber>
-              .
-            </>
-          ) : null}
-        </p>
-        <p className="text-[13px] text-muted">So the fireball is drawn as a ghost: an outline with no heat map. That gap is the finding.</p>
-      </div>
-    )
-  }
-  return (
-    <ul className="m-0 flex list-none flex-col gap-2.5 p-0 text-[14px]">
-      <li>
-        {look.burningRate.tests.length > 0 ? (
-          <>
-            Burning rate near {o2} oxygen:{' '}
-            <SourcedNumber path={[{ kind: 'fireball', readout: 'burningRate' }]} label={`Burning rate ${formatNumber(look.burningRate.value ?? 0, 3)}, the median of ${look.burningRate.tests.length} FLEX tests`}>
-              {formatNumber(rate, 3)}
-            </SourcedNumber>
-            , the median of <span className="num">{look.burningRate.tests.length}</span> FLEX tests.
-          </>
-        ) : (
-          <>
-            Burning rate: no nitrogen-diluted FLEX test within 3 points of {o2} oxygen.{' '}
-            {look.burningRate.value != null ? (
-              <>
-                The fireball uses <span className="num">{formatNumber(look.burningRate.value, 2)}</span>, between tested levels.
-              </>
-            ) : null}
-          </>
-        )}
-      </li>
-      <li>
-        Ended in extinction:{' '}
-        <SourcedNumber path={[{ kind: 'fireball', readout: 'outcomes' }]} label={`${look.extinction.ended.length} of ${look.extinction.of.length} nearby FLEX tests ended in extinction`}>
-          {look.extinction.ended.length} of {look.extinction.of.length}
-        </SourcedNumber>{' '}
-        nearby FLEX tests.
-      </li>
-      <li>
-        Listed flame temperature for gas flames near this oxygen:{' '}
-        {look.flameTemperature.value != null ? (
-          <>
-            <SourcedNumber path={[{ kind: 'fireball', readout: 'flameTemperature' }]} label={`Listed flame temperature ${Math.round(look.flameTemperature.value)} kelvin, the median of ${look.flameTemperature.tests.length} ACME tests`}>
-              {Math.round(temp).toLocaleString('en-US')} K
-            </SourcedNumber>
-            , the median of <span className="num">{look.flameTemperature.tests.length}</span> ACME tests.
-          </>
-        ) : (
-          'none listed.'
-        )}
-      </li>
-      <li className="text-[13px] text-muted">
-        <SourcedNumber path={[{ kind: 'fireball', readout: 'nearest' }]} label={`${look.dropletsInRange.length} droplet tests within one unit of this atmosphere`}>
-          {look.dropletsInRange.length}
-        </SourcedNumber>{' '}
-        droplet {look.dropletsInRange.length === 1 ? 'test' : 'tests'} within range of this atmosphere. Fewer than ten and the fireball fades.
-      </li>
-    </ul>
-  )
-}
-
-const DRIVERS: { control: string; change: string; basis: keyof typeof BASIS }[] = [
+// What each control changes in the picture. Shown on the About screen.
+export const DRIVERS: { control: string; change: string; basis: keyof typeof BASIS }[] = [
   { control: 'Oxygen', change: 'How fast it seethes, from the median FLEX burning rate near this oxygen', basis: 'tables' },
   { control: 'Oxygen', change: 'How hot the brightest part is, from the listed flame temperature of ACME gas flames. A calculated upper temperature', basis: 'tables' },
   { control: 'Oxygen', change: 'Whether it holds, struggles or goes out, from the share of nearby FLEX tests that ended in extinction', basis: 'tables' },
@@ -206,88 +189,72 @@ const DRIVERS: { control: string; change: string; basis: keyof typeof BASIS }[] 
   { control: 'Gravity', change: 'The fireball at 0 g, or the Earth flame at 1 g. No shape in between is drawn, because no partial-gravity test exists', basis: 'tables' },
 ]
 
-export function FireballStage({ droplet = null, compact = false, showEarth = true }: { droplet?: DropletState; compact?: boolean; showEarth?: boolean }) {
+export function FireballStage({ droplet = null, showEarth = true }: { droplet?: DropletState; showEarth?: boolean }) {
   const { tests } = useData()
   const { scenario } = useScenario()
   const params = useMemo(() => flameParams(scenario, tests), [scenario, tests])
   const [view, setView] = useState<FlameView>('heat')
   const reduced = usePrefersReducedMotion()
-  const [live, setLive] = useState(false)
+  const [near, setNear] = useState(false)
   const [failed, setFailed] = useState(false)
   const [asked, setAsked] = useState(false)
   const stage = useRef<HTMLDivElement>(null)
-  // The 3D code loads only when the fireball is on screen. One canvas at a time.
+  // The 3D code loads the first time the stage comes on screen. After that the canvas stays
+  // mounted and pauses itself whenever it is out of view.
   useEffect(() => {
     const node = stage.current
     if (!node || typeof IntersectionObserver === 'undefined') return
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData
+    if (saveData) return
     const observer = new IntersectionObserver((entries) => {
-      const visible = entries[0].isIntersecting
-      setLive(visible && !saveData)
-    }, { threshold: 0.2 })
+      if (entries[0].isIntersecting) {
+        setNear(true)
+        observer.disconnect()
+      }
+    }, { threshold: 0.1 })
     observer.observe(node)
     return () => observer.disconnect()
   }, [])
-  const showLive = live && !failed && (!reduced || asked)
+  const showLive = near && !failed && (!reduced || asked)
+  const Icon = view === 'heat' ? Camera : Flame
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-stretch gap-3">
-        <div ref={stage} className="relative min-w-0 flex-1 overflow-hidden rounded-card border border-line" style={{ aspectRatio: '3 / 2', maxHeight: compact ? 280 : 360, background: CAMERA.deep }}>
-          <div className="absolute inset-0">
-            <FireballPoster params={params} view={view} droplet={droplet} showEarth={showEarth} />
-          </div>
-          {showLive ? (
-            <Suspense fallback={null}>
-              <LiveFireball params={params} view={view} droplet={droplet} showEarth={showEarth} onFail={() => setFailed(true)} />
-            </Suspense>
-          ) : null}
-          {showLive ? (
-            <>
-              <span className="si-label absolute bottom-2 left-2">{SI_LABEL}</span>
-              {showEarth && params.shape !== 'earth' ? <span className="absolute bottom-9 left-[12%] text-[11px] text-muted">On Earth</span> : null}
-              {showEarth ? (
-                <span className="absolute bottom-3 text-[11px] text-muted" style={{ left: params.shape !== 'earth' ? '62%' : '46%' }}>
-                  {params.shape === 'earth' ? 'On Earth, at 1 g' : 'In freefall'}
-                </span>
-              ) : null}
-            </>
-          ) : null}
+    <div className="flex flex-col gap-3">
+      <div ref={stage} className="relative overflow-hidden rounded-control border border-line" style={{ aspectRatio: '16 / 9', background: STAGE }}>
+        <div className="absolute inset-0">
+          <FireballPoster params={params} view={view} droplet={droplet} showEarth={showEarth} />
+        </div>
+        {showLive ? (
+          <Suspense fallback={null}>
+            <LiveFireball params={params} view={view} droplet={droplet} showEarth={showEarth} onFail={() => setFailed(true)} />
+          </Suspense>
+        ) : null}
+        {showLive ? (
+          <>
+            {showEarth && params.shape !== 'earth' ? <span className="absolute bottom-2 left-[12%] text-[10px] text-muted">On Earth</span> : null}
+            {showEarth ? (
+              <span className="absolute bottom-2 text-[10px] text-muted" style={{ left: params.shape !== 'earth' ? '62%' : '46%' }}>
+                {params.shape === 'earth' ? 'On Earth, at 1 g' : 'In freefall'}
+              </span>
+            ) : null}
+            <span className="si-mark absolute bottom-2 right-2" title={SI_LABEL} aria-label={SI_LABEL}>
+              {SI_MARK}
+            </span>
+          </>
+        ) : null}
+        <div className="absolute right-2 top-2 flex gap-1">
           {reduced && !asked && !failed ? (
-            <button type="button" className="btn btn-secondary btn-sm absolute right-2 top-2" onClick={() => setAsked(true)}>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAsked(true)}>
               <Play size={14} aria-hidden="true" /> Play
             </button>
           ) : null}
+          <button type="button" className="stage-btn" onClick={() => setView(view === 'heat' ? 'camera' : 'heat')} aria-pressed={view === 'camera'} aria-label={view === 'heat' ? 'Show it as a camera sees it' : 'Show the heat map'} title={view === 'heat' ? 'As a camera sees it' : 'Heat map'}>
+            <Icon size={14} aria-hidden="true" />
+          </button>
         </div>
-        <TemperatureScale params={params} />
       </div>
-      {params.gravityBadge ? <p className="chip chip-warn self-start whitespace-normal py-1">{params.gravityBadge}</p> : null}
-      <p className="text-[12px] text-muted">
-        {SCALE_NOTE}{' '}
-        <a href="https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/" target="_blank" rel="noreferrer">
-          Source, page 8
-        </a>
-        .
-      </p>
-      <div className="flex flex-wrap items-center gap-3">
-        <Segmented label="Fireball view" value={view} onChange={setView} options={[{ value: 'heat', label: 'Heat map' }, { value: 'camera', label: 'As a camera sees it' }]} />
-        <span className="chip chip-ok">{BASIS.tables}</span>
-      </div>
+      {view === 'heat' ? <TemperatureScale params={params} /> : null}
       <FireballReadout params={params} />
-      <p className="text-[13px] text-muted">Pressure changes which tests are near. EMBER draws no pressure effect that the tables do not show.</p>
-      {!compact ? (
-        <details className="text-[13px]">
-          <summary className="cursor-pointer font-semibold">What drives the fireball</summary>
-          <ul className="m-0 mt-2 flex list-none flex-col gap-2 p-0">
-            {DRIVERS.map((d) => (
-              <li key={d.change} className="flex flex-col gap-0.5 border-l-2 border-line pl-3">
-                <span className="font-semibold">{d.control}</span>
-                <span className="text-muted">{d.change}.</span>
-                <span className="text-[11px] uppercase tracking-wide text-faint">{BASIS[d.basis]}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      ) : null}
+      {params.gravityBadge ? <p className="text-[12px] text-warn">{params.gravityBadge}</p> : null}
     </div>
   )
 }

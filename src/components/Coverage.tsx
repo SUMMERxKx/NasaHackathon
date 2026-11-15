@@ -4,7 +4,7 @@ import { useId } from 'react'
 import type { CoverageResult, Pillar } from '../types.ts'
 import { PILLARS } from '../lib/coverage.ts'
 import { formatNumber } from '../lib/units.ts'
-import { NotASafetyRating, useCountUp, useDrillDescribed, useDrillProps } from './ui.tsx'
+import { useCountUp, useDrillDescribed, useDrillProps } from './ui.tsx'
 
 const START = 135
 const SWEEP = 270
@@ -197,19 +197,30 @@ export function PillarBars({ coverage, focus, onFocus }: { coverage: CoverageRes
   )
 }
 
-export function CoveragePanel({ coverage, name, focus, onFocus }: { coverage: CoverageResult; name: string; focus: Pillar | null; onFocus?: (pillar: Pillar | null) => void }) {
+// The three pillars as one short row each: name, bar, score. A click opens the tests behind it.
+export function PillarMini({ coverage }: { coverage: CoverageResult }) {
+  const props = useDrillDescribed()
   return (
-    <div className="flex flex-col items-center gap-4">
-      <CoverageDial coverage={coverage} size={240} label={name} />
-      <div className="text-center">
-        <p className="font-display text-[18px] font-semibold">Evidence Coverage</p>
-        <NotASafetyRating className="mt-1" />
-      </div>
-      <div className="w-full">
-        <PillarBars coverage={coverage} focus={focus} onFocus={onFocus} />
-      </div>
-      <AssumedShare coverage={coverage} />
-      <p className="text-[13px] text-muted">The score counts real NASA flight tests near this atmosphere. It says how much is known, not how safe a habitat is.</p>
-    </div>
+    <ul className="m-0 flex list-none flex-col gap-1 p-0">
+      {PILLARS.map((pillar) => {
+        const p = coverage.byPillar[pillar]
+        const solid = p.score * (1 - p.assumedShare)
+        return (
+          <li
+            key={pillar}
+            className="drillable flex items-center gap-2 rounded px-1 py-0.5 text-[12px] transition-colors hover:bg-surface-2"
+            tabIndex={0}
+            {...props([{ kind: 'coverage', pillar }], `${PILLAR_LABEL[pillar]} coverage ${Math.round(p.score)} out of 100, from ${formatNumber(p.effectiveTests, 1)} effective tests. Press Enter for the tests behind it.`)}
+          >
+            <span className="w-[82px] shrink-0 text-muted">{PILLAR_LABEL[pillar]}</span>
+            <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-line">
+              <span className="absolute inset-y-0 left-0 rounded-full bg-ember opacity-40" style={{ width: `${p.score}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
+              <span className="absolute inset-y-0 left-0 rounded-full bg-ember" style={{ width: `${solid}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
+            </span>
+            <span className="num w-6 shrink-0 text-right">{Math.round(p.score)}</span>
+          </li>
+        )
+      })}
+    </ul>
   )
 }

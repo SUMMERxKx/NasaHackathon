@@ -11,7 +11,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import type { DropletState, FlameView } from '../components/FireballStage.tsx'
 import type { FlameInputs, FlameParams } from './flameParams.ts'
-import { CAMERA, SCENE, rampBytes, rampColorAt } from './ramp.ts'
+import { STAGE, CAMERA, SCENE, rampBytes, rampColorAt } from './ramp.ts'
 
 export type FireballProps = { params: FlameParams; view: FlameView; droplet: DropletState; showEarth: boolean; onFail: () => void }
 
@@ -245,7 +245,7 @@ export default function Fireball({ params, view, droplet, showEarth, onFail }: F
       disposables.push(item)
       return item
     }
-    renderer.setClearColor(new THREE.Color(CAMERA.deep), 1)
+    renderer.setClearColor(new THREE.Color(STAGE), 1)
     renderer.domElement.style.width = '100%'
     renderer.domElement.style.height = '100%'
     renderer.domElement.style.display = 'block'
@@ -427,7 +427,8 @@ export default function Fireball({ params, view, droplet, showEarth, onFail }: F
     let composer: EffectComposer | null = null
     let bloom: UnrealBloomPass | null = null
     const applyTier = () => {
-      const cap = tier === 'high' ? 2 : tier === 'medium' ? 1.5 : 1
+      // The device pixel ratio is capped. Past 1.5 the picture gains nothing and the frame time doubles.
+      const cap = tier === 'high' ? 1.5 : tier === 'medium' ? 1.25 : 1
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cap))
       shells[0].mesh.visible = tier !== 'low'
       shells[2].mesh.visible = tier !== 'low'
@@ -466,27 +467,35 @@ export default function Fireball({ params, view, droplet, showEarth, onFail }: F
     let last = performance.now()
     let clock = 0
     let running = true
+    let onScreen = true
     const samples: number[] = []
     let lowStrikes = 0
     const tmp = new THREE.Color()
 
-    const onVisibility = () => {
-      running = !document.hidden
-      if (running) {
-        last = performance.now()
-        frame = requestAnimationFrame(loop)
-      } else cancelAnimationFrame(frame)
+    // The loop sleeps whenever nobody can see the canvas: a hidden tab, or the stage scrolled away.
+    const awake = () => running && onScreen && !document.hidden
+    const wake = () => {
+      if (frame || !awake()) return
+      last = performance.now()
+      samples.length = 0
+      frame = requestAnimationFrame(loop)
     }
+    const sight = new IntersectionObserver((entries) => {
+      onScreen = entries.some((entry) => entry.isIntersecting)
+      wake()
+    })
+    sight.observe(node)
     const onLost = (event: Event) => {
       event.preventDefault()
       running = false
       latest.current.onFail()
     }
     renderer.domElement.addEventListener('webglcontextlost', onLost)
-    document.addEventListener('visibilitychange', onVisibility)
+    document.addEventListener('visibilitychange', wake)
 
     function loop(now: number) {
-      if (!running) return
+      frame = 0
+      if (!awake()) return
       const dt = Math.min(0.1, (now - last) / 1000)
       last = now
       clock += dt
@@ -576,10 +585,10 @@ export default function Fireball({ params, view, droplet, showEarth, onFail }: F
         const p95 = sorted[56]
         const mean = samples.reduce((a, b) => a + b, 0) / samples.length
         samples.length = 0
-        if (tier === 'medium' && p95 < 12 && lowStrikes === 0) {
+        if (tier === 'medium' && p95 < 10 && lowStrikes === 0) {
           tier = 'high'
           applyTier()
-        } else if (tier !== 'low' && mean > 25) {
+        } else if ((tier === 'high' && mean > 19) || (tier === 'medium' && mean > 25)) {
           lowStrikes += 1
           tier = tier === 'high' ? 'medium' : 'low'
           applyTier()
@@ -591,13 +600,14 @@ export default function Fireball({ params, view, droplet, showEarth, onFail }: F
       }
       frame = requestAnimationFrame(loop)
     }
-    frame = requestAnimationFrame(loop)
+    wake()
 
     return () => {
       running = false
       cancelAnimationFrame(frame)
       observer.disconnect()
-      document.removeEventListener('visibilitychange', onVisibility)
+      sight.disconnect()
+      document.removeEventListener('visibilitychange', wake)
       renderer.domElement.removeEventListener('webglcontextlost', onLost)
       composer?.dispose()
       bloom?.dispose()
