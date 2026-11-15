@@ -257,10 +257,10 @@ export function FireballStage({ droplet = null, compact = false, showEarth = tru
               <Play size={14} aria-hidden="true" /> Play
             </button>
           ) : null}
-          {params.gravityBadge ? <span className="chip chip-warn absolute left-2 top-2 max-w-[70%] whitespace-normal py-1">{params.gravityBadge}</span> : null}
         </div>
         <TemperatureScale params={params} />
       </div>
+      {params.gravityBadge ? <p className="chip chip-warn self-start whitespace-normal py-1">{params.gravityBadge}</p> : null}
       <p className="text-[12px] text-muted">
         {SCALE_NOTE}{' '}
         <a href="https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/" target="_blank" rel="noreferrer">
