@@ -59,7 +59,7 @@ The fireball's readout, also from the data: at the ISS cabin, burning rate 0.51 
 - PSI holds no partial-gravity combustion tests, so nothing describes a flame on the Moon or Mars.
 - Pinned answers for the six example chips do not exist until the live model is set up and a person has reviewed them.
 - The evaluation of the live model has not been run yet. Its pass bars are targets.
-- Search is by keyword with alias expansion.
+- Search by meaning needs a download of about 51 MB on the first use of the question box. Until it is ready, search is by keyword with alias expansion, with no message.
 - The pillar mapping, the equipment tags, the plain summaries and the assumptions are SI drafts that wait on a human check.
 
 ## Checks run on the build machine

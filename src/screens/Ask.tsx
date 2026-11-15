@@ -9,10 +9,12 @@ import type { AskRequest, CheckResult, EvidenceItem, PinnedAnswer, RetrievalResu
 import { askLive, cacheKey, fetchHealth } from '../lib/ask.ts'
 import type { Health, LiveFailure } from '../lib/ask.ts'
 import { REFUSAL, checkAnswer } from '../lib/grounding.ts'
+import { decodeVectors, scoreMeaning } from '../lib/meaning.ts'
 import { buildEngine, retrieve } from '../lib/retrieve.ts'
 import { formatNumber, formatPercent } from '../lib/units.ts'
 import { loadAskData, useAskData, useData } from '../state/data.tsx'
 import { useDrill, useScenario } from '../state/hooks.ts'
+import { useMeaning } from '../state/meaning.ts'
 import { fromHabitat, matchPreset, scenarioLine } from '../state/scenario.ts'
 import { PageHeader } from '../components/AppShell.tsx'
 import { DataTable } from '../components/DataTable.tsx'
@@ -138,6 +140,10 @@ export default function Ask() {
   const scenarioRef = useRef(scenario)
   scenarioRef.current = scenario
   const engine = useMemo(() => (ask.data ? buildEngine(ask.data.search) : null), [ask.data])
+  // Search by meaning. The model loads on the first focus of the question box, in a Web Worker.
+  const embedding = ask.data?.search.embedding ?? null
+  const vectors = useMemo(() => (embedding ? decodeVectors(embedding.vectors) : null), [embedding])
+  const { embed: embedQuestion, start: startMeaning, status: meaningStatus } = useMeaning(embedding != null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -168,7 +174,14 @@ export default function Ask() {
       let notice: string | null = null
       const chip = chipId ? CHIPS.find((c) => c.id === chipId) : null
       const ctx = () => ({ scenario: current, investigations: snapshot.investigations, tests: snapshot.tests, habitats: snapshot.habitats })
-      const first = retrieve(text, engine, ctx())
+      // If the model is ready the question is also matched by meaning. If not, keyword search answers alone.
+      let scores: Map<string, number> | null = null
+      if (embedding && vectors) {
+        const vector = await embedQuestion(text)
+        if (run.current !== mine) return
+        if (vector) scores = scoreMeaning(vector, embedding, vectors)
+      }
+      const first = retrieve(text, engine, ctx(), scores)
       if (chip?.habitat) {
         const habitat = snapshot.habitats.find((h) => h.id === chip.habitat)
         if (habitat && current.presetId !== habitat.id) {
@@ -187,7 +200,7 @@ export default function Ask() {
           notice = `Habitat set to ${bits.join(' and ')} from your question.`
         }
       }
-      const retrieval = notice ? retrieve(text, engine, ctx()) : first
+      const retrieval = notice ? retrieve(text, engine, ctx(), scores) : first
       if (!retrieval.hasEvidence) {
         setState({ phase: 'no_evidence', question: text })
         return
@@ -258,7 +271,7 @@ export default function Ask() {
       cache.set(key, { label: result.meta.label, result: check })
       setState({ ...base, live: check.verdict === 'refusal' ? { kind: 'refusal', label: result.meta.label } : { kind: 'verified', label: result.meta.label, result: check, cached: false } })
     },
-    [engine, ask.data, snapshot, health, setScenario],
+    [engine, ask.data, snapshot, health, setScenario, embedding, vectors, embedQuestion],
   )
 
   // A question in the address is asked once the search index has loaded.
@@ -334,7 +347,7 @@ export default function Ask() {
     <div className="page flex flex-col">
       <PageHeader title="Ask EMBER" lead="Ask in plain words. EMBER finds the NASA evidence first. A live language model may then write a short answer from that evidence only, and every sentence is checked against its source." />
 
-      <form onSubmit={onSubmit} className="card sticky bottom-[64px] z-20 order-last mt-6 p-3 md:static md:order-none md:mt-0 md:p-4" role="search" aria-label="Ask a question">
+      <form onSubmit={onSubmit} className="card sticky bottom-[64px] z-20 order-last mt-6 p-3 md:static md:order-none md:mt-0 md:p-4" role="search" aria-label="Ask a question" data-meaning={meaningStatus}>
         <label htmlFor="ask-box" className="field-label">
           Your question
         </label>
@@ -345,6 +358,7 @@ export default function Ask() {
             value={draft}
             maxLength={300}
             onChange={(e) => setDraft(e.target.value)}
+            onFocus={startMeaning}
             placeholder="For example: what is missing for the Moon?"
             autoComplete="off"
           />
@@ -456,7 +470,7 @@ export default function Ask() {
                 Evidence answer
               </h2>
               <p className="mb-4 mt-1 text-[14px] text-muted">
-                What EMBER found for "{state.question}", with no model. Habitat: <span className="num text-ink">[S]</span> {state.line}
+                What EMBER found for "{state.question}", with no language model{state.retrieval.mode === 'keyword+meaning' ? ', by keyword and by meaning' : ', by keyword'}. Habitat: <span className="num text-ink">[S]</span> {state.line}
               </p>
               <div className="grid gap-4 md:grid-cols-2">
                 {state.items.map((item) => (

@@ -62,6 +62,7 @@ On the Ask screen the evidence answer appears at once, built in the browser with
 - The browser sends the question, the habitat and a list of evidence ids. The function looks up the evidence text itself, so the model only ever sees text EMBER built from NASA data.
 - The browser checks the answer sentence by sentence. A sentence is removed when it cites no source or an unknown one, holds a number that is not in its source, says safe or unsafe, or shares too few words with its source.
 - If the model fails, is slow, or its answer fails the check, the evidence answer stands. The site is complete without the model.
+- Retrieval is keyword search with alias expansion, which always works. On top of it, a small open embedding model (`Xenova/all-MiniLM-L6-v2`) runs in the browser in a Web Worker for search by meaning. Its files and its runtime are served by the site itself, so nothing is fetched from another host.
 - Limits: one firewall rule of 8 requests a minute per address, and a daily dollar limit on the key. An answer costs about $0.0003.
 - The key is typed by the owner into Vercel. It is never in this repository.
 
@@ -86,6 +87,7 @@ Data, only when the NASA snapshot should be refreshed:
 ```sh
 npm run fetch        # downloads the PSI records and tables. Manual only.
 npm run build:data   # normalizes them and writes the files in public/data
+npm run build:embeddings  # embeds the search documents for search by meaning. Run it after build:data.
 npm run data:report  # prints the headline numbers beside the values in the plan
 ```
 
@@ -105,6 +107,7 @@ scripts/             the data pipeline and the build checks
 data/raw/            the PSI records and tables as fetched, with a manifest and a hash per file
 data/manual/         hand-made files: habitats, assumptions, pillars, glossary, resources
 public/data/         the generated files the site reads
+public/models/embed/ the search model files, served by the site itself
 src/lib/             pure functions: parse, units, coverage, ranking, drill, droplet, retrieve, grounding
 src/components/      the component set
 src/screens/         Brief, Map, Investigations, Detail, Compare, Lab, Ask, Earth, Methods

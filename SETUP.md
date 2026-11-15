@@ -88,7 +88,7 @@ These are drafts by SI and carry the status "needs human check".
 | Incident and spinoff cards | `data/manual/resources.json` | Check every sentence against its NASA page. |
 | The Exploration atmosphere preset | `data/manual/habitats.json` | Read the two NTRS reports and settle the wording. |
 
-After any change in `data/manual`, run `npm run build:data` and commit the generated files with it. The build fails if they are out of date.
+After any change in `data/manual`, run `npm run build:data` and then `npm run build:embeddings`, and commit the generated files with it. The build fails if they are out of date. If the embeddings step is skipped, search still works by keyword.
 
 ## 9. Before each submission
 

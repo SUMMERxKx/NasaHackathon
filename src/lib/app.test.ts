@@ -7,6 +7,7 @@ import { countBehind, decodeDrill, encodeDrill, resolveDrill, resolveMark } from
 import { fieldGroups, overallFromGroups } from './field.ts'
 import { REFUSAL, checkAnswer, numbersIn, splitByCitations } from './grounding.ts'
 import { MAP_DOMAIN, STACK_RADIUS, layoutMap, mapScales } from './mapLayout.ts'
+import { EMBED_DIM, chunksFor, decodeVectors, encodeVectors, scoreMeaning } from './meaning.ts'
 import { buildEngine, namedInvestigations, retrieve } from './retrieve.ts'
 import { flameParams } from '../three/flameParams.ts'
 import { RAMP, SI_LABEL, rampBytes, rampColorAt, rampGradient } from '../three/ramp.ts'
@@ -334,6 +335,53 @@ describe('retrieval', () => {
       expect(result.pack.filter((p) => p.evidenceId.startsWith('PSI-')).length).toBeLessThanOrEqual(5)
     }
     expect(retrieve('What do we know about fire at 34 percent oxygen?', engine, ctxFor()).scenarioChange).toEqual({ o2: 0.34 })
+  })
+})
+
+describe('search by meaning', () => {
+  const unit = (index: number): Float32Array => {
+    const v = new Float32Array(EMBED_DIM)
+    v[index] = 1
+    return v
+  }
+  it('round trips vectors through signed bytes and base64', () => {
+    const decoded = decodeVectors(encodeVectors([unit(0), unit(5)]))
+    expect(decoded.length).toBe(2 * EMBED_DIM)
+    expect(decoded[0]).toBe(127)
+    expect(decoded[EMBED_DIM + 5]).toBe(127)
+  })
+  it('scores a document by its best chunk', () => {
+    const embedding = { model: 'Xenova/all-MiniLM-L6-v2' as const, dtype: 'q8' as const, dim: 384 as const, encoding: 'int8-base64' as const, chunkDocIds: ['a', 'a', 'b'], vectors: encodeVectors([unit(0), unit(1), unit(2)]) }
+    const scores = scoreMeaning(unit(1), embedding, decodeVectors(embedding.vectors))
+    expect(scores.get('a')).toBeCloseTo(1, 5)
+    expect(scores.get('b')).toBeCloseTo(0, 5)
+  })
+  it('splits an investigation into at most three chunks of at most 200 words', () => {
+    const doc = searchIndex.docs.find((d) => d.kind === 'investigation')
+    const long = Array.from({ length: 500 }, (_, i) => `word${i}`).join(' ')
+    const chunks = chunksFor(doc as (typeof searchIndex.docs)[number], { objective: long, hypothesis: long, approach: long, impacts: long })
+    expect(chunks.length).toBeLessThanOrEqual(3)
+    for (const chunk of chunks) expect(chunk.split(' ').length).toBeLessThanOrEqual(200)
+  })
+  it('ships one vector per chunk, built with the same model and precision as the browser uses', () => {
+    const embedding = searchIndex.embedding
+    if (!embedding) return
+    expect(embedding.model).toBe('Xenova/all-MiniLM-L6-v2')
+    expect(embedding.dtype).toBe('q8')
+    expect(decodeVectors(embedding.vectors).length).toBe(embedding.chunkDocIds.length * EMBED_DIM)
+    const known = new Set(searchIndex.docs.map((d) => d.id))
+    for (const id of embedding.chunkDocIds) expect(known.has(id)).toBe(true)
+  })
+  it('lets a strong match by meaning pass the gate and join the pack', () => {
+    const engine = buildEngine(searchIndex)
+    const ctx = { scenario: preset('iss'), investigations: snapshot.investigations, tests: snapshot.tests, habitats: snapshot.habitats }
+    const question = 'zzqx vvkp'
+    expect(retrieve(question, engine, ctx).hasEvidence).toBe(false)
+    const result = retrieve(question, engine, ctx, new Map([['inv:PSI-102', 0.62], ['inv:PSI-47', 0.41]]))
+    expect(result.mode).toBe('keyword+meaning')
+    expect(result.hasEvidence).toBe(true)
+    expect(result.pack[0].evidenceId).toBe('PSI-102')
+    expect(retrieve(question, engine, ctx, new Map([['inv:PSI-102', 0.1]])).hasEvidence).toBe(false)
   })
 })
 

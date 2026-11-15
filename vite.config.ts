@@ -52,8 +52,22 @@ function devApi(): Plugin {
   }
 }
 
+// The search model's runtime is served from public/ort. This drops the second copy that the
+// bundler would otherwise add to the worker's assets.
+function dropBundledRuntime(): Plugin {
+  return {
+    name: 'ember-drop-bundled-runtime',
+    generateBundle(_options, bundle) {
+      for (const name of Object.keys(bundle)) {
+        if (/ort-wasm-simd-threaded.*\.wasm$/.test(name)) delete bundle[name]
+      }
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [react(), tailwindcss(), devApi()],
+  worker: { format: 'es', plugins: () => [dropBundledRuntime()] },
   define: { __BUILD_ID__: JSON.stringify(readBuildId()) },
   build: { chunkSizeWarningLimit: 900 },
   test: {

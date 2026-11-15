@@ -90,6 +90,15 @@ Each is listed in a PSI record. EMBER takes the wording of findings from the PSI
 | First choice | Claude Haiku 5.5, `anthropic/claude-haiku-5.5` | OpenRouter, from a Vercel Function | https://openrouter.ai/anthropic/claude-haiku-5.5 |
 | Backup | GPT-6 Luna, `openai/gpt-6-luna` | OpenRouter, from a Vercel Function | https://openrouter.ai/openai/gpt-6-luna |
 
+## The search model
+
+| Piece | Source | Licence |
+|---|---|---|
+| `Xenova/all-MiniLM-L6-v2`, the 8-bit file `onnx/model_quantized.onnx` and its tokenizer files | https://huggingface.co/Xenova/all-MiniLM-L6-v2 | Apache 2.0 |
+| The ONNX runtime for the browser, two builds copied from the `onnxruntime-web` package at build time | https://www.npmjs.com/package/onnxruntime-web | MIT |
+
+The model files are committed under `public/models/embed` and served by the site itself. No search model file is fetched from another host at run time.
+
 ## Libraries
 
 Installed versions, from `package-lock.json`.
@@ -99,6 +108,7 @@ Installed versions, from `package-lock.json`.
 | `@fontsource-variable/inter` | 5.3.0 | OFL-1.1 |
 | `@fontsource-variable/jetbrains-mono` | 5.3.0 | OFL-1.1 |
 | `@fontsource-variable/space-grotesk` | 5.3.0 | OFL-1.1 |
+| `@huggingface/transformers` | 4.3.2 | Apache-2.0 |
 | `d3-array` | 3.2.5 | ISC |
 | `d3-dsv` | 3.0.2 | ISC |
 | `d3-interpolate` | 3.0.2 | ISC |
