@@ -7,6 +7,7 @@ import { markPath } from '../lib/mapLayout.ts'
 import { RANK_FORMULAS, RANK_WEIGHTS } from '../lib/ranking.ts'
 import type { RankParts, Ranked } from '../lib/ranking.ts'
 import { useData } from '../state/data.tsx'
+import { bar } from './Coverage.tsx'
 import { Chip, ScenarioLink, SourcedNumber, VerifiedMark, useDrillDescribed } from './ui.tsx'
 
 export const PILLAR_NAME: Record<string, string> = {
@@ -85,7 +86,7 @@ export function WhyRankBars({ ranked }: { ranked: Ranked }) {
                 <span className="num text-ink">{value.toFixed(2)}</span>
               </span>
               <span className="mt-0.5 block h-1.5 overflow-hidden rounded-full bg-line">
-                <span className="block h-full rounded-full bg-freefall" style={{ width: `${value * 100}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
+                <span className="block h-full bg-freefall" style={bar(value * 100)} />
               </span>
             </li>
           )
@@ -174,7 +175,7 @@ export function InvestigationRow({
             </span>
           </span>
           <span className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-line md:block" aria-hidden="true">
-            <span className="block h-full rounded-full bg-ember" style={{ width: `${ranked.score}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
+            <span className="block h-full bg-ember" style={bar(ranked.score)} />
           </span>
           <span className="num w-8 shrink-0 text-right text-[17px] text-ink" title="Relevance for this habitat, out of 100">
             {Math.round(ranked.score)}

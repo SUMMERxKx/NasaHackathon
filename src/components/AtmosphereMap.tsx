@@ -232,42 +232,42 @@ function MapBody({
   const { scenario, setScenario } = useScenario()
   const { open } = useDrill()
   const reduced = usePrefersReducedMotion()
-  const [hover, setHover] = useState<Hover>(null)
+  const [hover, setHoverState] = useState<Hover>(null)
   const [pinned, setPinned] = useState<Hover>(null)
   const [drag, setDrag] = useState<{ o2: number; pressurePsi: number } | null>(null)
   const dragState = useRef<{ startX: number; startY: number; moved: boolean } | null>(null)
+  // The pointer moves many times a frame. The hover only changes when it lands on something new.
+  const hoverKey = useRef('')
+  const setHover = useCallback((next: Hover) => {
+    const key = !next ? '' : next.kind === 'mark' ? `m${next.mark.testId}` : next.kind === 'stack' ? `s${next.stack.key}` : `p${next.habitat.id}`
+    if (key === hoverKey.current) return
+    hoverKey.current = key
+    setHoverState(next)
+  }, [])
+  // While the ring is dragged it follows the pointer on its own. The rest of the page, which
+  // reads the habitat from the address, catches up about six times a second.
+  const commit = useRef<{ timer: ReturnType<typeof setTimeout> | null; next: Scenario | null }>({ timer: null, next: null })
+  const flush = useCallback(() => {
+    const pending = commit.current
+    if (pending.timer) clearTimeout(pending.timer)
+    pending.timer = null
+    if (pending.next) setScenario(pending.next, { replace: true })
+    pending.next = null
+  }, [setScenario])
+  useEffect(() => () => {
+    if (commit.current.timer) clearTimeout(commit.current.timer)
+  }, [])
+  useEffect(() => {
+    if (!dragState.current) setDrag(null)
+  }, [scenario.o2, scenario.pressurePsi])
   const [intro] = useState(() => !introPlayed && !compact)
   useEffect(() => {
     if (!compact) introPlayed = true
   }, [compact])
 
-  // The zoom glides both axes between the full map and the Moon Base region.
-  const target = zoomMoon ? MOON_DOMAIN : MAP_DOMAIN
-  const [domain, setDomain] = useState<MapDomain>(target)
-  const domainRef = useRef(domain)
-  domainRef.current = domain
-  useEffect(() => {
-    const from = domainRef.current
-    if (reduced || typeof requestAnimationFrame === 'undefined') {
-      setDomain(target)
-      return
-    }
-    const start = performance.now()
-    let frame = 0
-    const lerpLog = (a: number, b: number, t: number) => Math.exp(Math.log(a) + (Math.log(b) - Math.log(a)) * t)
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-    const tick = (now: number) => {
-      const raw = Math.min(1, (now - start) / 600)
-      const t = raw < 0.5 ? 2 * raw * raw : 1 - (-2 * raw + 2) ** 2 / 2
-      setDomain({
-        psi: [lerpLog(from.psi[0], target.psi[0], t), lerpLog(from.psi[1], target.psi[1], t)],
-        o2Pct: [lerp(from.o2Pct[0], target.o2Pct[0], t), lerp(from.o2Pct[1], target.o2Pct[1], t)],
-      })
-      if (raw < 1) frame = requestAnimationFrame(tick)
-    }
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [target, reduced])
+  // The zoom switches at once. Gliding the axes meant laying out and redrawing every mark on
+  // every frame, which was the heaviest thing the map did.
+  const domain = zoomMoon ? MOON_DOMAIN : MAP_DOMAIN
 
   const box: MapBox = useMemo(
     () =>
@@ -360,7 +360,8 @@ function MapBody({
         const next = { o2: Math.round(o2 * 200) / 200, pressurePsi: Math.round(pressurePsi * 10) / 10 }
         setDrag(next)
         const merged: Scenario = { ...scenario, ...next, presetId: null }
-        setScenario({ ...merged, presetId: matchPreset(merged, habitats)?.id ?? null }, { replace: true })
+        commit.current.next = { ...merged, presetId: matchPreset(merged, habitats)?.id ?? null }
+        if (!commit.current.timer) commit.current.timer = setTimeout(flush, 160)
       }
       return
     }
@@ -380,7 +381,10 @@ function MapBody({
     const wasDrag = dragState.current?.moved
     const grabbed = dragState.current != null
     dragState.current = null
-    setDrag(null)
+    // The ring holds its place until the address has caught up, so it never slides back.
+    const pending = commit.current.next != null
+    flush()
+    if (!pending) setDrag(null)
     if (wasDrag) return
     if (grabbed && showRing && Math.hypot(px - ringX, py - ringY) <= 12) return open([{ kind: 'near', o2: scenario.o2, pressureAtm: psiToAtm(scenario.pressurePsi) }])
     const hit = find(px, py)
@@ -520,25 +524,6 @@ function MapBody({
                 )
               })
             : null}
-          {showRing ? (
-            <g aria-hidden="true" pointerEvents="none">
-              <ellipse
-                cx={ringX}
-                cy={ringY}
-                rx={rx}
-                ry={ry}
-                fill="var(--habitat)"
-                fillOpacity={0.07}
-                stroke="var(--habitat)"
-                strokeWidth={2}
-                style={{
-                  transition: drag || reduced ? 'none' : 'cx var(--t-scene) var(--ease-in-out), cy var(--t-scene) var(--ease-in-out)',
-                  filter: 'drop-shadow(0 0 calc(8px * var(--glow-strength)) var(--habitat))',
-                }}
-              />
-              <circle cx={ringX} cy={ringY} r={dragRing ? 4.5 : 2.5} fill="var(--habitat)" stroke="var(--bg)" strokeWidth={dragRing ? 1.5 : 0} style={{ transition: drag || reduced ? 'none' : 'cx var(--t-scene) var(--ease-in-out), cy var(--t-scene) var(--ease-in-out)' }} />
-            </g>
-          ) : null}
         </g>
         <rect
           x={0}
@@ -599,6 +584,23 @@ function MapBody({
           </g>
         ) : null}
       </svg>
+      {/* The ring is its own layer above the marks. It moves by transform alone, so dragging it or
+          switching habitat never repaints the two thousand marks under it. */}
+      {showRing ? (
+        <div aria-hidden="true" className="pointer-events-none absolute overflow-hidden" style={{ left: box.left, top: box.top, width: box.width, height: box.height }}>
+          <div
+            className="map-ring"
+            style={{
+              width: rx * 2,
+              height: ry * 2,
+              transform: `translate3d(${(ringX - rx - box.left).toFixed(1)}px, ${(ringY - ry - box.top).toFixed(1)}px, 0)`,
+              transition: drag || reduced ? 'none' : 'transform var(--t-scene) var(--ease-in-out)',
+            }}
+          >
+            <span className="map-ring-dot" style={{ width: dragRing ? 9 : 5, height: dragRing ? 9 : 5 }} />
+          </div>
+        </div>
+      ) : null}
       {tip ? (
         <div
           className="card pointer-events-none absolute z-10 max-w-[260px] px-3 py-2 text-[12px]"

@@ -10,7 +10,7 @@ import { useScenario } from '../state/hooks.ts'
 import { GATES, flameParams } from '../three/flameParams.ts'
 import type { FlameParams } from '../three/flameParams.ts'
 import { CAMERA, SCALE, SI_LABEL, SI_MARK, STAGE, kelvinToT, rampCss, rampGradient } from '../three/ramp.ts'
-import { SourcedNumber, useCountUp, usePrefersReducedMotion } from './ui.tsx'
+import { CountUp, SourcedNumber, usePrefersReducedMotion } from './ui.tsx'
 
 const LiveFireball = lazy(() => import('../three/Fireball.tsx'))
 
@@ -109,6 +109,9 @@ export function TemperatureScale({ params }: { params: FlameParams }) {
   )
 }
 
+const rate3 = (value: number): string => formatNumber(value, 3)
+const kelvin = (value: number): string => `${Math.round(value).toLocaleString('en-US')} K`
+
 function Tile({ label, note, children }: { label: string; note: string; children: ReactNode }) {
   return (
     <li className="stat-tile">
@@ -124,8 +127,6 @@ function Tile({ label, note, children }: { label: string; note: string; children
 // Three numbers, each sourced. A click opens the NASA rows behind it.
 export function FireballReadout({ params }: { params: FlameParams }) {
   const look = params.lookup
-  const rate = useCountUp(look.burningRate.value ?? 0, 400)
-  const temp = useCountUp(look.flameTemperature.value ?? 0, 400)
   if (params.ghost) {
     return (
       <p className="text-[13px]">
@@ -147,7 +148,7 @@ export function FireballReadout({ params }: { params: FlameParams }) {
       <Tile label="Burn rate" note={look.burningRate.tests.length > 0 ? `${look.burningRate.tests.length} FLEX tests` : 'between tests'}>
         {look.burningRate.tests.length > 0 ? (
           <SourcedNumber path={[{ kind: 'fireball', readout: 'burningRate' }]} label={`Burning rate ${formatNumber(look.burningRate.value ?? 0, 3)}, the median of ${look.burningRate.tests.length} FLEX tests`}>
-            {formatNumber(rate, 3)}
+            <CountUp value={look.burningRate.value ?? 0} ms={400} format={rate3} />
           </SourcedNumber>
         ) : (
           <span className="num">{look.burningRate.value != null ? formatNumber(look.burningRate.value, 2) : 'none'}</span>
@@ -161,7 +162,7 @@ export function FireballReadout({ params }: { params: FlameParams }) {
       <Tile label="Flame temp" note={look.flameTemperature.value != null ? `${look.flameTemperature.tests.length} ACME tests` : 'no test nearby'}>
         {look.flameTemperature.value != null ? (
           <SourcedNumber path={[{ kind: 'fireball', readout: 'flameTemperature' }]} label={`Listed flame temperature ${Math.round(look.flameTemperature.value)} kelvin, the median of ${look.flameTemperature.tests.length} ACME tests`}>
-            {Math.round(temp).toLocaleString('en-US')} K
+            <CountUp value={look.flameTemperature.value ?? 0} ms={400} format={kelvin} />
           </SourcedNumber>
         ) : (
           <span className="num">none</span>

@@ -1,6 +1,6 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The habitat, the derived scores and the drill path, all read from the URL.
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import type { CoverageResult, DrillPath, Habitat, Scenario } from '../types.ts'
 import { computeCoverage, scenarioPoint } from '../lib/coverage.ts'
@@ -75,7 +75,11 @@ export function useDrill(): {
     },
     [params, location.pathname],
   )
-  const open = useCallback((next: DrillPath) => navigate(hrefFor(next), { preventScrollReset: true }), [navigate, hrefFor])
+  // The opener keeps one identity for the life of the screen. The map hands it to every mark,
+  // so a new one on each address change would redraw two thousand marks.
+  const latest = useRef(hrefFor)
+  latest.current = hrefFor
+  const open = useCallback((next: DrillPath) => navigate(latest.current(next), { preventScrollReset: true }), [navigate])
   const close = useCallback(() => {
     const p = new URLSearchParams(params)
     p.delete('drill')

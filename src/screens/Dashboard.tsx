@@ -11,7 +11,7 @@ import { useData } from '../state/data.tsx'
 import { useCoverage, useDrill, useRanking, useScenario } from '../state/hooks.ts'
 import { gravityLabel, isPartialGravity } from '../state/scenario.ts'
 import { AtmosphereMap, MapLegend } from '../components/AtmosphereMap.tsx'
-import { CoverageDial, PillarMini } from '../components/Coverage.tsx'
+import { CoverageDial, PillarMini, bar } from '../components/Coverage.tsx'
 import { DataTable } from '../components/DataTable.tsx'
 import type { Column } from '../components/DataTable.tsx'
 import { oxygenText, pressureText } from '../components/DrillPanel.tsx'
@@ -234,7 +234,7 @@ function TopInvestigations() {
                   </span>
                 </span>
                 <span className="hidden h-1.5 w-20 overflow-hidden rounded-full bg-line sm:block" aria-hidden="true">
-                  <span className="block h-full rounded-full bg-ember" style={{ width: `${r.score}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
+                  <span className="block h-full bg-ember" style={bar(r.score)} />
                 </span>
                 <span className="num w-7 shrink-0 text-right text-[15px] text-ink" title="Relevance, out of 100">
                   {Math.round(r.score)}

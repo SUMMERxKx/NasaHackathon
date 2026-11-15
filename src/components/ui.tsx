@@ -1,7 +1,7 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The base component set. Built once and used on every screen.
 import { useEffect, useRef, useState } from 'react'
-import type { ButtonHTMLAttributes, KeyboardEvent, ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
 import { Check, Moon, Sun } from 'lucide-react'
@@ -9,16 +9,6 @@ import type { DrillPath } from '../types.ts'
 import { encodeDrill } from '../lib/drill.ts'
 import { scenarioQuery } from '../state/scenario.ts'
 import { useDrill } from '../state/hooks.ts'
-
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost'
-  size?: 'md' | 'sm'
-  icon?: boolean
-}
-
-export function Button({ variant = 'secondary', size = 'md', icon, className = '', type = 'button', ...rest }: ButtonProps) {
-  return <button type={type} className={`btn btn-${variant} ${size === 'sm' ? 'btn-sm' : ''} ${icon ? 'btn-icon' : ''} ${className}`} {...rest} />
-}
 
 export function Chip({
   children,
@@ -40,10 +30,6 @@ export function Chip({
       {children}
     </button>
   )
-}
-
-export function Card({ children, className = '', as: Tag = 'div' }: { children: ReactNode; className?: string; as?: 'div' | 'section' | 'article' | 'li' }) {
-  return <Tag className={`card ${className}`}>{children}</Tag>
 }
 
 // A link that keeps the habitat on every internal link and drops the screen-level parameters.
@@ -134,15 +120,6 @@ export function Slider({
   )
 }
 
-export function Banner({ children, icon }: { children: ReactNode; icon?: ReactNode }) {
-  return (
-    <div className="banner" role="status">
-      {icon}
-      <div>{children}</div>
-    </div>
-  )
-}
-
 export function VerifiedMark({ level }: { level: 'snapshot' | 'snapshot and raw files' }) {
   const twice = level === 'snapshot and raw files'
   return (
@@ -164,10 +141,6 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
       {children ? <p className="mt-2 text-[14px] text-muted">{children}</p> : null}
     </div>
   )
-}
-
-export function QuietLine({ children }: { children: ReactNode }) {
-  return <p className="text-[13px] text-muted" role="status">{children}</p>
 }
 
 export function NotASafetyRating({ className = '' }: { className?: string }) {
@@ -256,6 +229,11 @@ export function useCountUp(target: number, ms = 600): number {
     return () => cancelAnimationFrame(frame)
   }, [target, ms, reduced])
   return value
+}
+
+// A number that counts toward its new value. Only this text node redraws while it counts.
+export function CountUp({ value, format, ms = 600 }: { value: number; format: (value: number) => string; ms?: number }) {
+  return <>{format(useCountUp(value, ms))}</>
 }
 
 // Every chart mark and every sourced number is made clickable through this one helper.

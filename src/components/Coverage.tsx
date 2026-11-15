@@ -1,11 +1,14 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The coverage dial and the pillar bars. A single amber glow always means evidence.
+// The coverage dial and the pillar bars. Amber always means evidence.
 import { useId } from 'react'
 import type { CoverageResult, Pillar } from '../types.ts'
 import { PILLARS } from '../lib/coverage.ts'
 import { formatNumber } from '../lib/units.ts'
-import { useCountUp, useDrillDescribed, useDrillProps } from './ui.tsx'
+import { CountUp, useDrillDescribed, useDrillProps } from './ui.tsx'
 
+const whole = (value: number): string => String(Math.round(value))
+// A bar grows by scale, not by width, so the browser animates it with no layout.
+export const bar = (percent: number) => ({ transform: `scaleX(${Math.max(0, Math.min(100, percent)) / 100})`, transformOrigin: 'left', transition: 'transform var(--t-scene) var(--ease-out)' })
 const START = 135
 const SWEEP = 270
 
@@ -39,14 +42,12 @@ export function CoverageDial({
   const props = useDrillProps()
   const described = useDrillDescribed()
   const score = Math.max(0, Math.min(100, coverage.overall))
-  const shown = useCountUp(score)
   const stroke = size >= 160 ? 14 : size >= 120 ? 10 : 7
   const r = size / 2 - stroke / 2 - (size >= 160 ? 10 : 3)
   const c = size / 2
   const length = (SWEEP / 360) * 2 * Math.PI * r
   const solid = (score / 100) * (1 - coverage.assumedShare) * length
   const total = (score / 100) * length
-  const glow = Math.round((score / 100) * (size >= 160 ? 22 : 8))
   const big = size >= 160
   const track = arc(c, c, r, START, START + SWEEP)
   const ringR = r - stroke - 4
@@ -77,11 +78,7 @@ export function CoverageDial({
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={`${solid} ${length * 2}`}
-          style={{
-            transition: 'stroke-dasharray var(--t-scene) var(--ease-out), filter var(--t-scene) var(--ease-out)',
-            filter: `drop-shadow(0 0 calc(${glow}px * var(--glow-strength)) var(--ember))`,
-            opacity: solid < 0.5 ? 0 : 1,
-          }}
+          style={{ transition: 'stroke-dasharray var(--t-scene) var(--ease-out)', opacity: solid < 0.5 ? 0 : 1 }}
         />
         {big && interactive
           ? PILLARS.map((pillar, i) => {
@@ -118,82 +115,16 @@ export function CoverageDial({
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
         {interactive && drill ? (
           <button type="button" className="sourced pointer-events-auto leading-none" style={{ fontSize: big ? (size >= 240 ? 72 : 48) : size >= 120 ? 32 : 20 }} {...drill} role={undefined}>
-            {Math.round(shown)}
+            <CountUp value={score} format={whole} />
           </button>
         ) : (
           <span className="num leading-none" style={{ fontSize: big ? 48 : size >= 120 ? 32 : 20 }}>
-            {Math.round(shown)}
+            <CountUp value={score} format={whole} />
           </span>
         )}
         {big ? <span className="mt-1 text-[12px] text-muted">out of 100</span> : null}
       </div>
     </div>
-  )
-}
-
-export function AssumedShare({ coverage }: { coverage: CoverageResult }) {
-  const pct = Math.round(coverage.assumedShare * 100)
-  return (
-    <p className="flex items-center gap-2 text-[13px] text-muted">
-      <svg width="22" height="10" aria-hidden="true">
-        <defs>
-          <pattern id="hatch-key" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <rect width="5" height="5" fill="var(--ember)" opacity="0.25" />
-            <line x1="0" y1="0" x2="0" y2="5" stroke="var(--ember)" strokeWidth="2.4" />
-          </pattern>
-        </defs>
-        <rect width="22" height="10" rx="3" fill="url(#hatch-key)" />
-      </svg>
-      <span>
-        <span className="num text-ink">{pct}%</span> of this score rests on an assumed value. Hatching shows that share.
-      </span>
-    </p>
-  )
-}
-
-export function PillarBars({ coverage, focus, onFocus }: { coverage: CoverageResult; focus: Pillar | null; onFocus?: (pillar: Pillar | null) => void }) {
-  const props = useDrillDescribed()
-  return (
-    <ul className="m-0 flex list-none flex-col gap-3 p-0">
-      {PILLARS.map((pillar) => {
-        const p = coverage.byPillar[pillar]
-        const solid = p.score * (1 - p.assumedShare)
-        return (
-          <li key={pillar} className="flex items-center gap-2">
-            <div
-              className="drillable min-w-0 flex-1 rounded-control px-1 py-1 transition-colors hover:bg-surface-2"
-              tabIndex={0}
-              {...props([{ kind: 'coverage', pillar }], `${PILLAR_LABEL[pillar]} coverage ${Math.round(p.score)} out of 100, from ${formatNumber(p.effectiveTests, 1)} effective tests. Press Enter for the tests behind it.`)}
-            >
-              <div className="flex items-baseline justify-between gap-2 text-[14px]">
-                <span className="font-semibold">{PILLAR_LABEL[pillar]}</span>
-                <span className="text-[12px] text-muted">
-                  <span className="num text-[14px] text-ink">{Math.round(p.score)}</span> from <span className="num text-ink">{formatNumber(p.effectiveTests, 1)}</span> effective tests
-                </span>
-              </div>
-              <div className="relative mt-1.5 h-2.5 overflow-hidden rounded-full bg-line">
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full"
-                  style={{ width: `${p.score}%`, background: 'repeating-linear-gradient(45deg, var(--ember) 0 2px, color-mix(in srgb, var(--ember) 30%, transparent) 2px 5px)', transition: 'width var(--t-scene) var(--ease-out)' }}
-                />
-                <div className="absolute inset-y-0 left-0 rounded-full bg-ember" style={{ width: `${solid}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
-              </div>
-            </div>
-            {onFocus ? (
-              <button
-                type="button"
-                className="chip shrink-0"
-                aria-pressed={focus === pillar}
-                onClick={() => onFocus(focus === pillar ? null : pillar)}
-                title="Rank investigations with this pillar in focus"
-              >
-                Focus
-              </button>
-            ) : null}
-          </li>
-        )
-      })}
-    </ul>
   )
 }
 
@@ -214,8 +145,8 @@ export function PillarMini({ coverage }: { coverage: CoverageResult }) {
           >
             <span className="w-[82px] shrink-0 text-muted">{PILLAR_LABEL[pillar]}</span>
             <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-line">
-              <span className="absolute inset-y-0 left-0 rounded-full bg-ember opacity-40" style={{ width: `${p.score}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
-              <span className="absolute inset-y-0 left-0 rounded-full bg-ember" style={{ width: `${solid}%`, transition: 'width var(--t-scene) var(--ease-out)' }} />
+              <span className="absolute inset-0 bg-ember opacity-40" style={bar(p.score)} />
+              <span className="absolute inset-0 bg-ember" style={bar(solid)} />
             </span>
             <span className="num w-6 shrink-0 text-right">{Math.round(p.score)}</span>
           </li>
