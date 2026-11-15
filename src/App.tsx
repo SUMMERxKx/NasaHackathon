@@ -1,7 +1,8 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-import { lazy, Suspense, useEffect, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import HalftoneNebula, { NEBULA_QUIET } from '@/components/ui/halftone-nebula.tsx'
 import { DataProvider } from './state/data.tsx'
 import { Skeleton } from './components/ui.tsx'
 import { makeRoutes } from './routes.tsx'
@@ -41,8 +42,14 @@ export function App() {
       if (!idle) window.clearTimeout(timer)
     }
   }, [])
+  // One sky sits behind every screen, on one canvas that is never rebuilt. The hero shows it
+  // in full and follows the display. Every other screen shows it quieter and at most 30 times
+  // a second, so it leaves the frame budget to the map and to the fireball's own canvas.
+  const [onHero, setOnHero] = useState(() => router.state.location.pathname === '/')
+  useEffect(() => router.subscribe((state) => setOnHero(state.location.pathname === '/')), [router])
   return (
     <DataProvider>
+      <HalftoneNebula backdrop maxDpr={1} params={onHero ? undefined : NEBULA_QUIET} maxFps={onHero ? undefined : 30} sparkOnClick={onHero} />
       <RouterProvider router={router} />
     </DataProvider>
   )

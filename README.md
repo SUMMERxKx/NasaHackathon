@@ -4,7 +4,7 @@
 
 EMBER is a web dashboard that answers one question: for the crew habitat I care about, what does NASA's microgravity fire evidence cover, what does it tell me, and where are the gaps? Pick a habitat. EMBER scores the evidence near it, maps every real flight test, ranks the 24 combustion investigations, and lets a live language model answer questions using only that evidence, with every sentence checked against its source. Every number on screen opens the NASA rows it came from.
 
-The site has a start page and four screens. The **dashboard** is one screen around the map, and a habitat dropdown at the bottom changes all of it. **Investigations** is the ranked list. The **Lab** holds three models. **About** holds everything that explains EMBER: the findings, the methods, the Earth benefits, the SI disclosure and the sources. A small robot at the bottom right opens the chat.
+The site has a start page and four screens. The **dashboard** is one screen around the map, and a habitat picker at the right end of the top bar changes all of it. **Investigations** is the ranked list. The **Lab** holds three models. **About** holds everything that explains EMBER: the findings, the methods, the Earth benefits, the SI disclosure and the sources. A small robot at the bottom right opens the chat.
 
 Built by team **Low Cortisol Gng** for the NASA Space Apps Challenge 2026, challenge "Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data". Built with NASA open data from the PSI repository. NASA does not endorse this project.
 
@@ -118,7 +118,7 @@ src/components/      the component set, with the chat panel in chat/
 src/components/ui/   shadcn-style components: the halftone sky and the tubelight navbar
 src/screens/         Hero, Dashboard, Investigations, Detail, Compare, Lab, About
 src/three/           the fireball, its colour ramp and its inputs
-src/styles/theme.css every design token, light and dark
+src/styles/theme.css every design token, for the one dark look
 plan.html            the build plan. Not part of the site.
 ```
 

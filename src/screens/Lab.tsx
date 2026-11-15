@@ -54,7 +54,7 @@ function ToolIntro({ line, children }: { line: string; children: ReactNode }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="mb-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="card flex flex-wrap items-center justify-between gap-3 px-4 py-2">
         <p className="text-[14px] text-muted">{line}</p>
         <button type="button" className="chip" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           <Info size={13} aria-hidden="true" /> Notes
@@ -166,7 +166,7 @@ function DropletCalculator() {
         <p className="text-muted">
           This is the d-squared law. EMBER takes the burning rate from real FLEX tests near the condition you pick, and checks the law against every FLEX test that has the four values it needs.
         </p>
-        <p className="num rounded-control bg-surface-2 px-3 py-2 text-[13px]">{D_SQUARED_FORMULA}</p>
+        <p className="num bg-surface-2 px-3 py-2 text-[13px]">{D_SQUARED_FORMULA}</p>
         <p className="text-muted">The model end time and the measured burn time are different quantities. The model is never stretched to hide the difference.</p>
         <Limits>
           <li>The law assumes a round, steady flame around one droplet. Disrupted droplets and cool flames do not follow it.</li>
@@ -177,7 +177,7 @@ function DropletCalculator() {
         </Limits>
       </ToolIntro>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-12">
+      <div className="grid gap-4 lg:grid-cols-12">
         <section className="card flex flex-col gap-4 p-4 lg:col-span-3" aria-label="Inputs">
           <div>
             <span className="field-label">Fuel</span>
@@ -272,14 +272,14 @@ function DropletCalculator() {
           </div>
           {row && chosen && modelEnd != null ? (
             <div className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
-              <div className="rounded-control bg-surface-2 p-3">
+              <div className="bg-surface-2 p-3">
                 <p className="stat-label">Model end</p>
                 <p className="num mt-1 text-[22px] text-freefall">{formatNumber(modelEnd, 2)} s</p>
                 <p className="num text-muted">
                   ({formatNumber(row.d0, 2)}² − {formatNumber(row.dExt, 2)}²) ÷ {formatNumber(row.k, 2)}
                 </p>
               </div>
-              <div className="rounded-control bg-surface-2 p-3">
+              <div className="bg-surface-2 p-3">
                 <p className="stat-label">Measured</p>
                 <p className="mt-1 text-[22px]">
                   <SourcedNumber path={[{ kind: 'test', id: chosen.id }]} label={`FLEX test ${chosen.label} measured burn time ${formatNumber(row.burnTime, 1)} seconds`}>
@@ -328,7 +328,7 @@ const Validation = memo(function Validation() {
   const validation = useMemo(() => validateDSquared(flexTests(data.tests)), [data.tests])
   const i4 = data.insightById.I4
   return (
-    <section className="card mt-6 p-4" aria-labelledby="validation-title">
+    <section className="card mt-4 p-4" aria-labelledby="validation-title">
       <h3 id="validation-title" className="text-[18px]">
         Does the law hold on the real tests?
       </h3>
@@ -452,7 +452,7 @@ function ExtinctionExplorer() {
           <li>Background on cool flames, where a droplet keeps burning with no visible flame, is on the <ScenarioLink to="/investigations/PSI-39">CFI</ScenarioLink> and <ScenarioLink to="/investigations/PSI-69">FLEX</ScenarioLink> pages.</li>
         </Limits>
       </ToolIntro>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {LAB_FUELS.map((fuel) => {
           const points = extinctionPoints(data.tests, fuel)
           const bins = extinctionBins(data.tests, fuel)
@@ -491,7 +491,7 @@ function ExtinctionExplorer() {
           )
         })}
       </div>
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+      <div className="card mt-4 flex flex-wrap gap-x-4 gap-y-1 px-4 py-2">
         {DILUENT_FAMILIES.map((f) => (
           <LegendItem key={f} swatch={<svg width="12" height="12" viewBox="-6 -6 12 12"><path d={shapePath(FAMILY_STYLE[f].shape, 4)} fill={FAMILY_STYLE[f].color} /></svg>}>
             {f[0].toUpperCase() + f.slice(1)}
@@ -569,7 +569,7 @@ function GravityBounds() {
                       <text x={8} y={cy + 12} fontSize={11} fill="var(--muted)">
                         {p.thickness} {p.mixed ? '· two materials' : ''}
                       </text>
-                      {both ? <rect x={Math.min(x(p.ug as number), x(p.g1 as number))} y={cy - 6} width={Math.max(2, Math.abs(x(p.g1 as number) - x(p.ug as number)))} height={12} rx={6} fill="var(--warn)" fillOpacity={0.22} stroke="var(--warn)" strokeDasharray="3 3" strokeOpacity={0.7} /> : null}
+                      {both ? <rect x={Math.min(x(p.ug as number), x(p.g1 as number))} y={cy - 6} width={Math.max(2, Math.abs(x(p.g1 as number) - x(p.ug as number)))} height={12} fill="var(--warn)" fillOpacity={0.22} stroke="var(--warn)" strokeDasharray="3 3" strokeOpacity={0.7} /> : null}
                       {p.ug != null ? <circle cx={x(p.ug)} cy={cy} r={6} fill="var(--freefall)" /> : null}
                       {p.g1 != null ? <path d={shapePath('diamond', 6)} transform={`translate(${x(p.g1)},${cy})`} fill="var(--ember)" /> : null}
                     </g>
@@ -582,7 +582,7 @@ function GravityBounds() {
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
           <LegendItem swatch={<span className="inline-block h-3 w-3 rounded-full bg-freefall" />}>Microgravity</LegendItem>
           <LegendItem swatch={<svg width="12" height="12" viewBox="-7 -8 14 16"><path d={shapePath('diamond', 6)} fill="var(--ember)" /></svg>}>Normal gravity</LegendItem>
-          <LegendItem swatch={<span className="inline-block h-3 w-6 rounded-full border border-dashed border-warn" />}>Unknown, bounded</LegendItem>
+          <LegendItem swatch={<span className="inline-block h-3 w-6 border border-dashed border-warn" />}>Unknown, bounded</LegendItem>
         </div>
       </section>
     </div>

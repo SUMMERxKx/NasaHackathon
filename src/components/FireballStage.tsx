@@ -52,7 +52,7 @@ export function FireballPoster({ params, view, droplet = null, showEarth = true 
       {showEarth ? (
         <g transform={earth ? 'translate(196,58) scale(1.55)' : 'translate(40,104)'} opacity={earth ? 1 : 0.95}>
           <path d="M22,78C6,66 8,44 16,28C19,20 21,10 22,0C24,10 27,20 30,28C38,44 38,66 22,78Z" fill="url(#poster-earth)" />
-          <rect x="15" y="80" width="14" height="30" rx="2" fill="var(--hero-ink)" fillOpacity="0.6" opacity="0.7" />
+          <rect x="15" y="80" width="14" height="30" fill="var(--hero-ink)" fillOpacity="0.6" opacity="0.7" />
           <line x1="22" y1="72" x2="22" y2="81" stroke="var(--hero-ink)" strokeWidth="1.5" />
           {!earth ? (
             <text x="22" y="126" textAnchor="middle" fontSize="10" fill="var(--hero-ink)" fillOpacity="0.6">
@@ -80,7 +80,7 @@ export function FireballPoster({ params, view, droplet = null, showEarth = true 
         </g>
       ) : null}
       <g transform="translate(332,218)">
-        <rect width="22" height="15" rx="4" fill="var(--hero-void)" fillOpacity="0.7" stroke="var(--hero-ink)" strokeOpacity="0.25" />
+        <rect width="22" height="15" fill="var(--hero-void)" fillOpacity="0.7" stroke="var(--hero-ink)" strokeOpacity="0.25" />
         <text x="11" y="11" textAnchor="middle" fontSize="9" fontWeight="600" fill="var(--hero-ink)" fillOpacity="0.8">
           {SI_MARK}
         </text>
@@ -95,7 +95,7 @@ export function TemperatureScale({ params }: { params: FlameParams }) {
   const markAt = params.tempTopKelvin != null && GATES.tadConfirmed ? kelvinToT(params.tempTopKelvin) * 100 : null
   return (
     <div aria-label="Temperature scale in kelvin" title="Illustrative temperature pattern. The two labelled ends are from NASA's guide to combustion science.">
-      <div className="relative h-1.5 rounded-full" style={{ background: rampGradient('to right') }} data-ramp={rampGradient('to right')}>
+      <div className="relative h-1.5" style={{ background: rampGradient('to right') }} data-ramp={rampGradient('to right')}>
         <span className="absolute -top-0.5 h-2.5 w-px bg-ink" style={{ left: `${flameAt}%` }} aria-hidden="true" />
         {markAt != null ? <span className="absolute -top-1 h-3.5 w-0.5 bg-freefall" style={{ left: `${markAt}%`, transition: 'left var(--t-scene) var(--ease-out)' }} aria-hidden="true" /> : null}
       </div>
@@ -221,7 +221,7 @@ export function FireballStage({ droplet = null, showEarth = true }: { droplet?: 
   const Icon = view === 'heat' ? Camera : Flame
   return (
     <div className="flex flex-col gap-3">
-      <div ref={stage} className="relative overflow-hidden rounded-control border border-line" style={{ aspectRatio: '16 / 9', background: STAGE }}>
+      <div ref={stage} className="relative overflow-hidden border border-line" style={{ aspectRatio: '16 / 9', background: STAGE }}>
         {/* The poster shows until the live canvas has drawn its first frame, and again if it fails. */}
         {!showLive || !drawn ? (
           <div className="absolute inset-0">

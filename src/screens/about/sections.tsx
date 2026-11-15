@@ -44,7 +44,7 @@ export function Section({ id, title, children }: { id: string; title: string; ch
 }
 
 function Formula({ children }: { children: ReactNode }) {
-  return <p className="num rounded-control bg-surface-2 px-3 py-2 text-[13px] !max-w-none">{children}</p>
+  return <p className="num bg-surface-2 px-3 py-2 text-[13px] !max-w-none">{children}</p>
 }
 
 // What EMBER is, how it answers the challenge and why the question matters.
@@ -416,12 +416,12 @@ export function AnswersSection() {
             </table>
           </div>
           <p className="text-[14px] text-muted">{EVALUATION_NOTE}</p>
-          <p className="rounded-control bg-surface-2 px-3 py-2 text-[14px]">
+          <p className="bg-surface-2 px-3 py-2 text-[14px]">
             {MEANING_CHECK ?? 'The Meaning measure is still open. The checker proves that ids and numbers match the evidence. The team\'s science lead has not yet read the verified answers against their sources.'}
           </p>
         </>
       ) : (
-        <p className="rounded-control bg-surface-2 px-3 py-2 text-[14px]">The evaluation set is fixed: 12 real questions and 5 trick questions. Retrieval recall is tested on every build. The answer rate and the other live measures are published here after the first run against the live model. No result is shown until it has been measured.</p>
+        <p className="bg-surface-2 px-3 py-2 text-[14px]">The evaluation set is fixed: 12 real questions and 5 trick questions. Retrieval recall is tested on every build. The answer rate and the other live measures are published here after the first run against the live model. No result is shown until it has been measured.</p>
       )}
     </Section>
     </>

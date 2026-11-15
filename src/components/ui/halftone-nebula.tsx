@@ -1,7 +1,9 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The hero sky. Adapted from the Halftone Nebula component the owner supplied (21st.dev style),
-// with its solar preset tuned to the EMBER flame palette. The planet of the original is drawn
-// here as a flame in freefall: a sphere of flame around a small fuel droplet.
+// The sky behind every screen. Adapted from the Halftone Nebula component the owner supplied
+// (21st.dev style), with its solar preset tuned to the EMBER flame palette. The planet of the
+// original is drawn here as a flame in freefall: a sphere of flame around a small fuel droplet.
+// One canvas serves the whole app. The hero shows it at full strength. Every other screen
+// shows the same sky quieter, with no flame and no sparks, behind its panels.
 import * as React from "react"
 import { NEBULA } from "@/three/ramp.ts"
 
@@ -63,6 +65,8 @@ export type NebulaParams = {
   speed: number
   vignette: number
   grain: number
+  /** Overall brightness. 1 is the hero. Lower is a quieter sky that sits behind content. */
+  gain: number
   // palette, dark to bright
   voidColor: string
   hazeColor: string
@@ -113,8 +117,25 @@ export const NEBULA_DEFAULTS: NebulaParams = {
   speed: 1,
   vignette: 0.5,
   grain: 0.035,
+  gain: 1,
 
   ...NEBULA,
+}
+
+// The same sky behind the working screens: thinner gas, no flame, no sparks and less light,
+// so the panels and the text over it stay easy to read. The pointer still parts the gas.
+export const NEBULA_QUIET: Partial<NebulaParams> = {
+  density: 0.44,
+  band: 0.6,
+  haze: 0.7,
+  stars: 0.7,
+  sparkles: 0,
+  planet: false,
+  lens: 0.7,
+  lensRadius: 190,
+  vignette: 0.25,
+  grain: 0.02,
+  gain: 0.45,
 }
 
 const MAX_SPARKS = 16
@@ -131,7 +152,7 @@ const UNIFORMS: Slot[] = [
   ["band", "f"], ["bandAngle", "f"], ["bandOffset", "f"], ["bandWidth", "f"], ["haze", "f"],
   ["stars", "f"], ["twinkle", "f"], ["starDrift", "f"], ["spikeWidth", "f"],
   ["parallax", "f"], ["lens", "f"], ["lensRadius", "f"], ["lensPush", "f"], ["rippleSpeed", "f"],
-  ["vignette", "f"], ["grain", "f"],
+  ["vignette", "f"], ["grain", "f"], ["gain", "f"],
   ["voidColor", "c"], ["hazeColor", "c"], ["duskColor", "c"], ["wineColor", "c"],
   ["crimsonColor", "c"], ["hotColor", "c"], ["starColor", "c"],
 ]
@@ -362,7 +383,7 @@ void main(){
   vec2 vu = gl_FragCoord.xy / uRes - 0.5;
   col *= 1.0 - uVignette * smoothstep(0.35, 0.95, length(vu * vec2(uRes.x / uRes.y, 1.0) * 1.1));
   col += (hash12(floor(css) + fract(uTime) * 91.0) - 0.5) * uGrain;
-  frag = vec4(max(col, vec3(0.0)), 1.0);
+  frag = vec4(max(col, vec3(0.0)) * uGain, 1.0);
 }`
 
 /**
@@ -457,6 +478,9 @@ export function driftPos(t: number) {
 }
 // #endregion
 
+/** What the sky shows, for a screen that presents it as a picture. */
+export const SKY_LABEL = "A sky of ember-coloured gas printed in halftone dots, with a round flame in freefall"
+
 export type HalftoneNebulaProps = {
   /** Explicit height. The canvas fills this box, so it must be a definite length. */
   height?: string
@@ -468,6 +492,15 @@ export type HalftoneNebulaProps = {
   touch?: "scroll" | "draw"
   /** Device-pixel-ratio cap. The shader is per-pixel, so 2 is plenty. */
   maxDpr?: number
+  /** Frames per second cap. Unset follows the display. A capped sky also skips its turn when the page is busy. */
+  maxFps?: number
+  /** A click on the sky drops a sparkle and sends a ring through the gas. */
+  sparkOnClick?: boolean
+  /**
+   * The sky as the page background: fixed behind everything, the size of the window, hidden
+   * from assistive technology, and lit by the pointer wherever it is on the page.
+   */
+  backdrop?: boolean
   /** Content laid over the sky. Pointer events pass through unless opted in. */
   children?: React.ReactNode
   className?: string
@@ -479,6 +512,9 @@ export default function HalftoneNebula({
   interactive = true,
   touch = "scroll",
   maxDpr = 2,
+  maxFps,
+  sparkOnClick = true,
+  backdrop = false,
   children,
   className = "",
 }: HalftoneNebulaProps) {
@@ -501,6 +537,16 @@ export default function HalftoneNebula({
   // The loop reads through a ref, so tuning a value never restarts WebGL.
   const paramsRef = React.useRef(P)
   paramsRef.current = P
+  // The frame cap and the click switch are read the same way, so a route change never restarts WebGL.
+  const capRef = React.useRef(maxFps)
+  capRef.current = maxFps
+  const sparkRef = React.useRef(sparkOnClick)
+  sparkRef.current = sparkOnClick
+  // Under reduced motion nothing loops, so a change of parameters asks for one new still frame.
+  const repaintRef = React.useRef<(() => void) | null>(null)
+  React.useEffect(() => {
+    repaintRef.current?.()
+  }, [P])
 
   React.useEffect(() => {
     const root = rootRef.current
@@ -549,6 +595,16 @@ export default function HalftoneNebula({
       return
     }
 
+    // Colours are parsed once for each value, not on every frame.
+    const parsed = new Map<string, [number, number, number]>()
+    const rgb = (hex: string) => {
+      let v = parsed.get(hex)
+      if (!v) {
+        v = hexToRgb(hex)
+        parsed.set(hex, v)
+      }
+      return v
+    }
     const loc = (n: string) => gl.getUniformLocation(program, n)
     const tuned = UNIFORMS.map(([k, kind]) => [loc(uName(k)), k, kind] as const)
     const U = {
@@ -603,6 +659,10 @@ export default function HalftoneNebula({
     let lastTouched = -1e9
 
     const toUv = (e: PointerEvent): [number, number] => {
+      // The backdrop fills the window, so its box is known without asking the page to lay out.
+      if (backdrop) {
+        return [Math.min(Math.max(e.clientX / cssW, 0), 1), Math.min(Math.max(1 - e.clientY / cssH, 0), 1)]
+      }
       const r = canvas.getBoundingClientRect()
       return [
         Math.min(Math.max((e.clientX - r.left) / Math.max(r.width, 1), 0), 1),
@@ -619,7 +679,7 @@ export default function HalftoneNebula({
       inside = false
     }
     const onDown = (e: PointerEvent) => {
-      if (!interactive || e.button > 0) return
+      if (!interactive || !sparkRef.current || e.button > 0) return
       // Let buttons and links in the overlay keep their clicks.
       if ((e.target as HTMLElement | null)?.closest("a,button,input,textarea,select,label,[role=button]")) return
       const [x, y] = toUv(e)
@@ -643,10 +703,34 @@ export default function HalftoneNebula({
       if (reduced) paint()
     }
 
-    root.addEventListener("pointermove", onMove)
-    root.addEventListener("pointerdown", onDown)
-    root.addEventListener("pointerleave", onLeave)
-    root.addEventListener("pointercancel", onLeave)
+    // A capped sky holds still while something is pressed, and for a moment after a click or a
+    // key, so the work that follows a click never shares a frame with it.
+    let pressed = false
+    let holdUntil = 0
+    const HOLD_MS = 400
+    const onPress = () => {
+      pressed = true
+    }
+    const onRelease = () => {
+      pressed = false
+      holdUntil = performance.now() + HOLD_MS
+    }
+    if (backdrop) {
+      window.addEventListener("pointerdown", onPress, true)
+      window.addEventListener("pointerup", onRelease, true)
+      window.addEventListener("pointercancel", onRelease, true)
+      window.addEventListener("click", onRelease, true)
+      window.addEventListener("keydown", onRelease, true)
+      window.addEventListener("blur", onRelease)
+    }
+
+    // As a backdrop the sky sits behind the page, so it listens to the whole window.
+    const host: HTMLElement | Window = backdrop ? window : root
+    const edge: HTMLElement = backdrop ? document.documentElement : root
+    host.addEventListener("pointermove", onMove as EventListener)
+    host.addEventListener("pointerdown", onDown as EventListener)
+    edge.addEventListener("pointerleave", onLeave)
+    host.addEventListener("pointercancel", onLeave)
 
     const onLost = (e: Event) => {
       e.preventDefault()
@@ -657,17 +741,24 @@ export default function HalftoneNebula({
     canvas.addEventListener("webglcontextlost", onLost)
     canvas.addEventListener("webglcontextrestored", onRestored)
 
+    // The numbers the shader is drawing with right now. They glide toward the parameters, so
+    // the sky changes smoothly when one screen hands over to another.
+    const live: Partial<Record<keyof NebulaParams, number>> = {}
+
     // ---- one frame ----------------------------------------------------------
     const paint = () => {
       const p = paramsRef.current
-      const key = p.seed + ":" + p.sparkles
-      if (key !== laidOut) {
-        sparks = [...layoutSparkles(p.seed, p.sparkles), ...sparks.filter((s) => s.user)].slice(0, MAX_SPARKS)
-        laidOut = key
-      }
       const t = clock()
       const dt = Math.min(Math.max(t - lastClock, 0), 0.1)
       lastClock = t
+      const key = p.seed + ":" + p.sparkles
+      if (key !== laidOut) {
+        // Sparks hung after the first sky grow in, as a clicked one does.
+        const fresh = layoutSparkles(p.seed, p.sparkles).map((s) => ({ ...s, born: reduced ? s.born : t }))
+        sparks = [...fresh, ...sparks.filter((s) => s.user)].slice(0, MAX_SPARKS)
+        laidOut = key
+      }
+      const glide = reduced ? 1 : 1 - Math.exp(-dt * 5)
 
       // With no hand on it, the lamp wanders on its own, so the sky never sits dead.
       const idle = !inside || performance.now() / 1000 - lastTouched > 6
@@ -700,9 +791,14 @@ export default function HalftoneNebula({
       gl.viewport(0, 0, canvas.width, canvas.height)
       for (const [l, key, kind] of tuned) {
         const v = p[key]
-        if (kind === "c") gl.uniform3fv(l, hexToRgb(v as string))
+        if (kind === "c") gl.uniform3fv(l, rgb(v as string))
         else if (kind === "i" || kind === "b") gl.uniform1i(l, Number(v) | 0)
-        else gl.uniform1f(l, v as number)
+        else {
+          const from = live[key] ?? (v as number)
+          const now = from + ((v as number) - from) * glide
+          live[key] = now
+          gl.uniform1f(l, now)
+        }
       }
       gl.uniform2f(U.res, canvas.width, canvas.height)
       gl.uniform1f(U.dpr, canvas.width / cssW)
@@ -721,9 +817,25 @@ export default function HalftoneNebula({
     // ---- loop, paused whenever nobody can see it -----------------------------
     let raf = 0
     let visible = true
-    const frame = () => {
+    let lastFrame = 0
+    let lastPaint = 0
+    const frame = (now: number) => {
       raf = 0
-      paint()
+      const cap = capRef.current
+      const gap = now - lastFrame
+      const since = now - lastPaint
+      lastFrame = now
+      // A capped sky paints at most that many times a second. It also gives way: when the
+      // frame before this one ran long, the page is busy, so the sky skips its turn. It never
+      // waits more than half a second for that, so on a slow machine it slows down and does
+      // not stop. While something is pressed it does not paint at all.
+      const due = !cap || since >= 1000 / cap - 2
+      const busy = Boolean(cap) && gap > 30 && since < 500
+      const held = Boolean(cap) && (pressed || now < holdUntil)
+      if (due && !busy && !held) {
+        paint()
+        lastPaint = now
+      }
       if (visible && !document.hidden) raf = requestAnimationFrame(frame)
     }
     const wake = () => {
@@ -742,6 +854,9 @@ export default function HalftoneNebula({
 
     // Paint before the first rAF so nothing ever flashes an empty canvas.
     paint()
+    repaintRef.current = () => {
+      if (reduced) paint()
+    }
     if (reduced) {
       // Nothing moves. One frame is the whole piece.
     } else {
@@ -750,37 +865,47 @@ export default function HalftoneNebula({
 
     return () => {
       cancelAnimationFrame(raf)
+      repaintRef.current = null
       observer.disconnect()
       io.disconnect()
       document.removeEventListener("visibilitychange", wake)
-      root.removeEventListener("pointermove", onMove)
-      root.removeEventListener("pointerdown", onDown)
-      root.removeEventListener("pointerleave", onLeave)
-      root.removeEventListener("pointercancel", onLeave)
+      window.removeEventListener("pointerdown", onPress, true)
+      window.removeEventListener("pointerup", onRelease, true)
+      window.removeEventListener("pointercancel", onRelease, true)
+      window.removeEventListener("click", onRelease, true)
+      window.removeEventListener("keydown", onRelease, true)
+      window.removeEventListener("blur", onRelease)
+      host.removeEventListener("pointermove", onMove as EventListener)
+      host.removeEventListener("pointerdown", onDown as EventListener)
+      edge.removeEventListener("pointerleave", onLeave)
+      host.removeEventListener("pointercancel", onLeave)
       canvas.removeEventListener("webglcontextlost", onLost)
       canvas.removeEventListener("webglcontextrestored", onRestored)
       gl.deleteVertexArray(vao)
       gl.deleteProgram(program)
     }
-  }, [interactive, reduced, generation, maxDpr])
+  }, [interactive, reduced, generation, maxDpr, backdrop])
 
   return (
     <section
       ref={rootRef}
       className={
-        "relative w-full overflow-hidden bg-hero-void " +
-        (interactive ? "cursor-crosshair " : "") +
-        (touch === "draw" ? "touch-none " : "touch-pan-y ") +
+        "overflow-hidden bg-hero-void " +
+        (backdrop
+          ? "no-print pointer-events-none fixed inset-0 -z-10 "
+          : "relative w-full " + (interactive ? "cursor-crosshair " : "") + (touch === "draw" ? "touch-none " : "touch-pan-y ")) +
         className
       }
-      style={{ height }}
-      aria-label="A sky of ember-coloured gas printed in halftone dots, with a round flame in freefall"
+      style={backdrop ? undefined : { height }}
+      aria-hidden={backdrop ? true : undefined}
+      aria-label={backdrop ? undefined : SKY_LABEL}
     >
       {failed ? (
         // No WebGL2: a still picture of the same sky beats a black box.
         <div
           className="absolute inset-0"
           style={{
+            opacity: P.gain,
             background:
               `radial-gradient(60% 45% at 12% 88%, ${P.hotColor} 0%, ${P.crimsonColor} 22%, ${P.wineColor} 50%, transparent 75%),` +
               `radial-gradient(45% 30% at 22% 22%, ${P.wineColor} 0%, transparent 70%),` +

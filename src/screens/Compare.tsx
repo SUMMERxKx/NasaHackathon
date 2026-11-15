@@ -104,7 +104,7 @@ export default function Compare() {
   return (
     <div className="page">
       <PageHeader title="Compare investigations" lead="Side by side. A tinted row is the same across them." />
-      <section aria-label="Choose investigations" className="mb-6">
+      <section aria-label="Choose investigations" className="card mb-4 p-4">
         <p className="field-label">Choose two or three</p>
         <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
           {snapshot.investigations.map((inv) => (
@@ -154,7 +154,7 @@ export default function Compare() {
             </table>
           </div>
 
-          <section className="card mt-6 p-4" aria-labelledby="shared-title">
+          <section className="card mt-4 p-4" aria-labelledby="shared-title">
             <h2 id="shared-title" className="text-[18px]">
               Shared and different
             </h2>
@@ -166,7 +166,7 @@ export default function Compare() {
             </p>
           </section>
 
-          <section className="card mt-6 p-4" aria-label="The chosen investigations on one atmosphere map">
+          <section className="card mt-4 p-4" aria-label="The chosen investigations on one atmosphere map">
             {tests.some((t) => t.o2 != null && t.pressureAtm != null) ? (
               <AtmosphereMap
                 tests={tests}

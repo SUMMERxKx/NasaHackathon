@@ -1,7 +1,7 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The habitat dropdown. It docks at the bottom of the screen and drives everything above it.
+// The habitat picker. It sits at the right end of the top bar and drives everything under it.
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ChevronUp, SlidersHorizontal } from 'lucide-react'
+import { Check, ChevronDown, SlidersHorizontal } from 'lucide-react'
 import type { Gravity, Scenario } from '../types.ts'
 import { computeCoverage, scenarioPoint } from '../lib/coverage.ts'
 import { formatNumber, formatPercent } from '../lib/units.ts'
@@ -72,7 +72,7 @@ function HabitatList({ onPick }: { onPick: () => void }) {
                   setScenario(fromHabitat(h, scenario.focus, scenario.flowCmS))
                   onPick()
                 }}
-                className={`flex w-full items-center gap-3 rounded-control px-3 py-2 text-left transition-colors hover:bg-surface-2 ${selected ? 'bg-surface-2' : ''}`}
+                className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-surface-2 ${selected ? 'bg-surface-2' : ''}`}
               >
                 <span className="flex w-4 shrink-0 justify-center text-ember">{selected ? <Check size={14} aria-hidden="true" /> : null}</span>
                 <span className="min-w-0 flex-1">
@@ -90,12 +90,12 @@ function HabitatList({ onPick }: { onPick: () => void }) {
         })}
       </ul>
       <div className="mt-1 border-t border-line pt-1">
-        <button type="button" aria-expanded={custom} onClick={() => setCustom((v) => !v)} className={`flex w-full items-center gap-3 rounded-control px-3 py-2 text-left transition-colors hover:bg-surface-2 ${scenario.presetId == null ? 'bg-surface-2' : ''}`}>
+        <button type="button" aria-expanded={custom} onClick={() => setCustom((v) => !v)} className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-surface-2 ${scenario.presetId == null ? 'bg-surface-2' : ''}`}>
           <span className="flex w-4 shrink-0 justify-center text-ember">
             <SlidersHorizontal size={14} aria-hidden="true" />
           </span>
           <span className="flex-1 text-[14px] font-semibold">Custom</span>
-          <ChevronUp size={14} aria-hidden="true" className={`text-muted transition-transform ${custom ? '' : 'rotate-180'}`} />
+          <ChevronDown size={14} aria-hidden="true" className={`text-muted transition-transform ${custom ? 'rotate-180' : ''}`} />
         </button>
         {custom ? <CustomHabitat /> : null}
       </div>
@@ -103,7 +103,7 @@ function HabitatList({ onPick }: { onPick: () => void }) {
   )
 }
 
-export function HabitatDock() {
+export function HabitatPicker() {
   const { scenario, name } = useScenario()
   const [open, setOpen] = useState(false)
   const wrap = useRef<HTMLDivElement>(null)
@@ -127,31 +127,25 @@ export function HabitatDock() {
     }
   }, [open])
   return (
-    <div ref={wrap} className="habitat-dock no-print">
-      {open ? (
-        <div className="dock-pop" role="dialog" aria-label="Choose a habitat">
-          <HabitatList onPick={() => setOpen(false)} />
-        </div>
-      ) : null}
-      <button
-        ref={button}
-        type="button"
-        id="habitat-dock"
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        onClick={() => setOpen((v) => !v)}
-        className="flex min-h-11 max-w-[min(340px,62vw)] items-center gap-2.5 rounded-full border border-line bg-surface/80 py-1 pl-4 pr-3 text-left shadow-lg backdrop-blur-lg transition-colors hover:border-muted"
-      >
-        <span className="h-2 w-2 shrink-0 rounded-full bg-ember" aria-hidden="true" />
+    <div ref={wrap} className="habitat-picker no-print">
+      <button ref={button} type="button" id="habitat-picker" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen((v) => !v)} className="habitat-button">
         <span className="min-w-0">
+          <span className="stat-label block !text-[9px] leading-tight text-ember" aria-hidden="true">
+            Habitat
+          </span>
           <span className="block truncate text-[13px] font-semibold leading-tight">{name}</span>
-          <span className="num block truncate text-[11px] leading-tight text-muted">
+          <span className="num hidden truncate text-[11px] leading-tight text-muted lg:block">
             {habitatFacts(scenario)} · {GRAVITY_SHORT[String(scenario.gravity)]}
           </span>
         </span>
-        <ChevronUp size={16} aria-hidden="true" className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} aria-hidden="true" className={`shrink-0 text-ember transition-transform ${open ? 'rotate-180' : ''}`} />
         <span className="sr-only">Change the habitat. Now {name}, {gravityLabel(scenario.gravity)}.</span>
       </button>
+      {open ? (
+        <div className="habitat-pop" role="dialog" aria-label="Choose a habitat">
+          <HabitatList onPick={() => setOpen(false)} />
+        </div>
+      ) : null}
     </div>
   )
 }

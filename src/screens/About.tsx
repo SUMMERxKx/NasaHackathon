@@ -59,8 +59,10 @@ export default function About() {
   return (
     <div className="page">
       <PageHeader title="About" lead="How EMBER is made, what it assumes and what it cannot tell you" />
-      <nav aria-label="About sections" className="hide-scrollbar -mx-4 mb-6 overflow-x-auto px-4">
-        <ul className="m-0 flex list-none gap-1 border-b border-line p-0">
+      {/* One panel holds the tabs and the sections. Thin lines divide the sections inside it. */}
+      <div className="card">
+      <nav aria-label="About sections" className="hide-scrollbar overflow-x-auto border-b border-line px-2 md:px-4">
+        <ul className="m-0 flex list-none gap-1 p-0">
           {ABOUT_TABS.map((t) => (
             <li key={t.id} className="shrink-0">
               <ScenarioLink to={`/about?section=${t.id}`} className="nav-link !min-h-10 text-[13px]" aria-current={t.id === tab ? 'page' : undefined} preventScrollReset>
@@ -70,7 +72,7 @@ export default function About() {
           ))}
         </ul>
       </nav>
-      <div className="min-w-0">
+      <div className="min-w-0 p-4 md:p-6">
         {tab === 'overview' ? <OverviewSection /> : null}
         {tab === 'findings' ? <FindingsSection /> : null}
         {tab === 'methods' ? <MethodsSection /> : null}
@@ -79,6 +81,7 @@ export default function About() {
         {tab === 'earth' ? <EarthSection /> : null}
         {tab === 'si' ? <DisclosureSection /> : null}
         {tab === 'sources' ? <SourcesSection /> : null}
+      </div>
       </div>
     </div>
   )

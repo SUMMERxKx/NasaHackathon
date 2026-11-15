@@ -77,7 +77,7 @@ export function WhyRankBars({ ranked }: { ranked: Ranked }) {
           return (
             <li
               key={part}
-              className="drillable rounded px-1 py-0.5 hover:bg-surface-2"
+              className="drillable px-1 py-0.5 hover:bg-surface-2"
               tabIndex={0}
               {...props([{ kind: 'rank', accession: ranked.accession, part }], `${info.label} for ${name}. ${info.formula} Weight ${RANK_WEIGHTS[part]}. Press Enter for the tests that were counted.`)}
             >
@@ -85,7 +85,7 @@ export function WhyRankBars({ ranked }: { ranked: Ranked }) {
                 <span className="truncate">{info.label}</span>
                 <span className="num text-ink">{value.toFixed(2)}</span>
               </span>
-              <span className="mt-0.5 block h-1.5 overflow-hidden rounded-full bg-line">
+              <span className="mt-0.5 block h-1.5 overflow-hidden bg-line">
                 <span className="block h-full bg-freefall" style={bar(value * 100)} />
               </span>
             </li>
@@ -133,7 +133,7 @@ export function years(inv: Investigation): string {
 // EMBER uses no NASA logo, badge or patch, so no image from the record is shown here.
 export function Thumb({ inv, size = 64 }: { inv: Investigation; size?: number }) {
   return (
-    <span className="flex shrink-0 items-center justify-center rounded-control border border-line bg-surface-2" style={{ width: size, height: size }} aria-hidden="true">
+    <span className="flex shrink-0 items-center justify-center border border-line bg-surface-2" style={{ width: size, height: size }} aria-hidden="true">
       <svg width={size * 0.5} height={size * 0.5} viewBox="-10 -10 20 20">
         <path d={markPath(inv.fuelClass, 6.5)} fill={inv.fuelClass === 'unknown' ? 'none' : `var(--fuel-${inv.fuelClass})`} stroke={`var(--fuel-${inv.fuelClass})`} strokeWidth={1.5} fillOpacity={/microgravity/i.test(inv.projectType) ? 0.9 : 0.15} />
       </svg>
@@ -163,7 +163,7 @@ export function InvestigationRow({
   return (
     <li className={`border-b border-line last:border-b-0 ${selected ? 'bg-surface-2' : ''}`}>
       <div className="flex items-center gap-1 pr-1 md:pr-2">
-        <ScenarioLink to={`/investigations/${inv.accession}`} className="row-link min-w-0 flex-1 !rounded-none !px-3 !py-2.5 md:!px-4">
+        <ScenarioLink to={`/investigations/${inv.accession}`} className="row-link min-w-0 flex-1 !px-3 !py-2.5 md:!px-4">
           <span className="num w-5 shrink-0 text-[12px] text-faint" aria-label={`Rank ${position}`}>
             {position}
           </span>
@@ -174,7 +174,7 @@ export function InvestigationRow({
               {PILLAR_NAME[inv.pillar]} · {FUEL_NAME[inv.fuelClass]} · <span className="num">{inv.testCount}</span> {inv.testCount === 1 ? 'test' : 'tests'} · {years(inv)}
             </span>
           </span>
-          <span className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-line md:block" aria-hidden="true">
+          <span className="hidden h-1.5 w-24 overflow-hidden bg-line md:block" aria-hidden="true">
             <span className="block h-full bg-ember" style={bar(ranked.score)} />
           </span>
           <span className="num w-8 shrink-0 text-right text-[17px] text-ink" title="Relevance for this habitat, out of 100">

@@ -1,5 +1,5 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// Every route renders to a string against the committed snapshot, in both themes, with no browser.
+// Every route renders to a string against the committed snapshot, with no browser.
 import { renderToString } from 'react-dom/server'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -23,14 +23,12 @@ import { STORY_STEPS, storyCaption } from './story/Story.tsx'
 
 const routes = makeRoutes({ Shell: AppShell, Hero, Dashboard, Investigations, InvestigationDetail, Compare, Lab, About })
 
-function render(url: string, theme: 'dark' | 'light' = 'dark'): string {
+function render(url: string): string {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
   return renderToString(
-    <div data-theme={theme}>
-      <StaticDataProvider data={data}>
-        <RouterProvider router={router} />
-      </StaticDataProvider>
-    </div>,
+    <StaticDataProvider data={data}>
+      <RouterProvider router={router} />
+    </StaticDataProvider>,
   )
 }
 
@@ -62,22 +60,37 @@ const URLS = [
 ]
 
 describe('routes', () => {
-  it('render every screen in both themes without throwing', () => {
+  it('render every screen without throwing', () => {
     for (const url of URLS) {
-      for (const theme of ['dark', 'light'] as const) {
-        const html = render(url, theme)
-        expect(html.length, url).toBeGreaterThan(1200)
-        expect(html, url).toContain('EMBER')
-        expect(html, url).not.toContain('This screen could not be shown')
-      }
+      const html = render(url)
+      expect(html.length, url).toBeGreaterThan(1200)
+      expect(html, url).toContain('EMBER')
+      expect(html, url).not.toContain('This screen could not be shown')
     }
+  })
+  it('show one look, with no theme switch on any screen', () => {
+    for (const url of URLS) {
+      const html = render(url)
+      expect(html, url).not.toContain('Theme:')
+      expect(html, url).not.toContain('data-theme')
+    }
+  })
+  it('keep every corner sharp, and leave round only the marks that stand for data', () => {
+    for (const url of URLS) {
+      const rounded = render(url).match(/\brounded(-[a-z0-9[\]]+)*/g) ?? []
+      expect(rounded.filter((name) => name !== 'rounded-full'), url).toEqual([])
+    }
+    // The dots left round are legend keys for test marks, never a button, a card or the navbar.
+    expect(render('/investigations')).not.toContain('rounded-full')
+    expect(render('/about')).not.toContain('rounded-full')
   })
   it('open on a hero with the name, one way in and nothing from the dashboard', () => {
     const html = render('/')
     expect(html).toContain('Open the dashboard')
     expect(html).toContain('href="/dashboard"')
     expect(html).not.toContain('aria-label="Main"')
-    expect(html).not.toContain('habitat-dock')
+    expect(html).not.toContain('habitat-picker')
+    expect(html).not.toContain('top-bar')
     expect(render('/?h=suit')).toContain('href="/dashboard?h=suit"')
   })
   it('show the not a safety rating line beside the score', () => {
@@ -121,7 +134,7 @@ describe('routes', () => {
     expect(render('/about?section=assumptions')).toContain('Declared assumptions')
   })
   it('light the navbar tab from the route', () => {
-    const lit = (url: string) => (render(url).match(/<a [^>]*>/g) ?? []).filter((tag) => tag.includes('aria-current="page"') && tag.includes('rounded-full'))
+    const lit = (url: string) => (render(url).match(/<a [^>]*>/g) ?? []).filter((tag) => tag.includes('aria-current="page"') && tag.includes('aria-label='))
     expect(lit('/lab/extinction')).toHaveLength(1)
     expect(lit('/lab/extinction')[0]).toContain('aria-label="Lab"')
     expect(lit('/investigations/PSI-69')[0]).toContain('aria-label="Investigations"')
@@ -130,9 +143,15 @@ describe('routes', () => {
     expect(lit('/about')[0]).toContain('aria-label="About"')
     expect(pageName('/dashboard')).toBe('Dashboard')
   })
-  it('put the habitat dropdown on the screens that follow the habitat', () => {
-    for (const url of ['/dashboard', '/investigations', '/lab', '/lab/gravity']) expect(render(url), url).toContain('habitat-dock')
-    for (const url of ['/about', '/investigations/PSI-69']) expect(render(url), url).not.toContain('habitat-dock')
+  it('put the habitat picker in the top bar of the screens that follow the habitat', () => {
+    for (const url of ['/dashboard', '/investigations', '/lab', '/lab/gravity']) {
+      const html = render(url)
+      expect(html, url).toContain('habitat-picker')
+      // The picker comes before the content, in the top bar, and not after it at the bottom.
+      expect(html.indexOf('habitat-picker'), url).toBeGreaterThan(html.indexOf('top-bar'))
+      expect(html.indexOf('habitat-picker'), url).toBeLessThan(html.indexOf('<main'))
+    }
+    for (const url of ['/about', '/investigations/PSI-69', '/dashboard?story=3']) expect(render(url), url).not.toContain('habitat-picker')
     expect(render('/dashboard?h=suit')).toContain(preset('suit').presetId === 'suit' ? snapshot.habitats.find((h) => h.id === 'suit')?.name : '')
   })
   it('open the drill panel from the address and ignore an address that does not decode', () => {

@@ -139,12 +139,12 @@ export function PillarMini({ coverage }: { coverage: CoverageResult }) {
         return (
           <li
             key={pillar}
-            className="drillable flex items-center gap-2 rounded px-1 py-0.5 text-[12px] transition-colors hover:bg-surface-2"
+            className="drillable flex items-center gap-2 px-1 py-0.5 text-[12px] transition-colors hover:bg-surface-2"
             tabIndex={0}
             {...props([{ kind: 'coverage', pillar }], `${PILLAR_LABEL[pillar]} coverage ${Math.round(p.score)} out of 100, from ${formatNumber(p.effectiveTests, 1)} effective tests. Press Enter for the tests behind it.`)}
           >
             <span className="w-[82px] shrink-0 text-muted">{PILLAR_LABEL[pillar]}</span>
-            <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-line">
+            <span className="relative h-1.5 flex-1 overflow-hidden bg-line">
               <span className="absolute inset-0 bg-ember opacity-40" style={bar(p.score)} />
               <span className="absolute inset-0 bg-ember" style={bar(solid)} />
             </span>

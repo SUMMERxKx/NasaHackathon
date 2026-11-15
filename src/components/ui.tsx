@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
-import { Check, Moon, Sun } from 'lucide-react'
+import { Check } from 'lucide-react'
 import type { DrillPath } from '../types.ts'
 import { encodeDrill } from '../lib/drill.ts'
 import { scenarioQuery } from '../state/scenario.ts'
@@ -60,7 +60,7 @@ export function Segmented<T extends string>({
   onChange: (value: T) => void
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-control border border-line bg-surface p-1">
+    <div role="radiogroup" aria-label={label} className="inline-flex border border-line bg-surface p-1">
       {options.map((o) => (
         <button
           key={o.value}
@@ -68,7 +68,7 @@ export function Segmented<T extends string>({
           role="radio"
           aria-checked={o.value === value}
           onClick={() => onChange(o.value)}
-          className={`min-h-9 whitespace-nowrap rounded-[7px] px-3 text-[13px] font-semibold transition-colors ${
+          className={`min-h-9 whitespace-nowrap px-3 text-[13px] font-semibold transition-colors ${
             o.value === value ? 'bg-surface-2 text-ink' : 'text-muted hover:text-ink'
           }`}
         >
@@ -145,50 +145,6 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
 
 export function NotASafetyRating({ className = '' }: { className?: string }) {
   return <p className={`text-[12px] font-semibold uppercase tracking-wide text-muted ${className}`}>Not a safety rating</p>
-}
-
-const THEME_KEY = 'ember-theme'
-type ThemeChoice = 'light' | 'dark'
-
-// EMBER opens dark, to match the hero. The choice is kept for the next visit.
-export function ThemeToggle() {
-  const [choice, setChoice] = useState<ThemeChoice>('dark')
-  useEffect(() => {
-    setChoice(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark')
-  }, [])
-  const next: ThemeChoice = choice === 'dark' ? 'light' : 'dark'
-  const Icon = choice === 'dark' ? Moon : Sun
-  return (
-    <button
-      type="button"
-      className="btn btn-ghost btn-icon"
-      aria-label={`Theme: ${choice}. Switch to ${next}.`}
-      title={`Theme: ${choice}`}
-      onClick={() => {
-        setChoice(next)
-        try {
-          localStorage.setItem(THEME_KEY, next)
-        } catch {
-          // Storage can be blocked. The choice lasts for this visit.
-        }
-        document.documentElement.dataset.theme = next
-        window.dispatchEvent(new Event('ember-theme'))
-      }}
-    >
-      <Icon size={18} aria-hidden="true" />
-    </button>
-  )
-}
-
-// Tells charts drawn on a canvas when the theme changes, so they can redraw.
-export function useThemeVersion(): number {
-  const [version, setVersion] = useState(0)
-  useEffect(() => {
-    const bump = () => setVersion((v) => v + 1)
-    window.addEventListener('ember-theme', bump)
-    return () => window.removeEventListener('ember-theme', bump)
-  }, [])
-  return version
 }
 
 export function usePrefersReducedMotion(): boolean {

@@ -1,8 +1,9 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The hero: the sky, the name, three short lines and one way in. Nothing else.
+// The sky itself is the app's one backdrop canvas, at full strength on this screen.
 import { useEffect } from 'react'
 import { ArrowRight } from 'lucide-react'
-import HalftoneNebula from '@/components/ui/halftone-nebula.tsx'
+import { SKY_LABEL } from '@/components/ui/halftone-nebula.tsx'
 import { ScenarioLink } from '../components/ui.tsx'
 import { SI_LABEL, SI_MARK } from '../three/ramp.ts'
 
@@ -12,11 +13,10 @@ export default function Hero() {
   }, [])
   return (
     <main id="main" className="relative w-full">
-      {/* One device pixel per CSS pixel is enough here: the sky snaps to a six pixel grid. */}
-      <HalftoneNebula maxDpr={1}>
+      <section className="relative flex w-full cursor-crosshair touch-pan-y flex-col overflow-hidden" style={{ height: '100svh' }} aria-label={SKY_LABEL}>
         {/* A soft shade behind the words, so they read over the brightest gas. */}
         <div className="absolute inset-0" style={{ background: 'radial-gradient(75% 65% at 0% 100%, color-mix(in srgb, var(--hero-void) 88%, transparent) 0%, color-mix(in srgb, var(--hero-void) 55%, transparent) 45%, transparent 75%)' }} aria-hidden="true" />
-        <div className="relative flex h-full flex-col justify-between p-6 sm:p-10">
+        <div className="pointer-events-none relative flex h-full flex-col justify-between p-6 sm:p-10">
           <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-hero-ink/60">Built with NASA open data</p>
           <div className="max-w-xl">
             <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.34em] text-hero-hot">Fire evidence for crew habitats</p>
@@ -34,7 +34,7 @@ export default function Hero() {
             </ScenarioLink>
           </div>
         </div>
-      </HalftoneNebula>
+      </section>
       <span className="si-mark absolute bottom-3 right-3 z-10" title={SI_LABEL} aria-label={SI_LABEL}>
         {SI_MARK}
       </span>
