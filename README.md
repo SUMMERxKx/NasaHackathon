@@ -8,7 +8,8 @@ Built by team **Low Cortisol Gng** for the NASA Space Apps Challenge 2026, chall
 
 ![The Brief for the Exploration atmosphere, with the fireball and its sourced readout](public/preview.png)
 
-- Live site: the production address of the Vercel project. See `SETUP.md` for the steps that put it online.
+- Live site: https://ember-two-eta.vercel.app
+- What the science lead still has to read and approve: `REVIEW-CHECKLIST.md`.
 - The build plan the team worked from: `plan.html` in this repository.
 
 ## How EMBER answers the challenge
