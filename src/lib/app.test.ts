@@ -10,7 +10,7 @@ import { MAP_DOMAIN, STACK_RADIUS, layoutMap, mapScales } from './mapLayout.ts'
 import { EMBED_DIM, chunksFor, decodeVectors, encodeVectors, scoreMeaning } from './meaning.ts'
 import { buildEngine, namedInvestigations, retrieve } from './retrieve.ts'
 import { flameParams } from '../three/flameParams.ts'
-import { RAMP, SI_LABEL, rampBytes, rampColorAt, rampGradient } from '../three/ramp.ts'
+import { RAMP, SI_LABEL, SI_MARK, rampBytes, rampColorAt, rampGradient } from '../three/ramp.ts'
 import { data, evalSet, evidence, pinned, preset, searchIndex, snapshot } from './testData.ts'
 
 describe('scenario in the URL', () => {
@@ -195,7 +195,8 @@ describe('ramp', () => {
     }
     for (let i = 1; i <= 100; i += 1) expect(light(i / 100)).toBeGreaterThanOrEqual(light((i - 1) / 100) - 1e-9)
   })
-  it('carries the label', () => {
+  it('carries the small mark and the words it stands for', () => {
+    expect(SI_MARK).toBe('SI')
     expect(SI_LABEL).toBe('SI-generated illustration')
   })
 })
