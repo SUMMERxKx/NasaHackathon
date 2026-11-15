@@ -195,7 +195,7 @@ export function RankedCard({
       <p className="text-[13px] text-muted">{ranked.reason}</p>
       {onSelect ? (
         <label className="mt-auto flex cursor-pointer items-center gap-2 text-[13px]">
-          <input type="checkbox" checked={Boolean(selected)} onChange={() => onSelect(inv.accession)} className="h-4 w-4 accent-[var(--ember)]" />
+          <input type="checkbox" name={`compare-${inv.accession}`} checked={Boolean(selected)} onChange={() => onSelect(inv.accession)} className="h-4 w-4 accent-[var(--ember)]" />
           Select to compare
         </label>
       ) : null}

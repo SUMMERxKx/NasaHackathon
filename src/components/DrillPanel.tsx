@@ -218,18 +218,20 @@ export function DrillPanel({ pageName }: { pageName: string }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [pathKey, close])
 
-  // When the panel closes, focus returns to the mark that opened it.
-  const lastFirst = useRef<string | null>(null)
+  // When the panel closes, focus returns to the mark that opened it. The app shell keeps this
+  // component mounted with no path, so this effect still runs on close. A move to another
+  // page is left alone.
+  const lastFirst = useRef<{ step: string; page: string } | null>(null)
   useEffect(() => {
     if (firstStep) {
-      lastFirst.current = firstStep
+      lastFirst.current = { step: firstStep, page: window.location.pathname }
       return
     }
-    if (lastFirst.current) {
-      const mark = document.querySelector<HTMLElement>(`[data-drill="${CSS.escape(lastFirst.current)}"]`)
-      mark?.focus({ preventScroll: true })
-      lastFirst.current = null
-    }
+    const last = lastFirst.current
+    lastFirst.current = null
+    if (!last || last.page !== window.location.pathname) return
+    const mark = document.querySelector<HTMLElement | SVGElement>(`[data-drill="${CSS.escape(last.step)}"]`)
+    mark?.focus({ preventScroll: true })
   }, [firstStep])
 
   if (!path || !result) return null

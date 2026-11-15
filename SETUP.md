@@ -4,6 +4,15 @@ EMBER builds and passes its checks with no account at all. These steps put it on
 
 Do them in this order. Each says what you should see when it worked.
 
+## Where things stand on 14 November 2026
+
+- Steps 1 to 3 are done. The site is at https://ember-two-eta.vercel.app and `/api/health` reports `"configured": true`.
+- Step 4 is done. A burst of calls to `/api/ask` gets the answer 429 after the eighth.
+- Step 5 is the owner's. The build machine cannot see whether it was done.
+- Step 6 has been run. The six pinned answers are in the repository with `"reviewed": false`. They wait on the science lead.
+- Step 7 has been run for both models. The results are on the Methods screen. Both answered 11 of 12 real questions and passed 5 of 5 trick questions. The backup did not beat the first choice and no answer came back empty, so the model order and the settings in `server/config.ts` were left alone.
+- Step 8 is open. `REVIEW-CHECKLIST.md` lists exactly what the science lead must read and what to set.
+
 ## 1. Put the site online with Vercel
 
 1. Sign in to vercel.com with the GitHub account that owns `SUMMERxKx/NasaHackathon`. Choose the free Hobby plan.
@@ -71,7 +80,7 @@ npm run eval:ask -- --site https://<your address>
 npm run eval:ask -- --site https://<your address> --use backup
 ```
 
-Each run posts 12 real questions and 5 trick questions three times, and costs under 2 cents. Copy the summary lines into `src/config/evaluation.ts` so the Methods screen shows them. If the backup beats the first choice, swap the two ids in `server/config.ts`. If answers come back empty, set `reasoningEffort` to `low` and `maxTokens` to 1500 in the same file.
+Each run posts 12 real questions and 5 trick questions three times, and costs under 2 cents. The script waits 8 seconds between calls to stay under the firewall limit, so a run takes about 7 minutes. Copy the summary lines into `src/config/evaluation.ts` so the Methods screen shows them. The full answers are written to `eval-results` for the science lead to read. If the backup beats the first choice, swap the two ids in `server/config.ts`. If answers come back empty, set `reasoningEffort` to `low` and `maxTokens` to 1500 in the same file.
 
 ## 8. Checks that wait on the science lead
 

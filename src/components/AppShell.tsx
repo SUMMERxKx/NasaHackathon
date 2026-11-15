@@ -6,7 +6,7 @@ import { Link, Outlet, useLocation, useRouteError } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { Home, List, Map as MapIcon, Menu, MessageCircleQuestion, Play, TriangleAlert } from 'lucide-react'
 import { loadAskData, useData } from '../state/data.tsx'
-import { useCoverage, useDrill, useScenario } from '../state/hooks.ts'
+import { useCoverage, useScenario } from '../state/hooks.ts'
 import { isPartialGravity } from '../state/scenario.ts'
 import { pageName } from '../routes.tsx'
 import { DrillPanel } from './DrillPanel.tsx'
@@ -139,7 +139,6 @@ function Footer() {
 
 export function AppShell() {
   const location = useLocation()
-  const { path } = useDrill()
   const name = pageName(location.pathname)
   const first = useRef(true)
   const [announce, setAnnounce] = useState('')
@@ -193,7 +192,7 @@ export function AppShell() {
       </main>
       <Footer />
       <BottomTabs pathname={location.pathname} />
-      {path ? <DrillPanel pageName={name} /> : null}
+      <DrillPanel pageName={name} />
       <StoryStepper />
       <div className="sr-only" role="status" aria-live="polite">
         {announce}
