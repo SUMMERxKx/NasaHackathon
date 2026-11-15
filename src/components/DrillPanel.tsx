@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { ChevronRight, ExternalLink, X } from 'lucide-react'
 import type { DrillGroup, DrillPath, Test } from '../types.ts'
-import { encodeDrill, resolveDrill } from '../lib/drill.ts'
+import { drillHead, encodeDrill, resolveDrill } from '../lib/drill.ts'
 import { isAssumed } from '../lib/coverage.ts'
 import { atmToPsi, formatNumber, formatPercent } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
@@ -235,7 +235,7 @@ export function DrillPanel({ pageName }: { pageName: string }) {
   }, [firstStep])
 
   if (!path || !result) return null
-  const base: DrillPath = [path[0]]
+  const base: DrillPath = drillHead(path)
   const invStep = path.find((s) => s.kind === 'investigation')
   const trail: DrillPath = invStep && path[0].kind !== 'investigation' && path[0].kind !== 'test' ? [...base, invStep] : base
   const tests = result.testIds.map((id) => data.testById.get(id)).filter((t): t is Test => Boolean(t))

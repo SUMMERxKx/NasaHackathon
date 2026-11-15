@@ -6,7 +6,32 @@ import { computeCoverage, isAssumed, scenarioPoint } from './coverage.ts'
 import { countBehind, decodeDrill, encodeDrill, resolveDrill, resolveMark } from './drill.ts'
 import { fieldGroups, overallFromGroups } from './field.ts'
 import { REFUSAL, checkAnswer, numbersIn, splitByCitations } from './grounding.ts'
-import { MAP_DOMAIN, STACK_RADIUS, layoutMap, mapScales } from './mapLayout.ts'
+import {
+  MAP_DOMAIN,
+  MIN_O2_SPAN,
+  MIN_PSI_RATIO,
+  STACK_RADIUS,
+  STACK_SPACING,
+  boxDomain,
+  clampDomain,
+  encodeZoom,
+  layoutMap,
+  mapScales,
+  oxygenTicks,
+  panBy,
+  parseZoom,
+  pressureTicks,
+  sameDomain,
+  stackRadius,
+  viewTransform,
+  zoomAt,
+  zoomMagnification,
+} from './mapLayout.ts'
+import type { MapDomain } from './mapLayout.ts'
+import { makeScope, scopeStep, scopeTests } from './mapScope.ts'
+import { moonCounts, onMoonEdge } from './regions.ts'
+import { bindSkyClicks } from '../components/ui/halftone-nebula.tsx'
+import { skyClicksAt } from '../App.tsx'
 import { EMBED_DIM, chunksFor, decodeVectors, encodeVectors, scoreMeaning } from './meaning.ts'
 import { NEARBY_FUELS, NO_PARTIAL_GRAVITY, gapStatement, isInverseFlame, nearbyDescription, nearbyReason, nearbyRows, nearbyTests, summarizeNearby } from './nearby.ts'
 import { rankAll } from './ranking.ts'
@@ -336,6 +361,224 @@ describe('map layout', () => {
     expect(px).toBeGreaterThan(box.left)
     expect(px).toBeLessThan(box.left + box.width)
     expect(data.tests.some((t) => t.pressureAtm === 5)).toBe(true)
+  })
+})
+
+describe('map zoom', () => {
+  const box = { left: 50, top: 14, width: 700, height: 500 }
+  const inside = (d: MapDomain) => {
+    expect(d.psi[0]).toBeGreaterThanOrEqual(MAP_DOMAIN.psi[0] - 1e-9)
+    expect(d.psi[1]).toBeLessThanOrEqual(MAP_DOMAIN.psi[1] + 1e-9)
+    expect(d.o2Pct[0]).toBeGreaterThanOrEqual(MAP_DOMAIN.o2Pct[0] - 1e-9)
+    expect(d.o2Pct[1]).toBeLessThanOrEqual(MAP_DOMAIN.o2Pct[1] + 1e-9)
+  }
+  it('keeps the point under the pointer in place, on the log pressure axis too', () => {
+    const fx = 0.62
+    const fy = 0.18
+    const before = mapScales(box, MAP_DOMAIN)
+    const px = box.left + fx * box.width
+    const py = box.top + (1 - fy) * box.height
+    const psi = before.x.invert(px)
+    const o2 = before.y.invert(py)
+    const next = zoomAt(MAP_DOMAIN, fx, fy, 4)
+    const after = mapScales(box, next)
+    expect(after.x(psi)).toBeCloseTo(px, 6)
+    expect(after.y(o2)).toBeCloseTo(py, 6)
+    // Four times in: a quarter of the log span and a quarter of the oxygen span.
+    expect(Math.log(next.psi[1] / next.psi[0])).toBeCloseTo(Math.log(MAP_DOMAIN.psi[1] / MAP_DOMAIN.psi[0]) / 4, 9)
+    expect(next.o2Pct[1] - next.o2Pct[0]).toBeCloseTo(90 / 4, 9)
+    expect(zoomMagnification(next)).toBeCloseTo(4, 9)
+  })
+  it('zooms back out to exactly the whole map and never past it', () => {
+    const inThenOut = zoomAt(zoomAt(MAP_DOMAIN, 0.3, 0.7, 3), 0.3, 0.7, 1 / 3)
+    expect(sameDomain(inThenOut, MAP_DOMAIN)).toBe(true)
+    const far = zoomAt(zoomAt(MAP_DOMAIN, 0.9, 0.1, 2), 0.1, 0.9, 1 / 50)
+    expect(sameDomain(far, MAP_DOMAIN)).toBe(true)
+  })
+  it('stops at the narrowest view and stays inside the map at the edges', () => {
+    let d = MAP_DOMAIN
+    for (let i = 0; i < 40; i += 1) d = zoomAt(d, 1, 0, 3)
+    inside(d)
+    expect(d.psi[1] / d.psi[0]).toBeCloseTo(MIN_PSI_RATIO, 9)
+    expect(d.o2Pct[1] - d.o2Pct[0]).toBeCloseTo(MIN_O2_SPAN, 9)
+    expect(d.psi[1]).toBeCloseTo(MAP_DOMAIN.psi[1], 9)
+    expect(d.o2Pct[0]).toBeCloseTo(MAP_DOMAIN.o2Pct[0], 9)
+  })
+  it('pans by the drag and slides back inside the map, keeping the zoom', () => {
+    const d = zoomAt(MAP_DOMAIN, 0.5, 0.5, 4)
+    const moved = panBy(d, -0.25, 0.25)
+    // A drag to the left shows higher pressure, a drag down shows more oxygen, by a quarter view each.
+    expect(Math.log(moved.psi[0] / d.psi[0])).toBeCloseTo(Math.log(d.psi[1] / d.psi[0]) / 4, 9)
+    expect(moved.o2Pct[0] - d.o2Pct[0]).toBeCloseTo((d.o2Pct[1] - d.o2Pct[0]) / 4, 9)
+    const pushed = panBy(d, -10, -10)
+    inside(pushed)
+    expect(pushed.psi[1]).toBeCloseTo(MAP_DOMAIN.psi[1], 9)
+    expect(pushed.o2Pct[0]).toBeCloseTo(MAP_DOMAIN.o2Pct[0], 9)
+    expect(zoomMagnification(pushed)).toBeCloseTo(4, 9)
+  })
+  it('zooms to a box drawn on the plot, in either drag direction', () => {
+    const { x, y } = mapScales(box, MAP_DOMAIN)
+    const a = { x: x(10), y: y(40) }
+    const b = { x: x(20), y: y(15) }
+    for (const d of [boxDomain(MAP_DOMAIN, box, a, b), boxDomain(MAP_DOMAIN, box, b, a)]) {
+      expect(d.psi[0]).toBeCloseTo(10, 9)
+      expect(d.psi[1]).toBeCloseTo(20, 9)
+      expect(d.o2Pct[0]).toBeCloseTo(15, 9)
+      expect(d.o2Pct[1]).toBeCloseTo(40, 9)
+    }
+    // A box thinner than the narrowest view grows to it around its own centre.
+    const thin = boxDomain(MAP_DOMAIN, box, { x: x(14.7), y: y(21) }, { x: x(14.7) + 0.5, y: y(21) + 0.5 })
+    expect(thin.psi[1] / thin.psi[0]).toBeCloseTo(MIN_PSI_RATIO, 9)
+    expect(thin.o2Pct[1] - thin.o2Pct[0]).toBeCloseTo(MIN_O2_SPAN, 9)
+  })
+  it('gives the stand-in transform that lands each test where the new layout puts it', () => {
+    const from = zoomAt(MAP_DOMAIN, 0.4, 0.3, 2)
+    const to = zoomAt(from, 0.7, 0.2, 3)
+    const { kx, ky, tx, ty } = viewTransform(from, to, box)
+    const a = mapScales(box, from)
+    const b = mapScales(box, to)
+    for (const [psi, o2] of [[14.7, 21], [10.2, 26.5], [8.2, 34]]) {
+      expect(kx * a.x(psi) + tx).toBeCloseTo(b.x(psi), 6)
+      expect(ky * a.y(o2) + ty).toBeCloseTo(b.y(o2), 6)
+    }
+  })
+  it('writes the zoom to the address and reads the same view back', () => {
+    const d = zoomAt(MAP_DOMAIN, 0.58, 0.12, 6.3)
+    const text = encodeZoom(d)
+    expect(text).toMatch(/^[\d.]+-[\d.]+_[\d.]+-[\d.]+$/)
+    const back = parseZoom(text)
+    expect(back).not.toBeNull()
+    expect(encodeZoom(back as MapDomain)).toBe(text)
+    expect(parseZoom('moon')).toBeNull()
+    expect(parseZoom('20-10_10-30')).toBeNull()
+    expect(parseZoom('')).toBeNull()
+    expect(parseZoom(null)).toBeNull()
+    // A view past the map is brought back inside it.
+    const wide = parseZoom('1-500_0-120') as MapDomain
+    expect(sameDomain(wide, clampDomain(MAP_DOMAIN))).toBe(true)
+  })
+  it('opens the cabin air stack as the map zooms in, until each test can be pointed at alone', () => {
+    const cabin = (d: MapDomain) => {
+      const l = layoutMap(data.tests, box, d)
+      const stack = l.stacks.find((s) => Math.abs(s.o2 - 0.21) < 1e-6 && Math.abs(s.pressureAtm - 1) < 1e-6)
+      return { stack, marks: l.marks.filter((m) => m.stackKey === stack?.key) }
+    }
+    const whole = cabin(MAP_DOMAIN)
+    expect(whole.stack?.open).toBe(false)
+    expect(whole.marks.every((m) => !m.single)).toBe(true)
+    const n = whole.stack?.count ?? 0
+    expect(stackRadius(n, 1).radius).toBe(STACK_RADIUS)
+    expect(stackRadius(n, 3).radius).toBe(STACK_RADIUS * 3)
+    // Zoomed in on the cabin far enough, the stack is spread at the mark spacing and open.
+    const { x, y } = mapScales(box, MAP_DOMAIN)
+    const fx = (x(14.696) - box.left) / box.width
+    const fy = 1 - (y(21) - box.top) / box.height
+    const d = zoomAt(MAP_DOMAIN, fx, fy, 40)
+    const near = cabin(d)
+    expect(near.stack?.open).toBe(true)
+    expect(near.marks.every((m) => m.single)).toBe(true)
+    // Neighbours in the sunflower sit about one spacing apart, so the nearest mark is the one pointed at.
+    const ms = near.marks
+    let closest = Infinity
+    for (let i = 0; i < ms.length; i += 1) {
+      for (let j = i + 1; j < ms.length; j += 1) closest = Math.min(closest, Math.hypot(ms[i].x - ms[j].x, ms[i].y - ms[j].y))
+    }
+    expect(closest).toBeGreaterThan(STACK_SPACING * 0.5)
+  })
+  it('labels a zoomed axis with round numbers, and keeps the named ticks on the whole map', () => {
+    expect(pressureTicks(MAP_DOMAIN)).toEqual([3, 4.3, 8.2, 10.2, 14.7, 30, 50, 80])
+    expect(oxygenTicks(MAP_DOMAIN)).toEqual([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    const d: MapDomain = { psi: [13.5, 16], o2Pct: [19, 24] }
+    const xs = pressureTicks(d)
+    const ys = oxygenTicks(d)
+    expect(xs.length).toBeGreaterThanOrEqual(3)
+    expect(ys.length).toBeGreaterThanOrEqual(3)
+    for (const t of xs) expect(t >= 13.5 && t <= 16).toBe(true)
+    for (const t of ys) expect(t >= 19 && t <= 24).toBe(true)
+  })
+})
+
+describe('map filter scope', () => {
+  const scoped = (inv: string) => scopeTests(data.tests, data.invByAcc, makeScope({ inv }))
+  it('gives the map the same tests as the heading and the table', () => {
+    for (const [inv, plotted] of [['PSI-25', 129], ['PSI-99', 9], ['PSI-69', 273]] as const) {
+      const tests = scoped(inv).filter((t) => t.o2 != null && t.pressureAtm != null)
+      expect(tests.length).toBe(plotted)
+      expect(tests.every((t) => t.accession === inv)).toBe(true)
+      const layout = layoutMap(tests, { left: 50, top: 14, width: 700, height: 500 })
+      expect(layout.marks.length).toBe(plotted)
+      // Every stack counts only tests of the filter.
+      for (const stack of layout.stacks) expect(Object.keys(stack.byAccession)).toEqual([inv])
+    }
+  })
+  it('counts the Moon Base region within the filter, as its drill does', () => {
+    expect(moonCounts(data.tests)).toMatchObject({ solid: 0, liquid: 0, gas: 66, edge: 17 })
+    expect(moonCounts(scoped('PSI-25'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, edge: 0 })
+    expect(moonCounts(scoped('PSI-99'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, edge: 0 })
+    expect(moonCounts(scoped('PSI-69'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, edge: 17 })
+    for (const inv of ['PSI-25', 'PSI-99', 'PSI-69']) {
+      const step = scopeStep(makeScope({ inv }))
+      expect(step).not.toBeNull()
+      const result = resolveDrill([{ kind: 'region', id: 'moon' }, step as DrillStep], data, preset('iss'))
+      expect(result.total).toBe(moonCounts(scoped(inv)).total)
+      expect(result.edge.reduce((n, g) => n + g.count, 0)).toBe(scoped(inv).filter(onMoonEdge).length)
+      expect(result.title).toContain('Counted within the map filter')
+    }
+  })
+  it('narrows a stack drill to the filter and keeps the filter in every crumb', () => {
+    const step = scopeStep(makeScope({ inv: 'PSI-25' })) as DrillStep
+    const cabin: DrillStep = { kind: 'stack', o2: 0.21, pressureAtm: 1 }
+    const all = resolveDrill([cabin], data, preset('iss'))
+    const within = resolveDrill([cabin, step], data, preset('iss'))
+    expect(within.total).toBeLessThan(all.total)
+    expect(within.groups.map((g) => g.accession)).toEqual(['PSI-25'])
+    expect(within.crumbs[0].path).toEqual([cabin, step])
+    const test = resolveDrill([cabin, step, { kind: 'test', id: within.testIds[0] }], data, preset('iss'))
+    expect(test.level).toBe('test')
+    expect(test.crumbs[0].path).toEqual([cabin, step])
+  })
+  it('writes the filter into the drill address and reads it back, refusing broken parts', () => {
+    const step = scopeStep(makeScope({ pillar: 'prevention', fuel: 'solid', inv: 'PSI-25', hw: 'cir-acme' })) as DrillStep
+    const path: DrillStep[] = [{ kind: 'region', id: 'moon' }, step]
+    expect(encodeDrill(path)).toBe('region.moon~scope.prevention,solid,PSI-25,cir-acme')
+    expect(decodeDrill(encodeDrill(path))).toEqual(path)
+    expect(decodeDrill('region.moon~scope.,,PSI-99,')).toEqual([{ kind: 'region', id: 'moon' }, { kind: 'scope', inv: 'PSI-99' }])
+    for (const text of ['region.moon~scope.,,,', 'region.moon~scope.wood,,,', 'region.moon~scope.,,PSI-x,', 'region.moon~scope.,,PSI-25', 'region.moon~scope.,,PSI-25,,x']) {
+      expect(decodeDrill(text)).toBeNull()
+    }
+    expect(scopeStep(makeScope({}))).toBeNull()
+  })
+})
+
+describe('sky clicks', () => {
+  it('are on for the hero only', () => {
+    expect(skyClicksAt('/')).toBe(true)
+    for (const path of ['/dashboard', '/investigations', '/investigations/PSI-100', '/compare', '/lab', '/lab/flame', '/about']) expect(skyClicksAt(path)).toBe(false)
+  })
+  it('attach no pointer listener at all when off, and one that can be taken off when on', () => {
+    const target = new EventTarget()
+    let calls = 0
+    const added: string[] = []
+    const add = target.addEventListener.bind(target)
+    target.addEventListener = (type: string, listener: EventListenerOrEventListenerObject | null, options?: boolean | AddEventListenerOptions) => {
+      added.push(type)
+      add(type, listener, options)
+    }
+    const onDown = () => {
+      calls += 1
+    }
+    const off = bindSkyClicks(target, onDown, false)
+    target.dispatchEvent(new Event('pointerdown'))
+    expect(added).toEqual([])
+    expect(calls).toBe(0)
+    off()
+    const unbind = bindSkyClicks(target, onDown, true)
+    expect(added).toEqual(['pointerdown'])
+    target.dispatchEvent(new Event('pointerdown'))
+    expect(calls).toBe(1)
+    unbind()
+    target.dispatchEvent(new Event('pointerdown'))
+    expect(calls).toBe(1)
   })
 })
 

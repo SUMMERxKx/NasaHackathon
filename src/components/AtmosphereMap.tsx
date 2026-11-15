@@ -1,23 +1,40 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The Atmosphere Map. Every test is a mark on oxygen against pressure, beside the habitat.
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
+// On the dashboard it zooms: Ctrl or Command with the wheel, or a trackpad pinch, zooms around
+// the pointer, a drag pans a zoomed map, Shift and a drag zooms to a box, and the zoom buttons
+// and the reset sit in the map's toolbar. A gesture moves the drawn layers by one transform and
+// the marks are laid out again only once it rests.
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 'react'
+import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 import type { DrillPath, Habitat, Scenario, Test } from '../types.ts'
 import { fieldGroups, overallFromGroups } from '../lib/field.ts'
 import {
   MAP_DOMAIN,
-  OXYGEN_TICKS,
-  PRESSURE_TICKS,
+  STACK_RADIUS,
+  boxDomain,
+  clampDomain,
+  encodeZoom,
   layoutMap,
   mapScales,
   markPath,
+  markPathAt,
   normoxicPoints,
+  oxygenTicks,
+  panBy,
   plottable,
+  pointGroups,
+  pressureTicks,
   ringRadii,
+  roundDomain,
+  sameDomain,
+  viewTransform,
+  zoomAt,
 } from '../lib/mapLayout.ts'
 import type { MapBox, MapDomain, MapMark, MapStack } from '../lib/mapLayout.ts'
-import { MOON_REGION, inMoonRegion, onMoonEdge } from '../lib/regions.ts'
-import { countBy } from '../lib/stats.ts'
+import { inScope } from '../lib/mapScope.ts'
+import type { ScopeStep } from '../lib/mapScope.ts'
+import { MOON_REGION, moonCounts } from '../lib/regions.ts'
 import { atmToPsi, formatNumber, formatPercent, psiToAtm } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
 import { useDrill, useScenario } from '../state/hooks.ts'
@@ -28,6 +45,16 @@ import { oxygenText, pressureText } from './DrillPanel.tsx'
 import { drillProps, usePrefersReducedMotion } from './ui.tsx'
 
 export const MOON_DOMAIN: MapDomain = { psi: [3, 17], o2Pct: [22, 100] }
+// A zoom button doubles or halves the view. The address catches up once a gesture has rested.
+const ZOOM_STEP = 2
+const ADDRESS_DELAY = 250
+const SETTLE_DELAY = 160
+
+type Gesture =
+  | { kind: 'pan'; startX: number; startY: number; moved: boolean; next: MapDomain | null }
+  | { kind: 'box'; startX: number; startY: number; moved: boolean; endX: number; endY: number }
+  | { kind: 'wheel'; next: MapDomain }
+  | null
 
 type Hover =
   | { kind: 'mark'; mark: MapMark; x: number; y: number }
@@ -37,72 +64,76 @@ type Hover =
 
 let introPlayed = false
 
-const TestDots = memo(function TestDots({
+// The marks as ink only: one path for each investigation, fuel class and fill, so laying the map
+// out again after a zoom touches a few dozen elements, not two thousand.
+const MarkInk = memo(function MarkInk({
   marks,
-  stacks,
-  dimmed,
   colorOf,
   radius,
-  labelOf,
-  open,
   intro,
   order,
 }: {
   marks: MapMark[]
-  stacks: MapStack[]
-  dimmed: Set<string> | null
   colorOf: ((mark: MapMark) => string) | null
   radius: number
-  labelOf: (testId: string) => string
-  open: (path: DrillPath) => void
   intro: boolean
   order: Record<string, number>
 }) {
+  const buckets = new Map<string, { accession: string; fuelClass: MapMark['fuelClass']; hollow: boolean; color: string; d: string[] }>()
+  for (const mark of marks) {
+    const key = `${mark.accession}|${mark.fuelClass}|${mark.hollow ? 1 : 0}`
+    let bucket = buckets.get(key)
+    if (!bucket) {
+      bucket = { accession: mark.accession, fuelClass: mark.fuelClass, hollow: mark.hollow, color: colorOf ? colorOf(mark) : `var(--fuel-${mark.fuelClass})`, d: [] }
+      buckets.set(key, bucket)
+    }
+    bucket.d.push(markPathAt(mark.fuelClass, mark.x, mark.y, radius))
+  }
   return (
-    <g>
-      {marks.map((mark) => {
-        const color = colorOf ? colorOf(mark) : `var(--fuel-${mark.fuelClass})`
-        const cross = mark.fuelClass === 'unknown'
-        const single = mark.stackKey == null
-        const path: DrillPath = [{ kind: 'test', id: mark.testId }]
-        const interactive = single ? { tabIndex: -1, 'data-nav': '', ...drillProps(path, labelOf(mark.testId), open) } : { 'data-drill': `test.${mark.testId}` }
+    <g aria-hidden="true">
+      {[...buckets].map(([key, b]) => {
+        const cross = b.fuelClass === 'unknown'
         return (
           <path
-            key={mark.testId}
-            d={markPath(mark.fuelClass, radius)}
-            transform={`translate(${mark.x.toFixed(1)},${mark.y.toFixed(1)})`}
-            fill={mark.hollow || cross ? 'var(--bg)' : color}
-            fillOpacity={mark.hollow ? 0.4 : cross ? 0 : 0.9}
-            stroke={color}
-            strokeWidth={mark.hollow || cross ? 1.2 : 0.5}
-            className={`mark ${single ? 'drillable' : ''} ${dimmed?.has(mark.testId) ? 'mark-dim' : ''} ${intro ? 'mark-arrive' : ''}`}
-            style={intro ? { animationDelay: `${order[mark.accession] ?? 0}ms` } : undefined}
-            {...interactive}
+            key={key}
+            d={b.d.join('')}
+            fill={b.hollow || cross ? 'var(--bg)' : b.color}
+            fillOpacity={b.hollow ? 0.4 : cross ? 0 : 0.9}
+            stroke={b.color}
+            strokeWidth={b.hollow || cross ? 1.2 : 0.5}
+            className={`mark ${intro ? 'mark-arrive' : ''}`}
+            style={intro ? { animationDelay: `${order[b.accession] ?? 0}ms` } : undefined}
           />
         )
       })}
-      {stacks.map((stack) => (
-        <circle
-          key={stack.key}
-          cx={stack.x}
-          cy={stack.y}
-          r={12}
-          fill="transparent"
+    </g>
+  )
+})
+
+type Target = { key: string; path: DrillPath; label: string }
+
+// What the keyboard and a screen reader reach: each test alone at its point and each stack, in the
+// order the map draws them. They carry no geometry, so a zoom never redraws them. The ring that
+// shows keyboard focus is drawn from the layout instead.
+const MarkTargets = memo(function MarkTargets({ targets, open, onFocusKey }: { targets: Target[]; open: (path: DrillPath) => void; onFocusKey: (key: string | null) => void }) {
+  return (
+    <g>
+      {targets.map((t) => (
+        <g
+          key={t.key}
           className="drillable"
           tabIndex={-1}
           data-nav=""
-          {...drillProps(
-            [{ kind: 'stack', o2: stack.o2, pressureAtm: stack.pressureAtm }],
-            `A stack of ${stack.count} tests at ${formatPercent(stack.o2)} oxygen and ${formatNumber(atmToPsi(stack.pressureAtm), 1)} psi. Press Enter for its rows.`,
-            open,
-          )}
+          {...drillProps(t.path, t.label, open)}
+          onFocus={(event) => onFocusKey(event.currentTarget.matches(':focus-visible') ? t.key : null)}
+          onBlur={() => onFocusKey(null)}
         />
       ))}
     </g>
   )
 })
 
-function CoverageField({ box, domain, size, tests }: { box: MapBox; domain: MapDomain; size: FrameSize; tests: Test[] }) {
+function CoverageField({ box, domain, size, tests, layerRef }: { box: MapBox; domain: MapDomain; size: FrameSize; tests: Test[]; layerRef: RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const { lookup } = useData()
   const groups = useMemo(() => fieldGroups(tests, lookup), [tests, lookup])
@@ -138,18 +169,22 @@ function CoverageField({ box, domain, size, tests }: { box: MapBox; domain: MapD
   }, [groups, domain])
   return (
     <div aria-hidden="true" className="pointer-events-none absolute overflow-hidden" style={{ left: box.left, top: box.top, width: box.width, height: box.height }}>
-      <canvas ref={ref} className="h-full w-full" style={{ filter: 'blur(6px)', opacity: size.width > 0 ? 1 : 0, transition: 'opacity var(--t-emphasis)' }} />
+      <div ref={layerRef} className="h-full w-full" style={{ transformOrigin: '0 0' }}>
+        <canvas ref={ref} className="h-full w-full" style={{ filter: 'blur(6px)', opacity: size.width > 0 ? 1 : 0, transition: 'opacity var(--t-emphasis)' }} />
+      </div>
     </div>
   )
 }
 
 export function AtmosphereMap({
   tests,
-  dim,
+  scope = null,
   compact = false,
   colorOf,
   showField = false,
   zoomMoon = false,
+  zoom = null,
+  onZoom,
   showRegion = true,
   showRing = true,
   showPresets = true,
@@ -159,11 +194,16 @@ export function AtmosphereMap({
   footer,
 }: {
   tests: Test[]
-  dim?: (t: Test) => boolean
+  // The map filter the tests were chosen by. Its Moon Base counts and every drill it opens keep to it.
+  scope?: ScopeStep | null
   compact?: boolean
   colorOf?: (accession: string) => string
   showField?: boolean
   zoomMoon?: boolean
+  // A zoom from the address. It wins over the Moon zoom.
+  zoom?: MapDomain | null
+  // Given, the map zooms, and reports each resting view here, or null for the whole map.
+  onZoom?: (next: MapDomain | null) => void
   showRegion?: boolean
   showRing?: boolean
   showPresets?: boolean
@@ -178,18 +218,75 @@ export function AtmosphereMap({
   const description = `${title}. ${plotted.length} tests plotted on oxygen against pressure. ${
     solidHigh === 0 ? 'No solid fuel test at or above 30 percent oxygen.' : `${solidHigh} solid fuel tests at or above 30 percent oxygen.`
   } Hollow marks rest on an assumed value.`
+
+  // The view the map shows. It follows the address, and it moves first when the map is zoomed,
+  // so the address is written once a gesture rests rather than on every step of it.
+  const base = zoom ?? (zoomMoon ? MOON_DOMAIN : MAP_DOMAIN)
+  const baseKey = encodeZoom(base)
+  const [view, setView] = useState<MapDomain>(base)
+  const pending = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const report = useRef(onZoom)
+  report.current = onZoom
+  useEffect(() => {
+    if (pending.current) clearTimeout(pending.current)
+    pending.current = null
+    setView((v) => (sameDomain(v, base) ? v : base))
+    // The key stands for the domain, so the effect runs only when the address really changed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseKey])
+  useEffect(() => () => {
+    if (pending.current) clearTimeout(pending.current)
+  }, [])
+  const zoomTo = useCallback((next: MapDomain | null, delay = 0) => {
+    const target = next ? roundDomain(clampDomain(next)) : MAP_DOMAIN
+    setView((v) => (sameDomain(v, target) ? v : target))
+    if (pending.current) clearTimeout(pending.current)
+    const write = () => {
+      pending.current = null
+      report.current?.(sameDomain(target, MAP_DOMAIN) ? null : target)
+    }
+    if (delay > 0) pending.current = setTimeout(write, delay)
+    else write()
+  }, [])
+  const zoomable = Boolean(onZoom)
+  const whole = sameDomain(view, MAP_DOMAIN)
+  const deepest = sameDomain(zoomAt(view, 0.5, 0.5, ZOOM_STEP), view)
+  const controls = zoomable ? (
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Map zoom">
+      <button type="button" className="chip" onClick={() => zoomTo(zoomAt(view, 0.5, 0.5, ZOOM_STEP))} disabled={deepest} aria-label="Zoom in" title="Zoom in. Or hold Ctrl or Command and scroll over the map, or pinch.">
+        <ZoomIn size={13} aria-hidden="true" />
+      </button>
+      <button type="button" className="chip" onClick={() => zoomTo(zoomAt(view, 0.5, 0.5, 1 / ZOOM_STEP))} disabled={whole} aria-label="Zoom out" title="Zoom out">
+        <ZoomOut size={13} aria-hidden="true" />
+      </button>
+      {!whole ? (
+        <button type="button" className="chip chip-on" onClick={() => zoomTo(null)}>
+          <RotateCcw size={13} aria-hidden="true" /> Reset to all tests
+        </button>
+      ) : null}
+    </div>
+  ) : null
+  const bar = controls ? (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {controls}
+      {toolbar}
+    </div>
+  ) : (
+    toolbar
+  )
   return (
-    <ChartFrame title={title} description={description} aspect={compact ? 0.62 : 0.72} minHeight={compact ? 220 : 320} maxHeight={compact ? 340 : 620} squareOnPhone={!compact} toolbar={toolbar} footer={footer}>
+    <ChartFrame title={title} description={description} aspect={compact ? 0.62 : 0.72} minHeight={compact ? 220 : 320} maxHeight={compact ? 340 : 620} squareOnPhone={!compact} toolbar={bar} footer={footer}>
       {(size) => (
         <MapBody
           size={size}
           tests={plotted}
           allTests={data.tests}
-          dim={dim}
+          scope={scope}
           compact={compact}
           colorOf={colorOf}
           showField={showField}
-          zoomMoon={zoomMoon}
+          domain={view}
+          onView={zoomable ? zoomTo : null}
           showRegion={showRegion}
           showRing={showRing}
           showPresets={showPresets}
@@ -204,11 +301,12 @@ function MapBody({
   size,
   tests,
   allTests,
-  dim,
+  scope,
   compact,
   colorOf,
   showField,
-  zoomMoon,
+  domain,
+  onView,
   showRegion,
   showRing,
   showPresets,
@@ -217,11 +315,12 @@ function MapBody({
   size: FrameSize
   tests: Test[]
   allTests: Test[]
-  dim?: (t: Test) => boolean
+  scope: ScopeStep | null
   compact: boolean
   colorOf?: (accession: string) => string
   showField: boolean
-  zoomMoon: boolean
+  domain: MapDomain
+  onView: ((next: MapDomain, delay?: number) => void) | null
   showRegion: boolean
   showRing: boolean
   showPresets: boolean
@@ -229,7 +328,15 @@ function MapBody({
 }) {
   const { invByAcc, testById, habitats } = useData()
   const { scenario, setScenario } = useScenario()
-  const { open } = useDrill()
+  const { open: openPath } = useDrill()
+  // Every drill the map opens is counted within its filter. A single test is just that test.
+  // The function is read through a ref, so writing the address never redraws the marks.
+  const opener = useRef({ openPath, scope })
+  opener.current = { openPath, scope }
+  const open = useCallback((path: DrillPath) => {
+    const { openPath: go, scope: within } = opener.current
+    go(within && path[0].kind !== 'test' ? [path[0], within, ...path.slice(1)] : path)
+  }, [])
   const reduced = usePrefersReducedMotion()
   const [hover, setHoverState] = useState<Hover>(null)
   const [pinned, setPinned] = useState<Hover>(null)
@@ -272,18 +379,32 @@ function MapBody({
 
   // The zoom switches at once. Gliding the axes meant laying out and redrawing every mark on
   // every frame, which was the heaviest thing the map did.
-  const domain = zoomMoon ? MOON_DOMAIN : MAP_DOMAIN
+  const zoomMoon = sameDomain(domain, MOON_DOMAIN)
+  const zoomed = !sameDomain(domain, MAP_DOMAIN)
+  const [startKey] = useState(() => encodeZoom(domain))
 
+  // A zoomed oxygen axis can carry decimals, so the plot moves right far enough for its labels to
+  // clear the axis title.
+  const yTicks = useMemo(() => oxygenTicks(domain), [domain])
+  const labelChars = Math.max(...yTicks.map((t) => `${t}%`.length))
+  const left = compact ? 38 : Math.max(50, Math.ceil(17 + labelChars * 6.6 + 6))
   const box: MapBox = useMemo(
     () =>
       compact
-        ? { left: 38, top: 8, width: Math.max(60, size.width - 46), height: Math.max(60, size.height - 36) }
-        : { left: 50, top: 14, width: Math.max(80, size.width - 64), height: Math.max(80, size.height - 60) },
-    [compact, size.width, size.height],
+        ? { left, top: 8, width: Math.max(60, size.width - 46), height: Math.max(60, size.height - 36) }
+        : { left, top: 14, width: Math.max(80, size.width - left - 14), height: Math.max(80, size.height - 60) },
+    [compact, left, size.width, size.height],
   )
   const { x, y } = useMemo(() => mapScales(box, domain), [box, domain])
   const layout = useMemo(() => layoutMap(tests, box, domain), [tests, box, domain])
-  const dimmed = useMemo(() => (dim ? new Set(tests.filter(dim).map((t) => t.id)) : null), [tests, dim])
+  // Zoomed in, only the marks in and near the view are drawn, so a deep zoom draws few marks.
+  const drawn = useMemo(() => {
+    if (!zoomed) return layout
+    const mx = box.width / 2
+    const my = box.height / 2
+    const near = (px: number, py: number) => px >= box.left - mx && px <= box.left + box.width + mx && py >= box.top - my && py <= box.top + box.height + my
+    return { marks: layout.marks.filter((m) => near(m.x, m.y)), stacks: layout.stacks.filter((s) => near(s.x, s.y)) }
+  }, [layout, zoomed, box])
   const order = useMemo(() => {
     const accessions = [...new Set(tests.map((t) => t.accession))]
     return Object.fromEntries(accessions.map((a, i) => [a, Math.round((i / Math.max(1, accessions.length)) * 1000)]))
@@ -296,6 +417,35 @@ function MapBody({
     },
     [testById, invByAcc],
   )
+  // The keyboard stops, built from the tests alone, so they stay put while the map zooms.
+  const targets = useMemo<Target[]>(() => {
+    const singles: Target[] = []
+    const stacks: Target[] = []
+    for (const [key, list] of pointGroups(tests)) {
+      if (list.length === 1) {
+        singles.push({ key: `m${list[0].id}`, path: [{ kind: 'test', id: list[0].id }], label: labelOf(list[0].id) })
+        continue
+      }
+      const o2 = list[0].o2 as number
+      const pressureAtm = list[0].pressureAtm as number
+      stacks.push({
+        key: `s${key}`,
+        path: [{ kind: 'stack', o2, pressureAtm }],
+        label: `A stack of ${list.length} tests at ${formatPercent(o2)} oxygen and ${formatNumber(atmToPsi(pressureAtm), 1)} psi. Press Enter for its rows.`,
+      })
+    }
+    return [...singles, ...stacks]
+  }, [tests, labelOf])
+  const [focusKey, setFocusKey] = useState<string | null>(null)
+  const focusAt = useMemo(() => {
+    if (!focusKey) return null
+    if (focusKey.startsWith('m')) {
+      const mark = layout.marks.find((m) => m.testId === focusKey.slice(1))
+      return mark ? { x: mark.x, y: mark.y, r: 7 } : null
+    }
+    const stack = layout.stacks.find((st) => st.key === focusKey.slice(1))
+    return stack ? { x: stack.x, y: stack.y, r: Math.max(12, stack.radius + 4) } : null
+  }, [focusKey, layout])
   const markColor = useMemo(() => (colorOf ? (mark: MapMark) => colorOf(mark.accession) : null), [colorOf])
 
   const current = dragPos.current ?? scenario
@@ -304,28 +454,27 @@ function MapBody({
   const { rx, ry } = ringRadii(box, domain)
   const ringTransform = (px: number, py: number): string => `translate3d(${(px - rx - box.left).toFixed(1)}px, ${(py - ry - box.top).toFixed(1)}px, 0)`
   const region = useMemo(() => {
-    const inside = allTests.filter(inMoonRegion)
-    const edge = allTests.filter((t) => onMoonEdge(t) && t.fuelClass === 'liquid')
-    const c = countBy(inside, (t) => t.fuelClass)
-    return { total: inside.length, solid: c.solid || 0, liquid: c.liquid || 0, gas: c.gas || 0, edge: edge.length }
-  }, [allTests])
+    // Under a filter the Moon Base counts are the filter's own, as the region's drill will be.
+    return moonCounts(scope ? allTests.filter((t) => inScope(t, invByAcc[t.accession], scope)) : allTests)
+  }, [allTests, scope, invByAcc])
   const regionBox = {
     x: box.left,
     y: Math.max(box.top, y(domain.o2Pct[1])),
     w: Math.max(0, Math.min(box.left + box.width, x(MOON_REGION.maxPressurePsi)) - box.left),
     h: Math.max(0, Math.min(box.top + box.height, y(MOON_REGION.minO2 * 100)) - box.top),
   }
-  const inBox = (px: number, py: number) => px >= box.left && px <= box.left + box.width && py >= box.top && py <= box.top + box.height
+  const inBox = (px: number, py: number, pad = 0) => px >= box.left - pad && px <= box.left + box.width + pad && py >= box.top - pad && py <= box.top + box.height + pad
   const visible = (px: number, py: number) => inBox(px, py)
 
   const find = (px: number, py: number): Hover => {
-    for (const stack of layout.stacks) {
-      if (Math.hypot(stack.x - px, stack.y - py) <= 12) return { kind: 'stack', stack, x: stack.x, y: stack.y }
+    // Anything hidden past the edge of a zoomed view cannot be pointed at.
+    if (zoomed && !inBox(px, py, 2)) return null
+    for (const stack of drawn.stacks) {
+      if (!stack.open && Math.hypot(stack.x - px, stack.y - py) <= 12) return { kind: 'stack', stack, x: stack.x, y: stack.y }
     }
     let best: MapMark | null = null
     let bestD = 12
-    for (const mark of layout.marks) {
-      if (dimmed?.has(mark.testId)) continue
+    for (const mark of drawn.marks) {
       const d = Math.hypot(mark.x - px, mark.y - py)
       if (d < bestD) {
         bestD = d
@@ -356,8 +505,132 @@ function MapBody({
     return null
   }
 
+  // ---- zoom gestures --------------------------------------------------------
+  const gesture = useRef<Gesture>(null)
+  const dataLayer = useRef<HTMLDivElement>(null)
+  const labelLayer = useRef<SVGGElement>(null)
+  const ringLayer = useRef<HTMLDivElement>(null)
+  const fieldLayer = useRef<HTMLDivElement>(null)
+  const boxRect = useRef<SVGRectElement>(null)
+  const surface = useRef<SVGRectElement>(null)
+  const frame = useRef(0)
+  const settle = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [hint, setHint] = useState(false)
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Move every drawn layer to where it sits in the next view, with one transform each and no render.
+  const preview = useCallback(
+    (next: MapDomain | null) => {
+      const svgLayers = [labelLayer.current]
+      const htmlLayers = [dataLayer.current, ringLayer.current, fieldLayer.current]
+      if (!next) {
+        for (const el of svgLayers) el?.removeAttribute('transform')
+        for (const el of htmlLayers) if (el) el.style.transform = ''
+        return
+      }
+      const { kx, ky, tx, ty } = viewTransform(domain, next, box)
+      for (const el of svgLayers) el?.setAttribute('transform', `matrix(${kx},0,0,${ky},${tx},${ty})`)
+      // The ring and the glow are laid out from the corner of the plot, not of the chart.
+      const ox = kx * box.left + tx - box.left
+      const oy = ky * box.top + ty - box.top
+      for (const el of htmlLayers) if (el) el.style.transform = `matrix(${kx},0,0,${ky},${ox},${oy})`
+    },
+    [domain, box],
+  )
+  // At most one preview a frame, of wherever the gesture has got to by then.
+  const schedule = () => {
+    if (frame.current) return
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0
+      const g = gesture.current
+      const target = g?.kind === 'wheel' || g?.kind === 'pan' ? g.next : null
+      if (target) preview(target)
+    })
+  }
+  // A new view has been drawn, so the layers drop their stand-in transform before it is shown.
+  useLayoutEffect(() => {
+    preview(null)
+  }, [preview])
+  useEffect(
+    () => () => {
+      if (frame.current) cancelAnimationFrame(frame.current)
+      if (settle.current) clearTimeout(settle.current)
+      if (hintTimer.current) clearTimeout(hintTimer.current)
+    },
+    [],
+  )
+  const land = useCallback(
+    (next: MapDomain) => {
+      if (!onView) return
+      if (sameDomain(roundDomain(clampDomain(next)), domain)) preview(null)
+      onView(next, ADDRESS_DELAY)
+    },
+    [onView, domain, preview],
+  )
+  // The wheel zooms only with Ctrl or Command held, which is also how a trackpad pinch arrives,
+  // so scrolling the page over the map still scrolls the page.
+  useEffect(() => {
+    const el = surface.current
+    if (!el || !onView) return
+    const onWheel = (event: WheelEvent) => {
+      if (!(event.ctrlKey || event.metaKey)) {
+        if (!hint) setHint(true)
+        if (hintTimer.current) clearTimeout(hintTimer.current)
+        hintTimer.current = setTimeout(() => setHint(false), 1400)
+        return
+      }
+      const rect = el.ownerSVGElement?.getBoundingClientRect()
+      const px = event.clientX - (rect?.left ?? 0)
+      const py = event.clientY - (rect?.top ?? 0)
+      if (!inBox(px, py)) return
+      event.preventDefault()
+      const scale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 400 : 1
+      const dy = event.deltaY * scale
+      const factor = Math.exp(-dy * (Math.abs(dy) < 50 ? 0.01 : 0.002))
+      const g = gesture.current
+      const from = g?.kind === 'wheel' ? g.next : domain
+      const next = zoomAt(from, (px - box.left) / box.width, 1 - (py - box.top) / box.height, factor)
+      gesture.current = { kind: 'wheel', next }
+      setHover(null)
+      schedule()
+      if (settle.current) clearTimeout(settle.current)
+      settle.current = setTimeout(() => {
+        settle.current = null
+        const done = gesture.current
+        gesture.current = null
+        if (done?.kind === 'wheel') land(done.next)
+      }, SETTLE_DELAY)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  })
+
   const onMove = (event: ReactPointerEvent<SVGRectElement>) => {
     const { px, py } = local(event)
+    const g = gesture.current
+    if (g && g.kind !== 'wheel') {
+      if (!g.moved && Math.hypot(px - g.startX, py - g.startY) > 4) {
+        g.moved = true
+        setHover(null)
+        event.currentTarget.style.cursor = g.kind === 'pan' ? 'grabbing' : 'crosshair'
+      }
+      if (!g.moved) return
+      if (g.kind === 'pan') {
+        g.next = panBy(domain, (px - g.startX) / box.width, (py - g.startY) / box.height)
+        schedule()
+      } else {
+        g.endX = Math.min(box.left + box.width, Math.max(box.left, px))
+        g.endY = Math.min(box.top + box.height, Math.max(box.top, py))
+        const r = boxRect.current
+        if (r) {
+          r.setAttribute('x', String(Math.min(g.startX, g.endX)))
+          r.setAttribute('y', String(Math.min(g.startY, g.endY)))
+          r.setAttribute('width', String(Math.abs(g.endX - g.startX)))
+          r.setAttribute('height', String(Math.abs(g.endY - g.startY)))
+          r.setAttribute('visibility', 'visible')
+        }
+      }
+      return
+    }
     if (dragState.current) {
       if (Math.hypot(px - dragState.current.startX, py - dragState.current.startY) > 4) dragState.current.moved = true
       if (dragState.current.moved) {
@@ -382,9 +655,30 @@ function MapBody({
     if (dragRing && (onHandle || (onRing(px, py) && !find(px, py)))) {
       dragState.current = { startX: px, startY: py, moved: false }
       event.currentTarget.setPointerCapture(event.pointerId)
+      return
     }
+    // Shift and a drag draws a box to zoom to. A plain drag pans, once the map is zoomed in.
+    if (!onView || event.button > 0 || !inBox(px, py)) return
+    if (event.shiftKey) gesture.current = { kind: 'box', startX: px, startY: py, moved: false, endX: px, endY: py }
+    else if (zoomed) gesture.current = { kind: 'pan', startX: px, startY: py, moved: false, next: null }
+    else return
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+  const endGesture = (event: ReactPointerEvent<SVGRectElement>): boolean => {
+    const g = gesture.current
+    if (!g || g.kind === 'wheel') return false
+    gesture.current = null
+    event.currentTarget.style.cursor = ''
+    if (g.kind === 'box') boxRect.current?.setAttribute('visibility', 'hidden')
+    if (!g.moved) return false
+    if (g.kind === 'pan' && g.next) land(g.next)
+    if (g.kind === 'box' && Math.abs(g.endX - g.startX) > 6 && Math.abs(g.endY - g.startY) > 6) {
+      land(boxDomain(domain, box, { x: g.startX, y: g.startY }, { x: g.endX, y: g.endY }))
+    }
+    return true
   }
   const onUp = (event: ReactPointerEvent<SVGRectElement>) => {
+    if (endGesture(event)) return
     const { px, py } = local(event)
     const wasDrag = dragState.current?.moved
     const grabbed = dragState.current != null
@@ -421,8 +715,7 @@ function MapBody({
   const tipTest = tip?.kind === 'mark' ? testById.get(tip.mark.testId) : null
   const pinTest = pinned?.kind === 'mark' ? testById.get(pinned.mark.testId) : null
   const narrow = size.width < 480
-  const xTicks = PRESSURE_TICKS.filter((t) => t >= domain.psi[0] - 1e-6 && t <= domain.psi[1] + 1e-6 && (!narrow || [3, 8.2, 14.7, 30, 80].includes(t)))
-  const yTicks = OXYGEN_TICKS.filter((t) => t >= domain.o2Pct[0] - 1e-6 && t <= domain.o2Pct[1] + 1e-6)
+  const xTicks = pressureTicks(domain, narrow)
   const curve = normoxicPoints(domain)
   const curvePath = curve.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.psi).toFixed(1)},${y(p.o2Pct).toFixed(1)}`).join('')
   const curveLabel = curve.find((p) => p.o2Pct <= 72) ?? curve[Math.floor(curve.length * 0.3)]
@@ -440,114 +733,137 @@ function MapBody({
     }
     return [...groups.values()]
   }, [habitats])
-  const clipId = `map-clip-${compact ? 'c' : 'f'}`
   const fontSize = compact ? 10 : 11
 
   return (
     <>
-      {showField ? <CoverageField box={box} domain={domain} size={size} tests={tests} /> : null}
-      <svg width={size.width} height={size.height} className="absolute inset-0 select-none" style={{ touchAction: dragRing ? 'none' : 'manipulation' }}>
-        <defs>
-          <clipPath id={clipId}>
-            <rect x={box.left} y={box.top} width={box.width} height={box.height} />
-          </clipPath>
-          <pattern id="region-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="8" stroke="var(--gap)" strokeWidth="1" opacity="0.22" />
-          </pattern>
-        </defs>
-        <g aria-hidden="true">
-          <rect x={box.left} y={box.top} width={box.width} height={box.height} fill="none" stroke="var(--line)" />
-          {xTicks.map((t) => (
-            <g key={`x${t}`}>
-              <line x1={x(t)} x2={x(t)} y1={box.top} y2={box.top + box.height} stroke="var(--line)" strokeOpacity={0.6} />
-              <text x={x(t)} y={box.top + box.height + 14} textAnchor="middle" fontSize={fontSize} fill="var(--muted)" className="num">
-                {t}
-              </text>
-            </g>
-          ))}
-          {yTicks.map((t) => (
-            <g key={`y${t}`}>
-              <line x1={box.left} x2={box.left + box.width} y1={y(t)} y2={y(t)} stroke="var(--line)" strokeOpacity={0.6} />
-              <text x={box.left - 6} y={y(t) + 4} textAnchor="end" fontSize={fontSize} fill="var(--muted)" className="num">
-                {t}%
-              </text>
-            </g>
-          ))}
-          {!compact ? (
-            <>
-              <text x={box.left + box.width / 2} y={size.height - 6} textAnchor="middle" fontSize={12} fill="var(--muted)">
-                Pressure, psi (log scale)
-              </text>
-              <text transform={`translate(12,${box.top + box.height / 2}) rotate(-90)`} textAnchor="middle" fontSize={12} fill="var(--muted)">
-                Oxygen
-              </text>
-            </>
-          ) : null}
-        </g>
-        <g clipPath={`url(#${clipId})`}>
-          {showRegion && regionBox.w > 0 && regionBox.h > 0 ? (
+      {showField ? <CoverageField box={box} domain={domain} size={size} tests={tests} layerRef={fieldLayer} /> : null}
+      {/* The axes and their labels. They are laid out again when a zoom rests. */}
+      <svg width={size.width} height={size.height} className="pointer-events-none absolute inset-0 select-none" aria-hidden="true">
+        <rect x={box.left} y={box.top} width={box.width} height={box.height} fill="none" stroke="var(--line)" />
+        {xTicks.map((t) => (
+          <text key={`x${t}`} x={x(t)} y={box.top + box.height + 14} textAnchor="middle" fontSize={fontSize} fill="var(--muted)" className="num">
+            {t}
+          </text>
+        ))}
+        {yTicks.map((t) => (
+          <text key={`y${t}`} x={box.left - 6} y={y(t) + 4} textAnchor="end" fontSize={fontSize} fill="var(--muted)" className="num">
+            {t}%
+          </text>
+        ))}
+        {!compact ? (
+          <>
+            <text x={box.left + box.width / 2} y={size.height - 6} textAnchor="middle" fontSize={12} fill="var(--muted)">
+              Pressure, psi (log scale)
+            </text>
+            <text transform={`translate(12,${box.top + box.height / 2}) rotate(-90)`} textAnchor="middle" fontSize={12} fill="var(--muted)">
+              Oxygen
+            </text>
+          </>
+        ) : null}
+      </svg>
+      {/* The grid and the marks, clipped to the plot. On a zoomable map this is a layer of its own,
+          so a zoom or pan gesture moves it on the compositor and never repaints the marks. */}
+      <div className="pointer-events-none absolute overflow-hidden" style={{ left: box.left, top: box.top, width: box.width, height: box.height }}>
+        <div ref={dataLayer} className="absolute inset-0" style={{ transformOrigin: '0 0', willChange: onView ? 'transform' : undefined }}>
+          <svg width={size.width} height={size.height} className="absolute select-none" style={{ left: -box.left, top: -box.top }}>
+            <defs>
+              <pattern id="region-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="8" stroke="var(--gap)" strokeWidth="1" opacity="0.22" />
+              </pattern>
+            </defs>
             <g aria-hidden="true">
-              <rect x={regionBox.x} y={regionBox.y} width={regionBox.w} height={regionBox.h} fill="var(--bg)" fillOpacity={0.55} />
-              <rect x={regionBox.x} y={regionBox.y} width={regionBox.w} height={regionBox.h} fill="url(#region-hatch)" stroke="var(--gap)" strokeDasharray="5 4" strokeWidth={1.2} />
+              {xTicks.map((t) => (
+                <line key={`x${t}`} x1={x(t)} x2={x(t)} y1={box.top} y2={box.top + box.height} stroke="var(--line)" strokeOpacity={0.6} />
+              ))}
+              {yTicks.map((t) => (
+                <line key={`y${t}`} x1={box.left} x2={box.left + box.width} y1={y(t)} y2={y(t)} stroke="var(--line)" strokeOpacity={0.6} />
+              ))}
             </g>
-          ) : null}
-          {curvePath ? (
-            <g aria-hidden="true">
-              <title>A reference line, not data. It has no rows behind it.</title>
-              <path d={curvePath} fill="none" stroke="var(--freefall)" strokeWidth={1.5} strokeDasharray="2 4" />
-              {!compact && !narrow && curveLabel ? (
-                <text x={x(curveLabel.psi) + 8} y={y(curveLabel.o2Pct) - 6} fontSize={11} fill="var(--freefall)">
-                  same oxygen for breathing as sea level
-                </text>
-              ) : null}
-            </g>
-          ) : null}
-          <TestDots marks={layout.marks} stacks={layout.stacks} dimmed={dimmed} colorOf={markColor} radius={compact ? 2.6 : 3.2} labelOf={labelOf} open={open} intro={intro && !reduced} order={order} />
-          {layout.stacks
-            .filter((s) => s.badge && (!narrow || s.count >= 100))
-            .map((stack) => {
-              const accessions = Object.keys(stack.byAccession)
-              const text = `${stack.count} ${accessions.length === 1 ? (invByAcc[accessions[0]]?.displayName ?? '') : 'tests'}`
-              return (
-                <g key={`b${stack.key}`} transform={`translate(${stack.x + 14},${stack.y - 14})`} aria-hidden="true" pointerEvents="none">
-                  <rect x={0} y={-11} width={text.length * 6.6 + 12} height={18} fill="var(--surface-2)" stroke="var(--line)" />
-                  <text x={6} y={2} fontSize={11} fill="var(--ink)" className="num">
-                    {text}
-                  </text>
+              {showRegion && regionBox.w > 0 && regionBox.h > 0 ? (
+                <g aria-hidden="true">
+                  <rect x={regionBox.x} y={regionBox.y} width={regionBox.w} height={regionBox.h} fill="var(--bg)" fillOpacity={0.55} />
+                  <rect x={regionBox.x} y={regionBox.y} width={regionBox.w} height={regionBox.h} fill="url(#region-hatch)" stroke="var(--gap)" strokeDasharray="5 4" strokeWidth={1.2} />
                 </g>
-              )
-            })}
-          {showPresets
-            ? presetGroups.map((group) => {
-                const hx = x(group.pressurePsi)
-                const hy = y(group.o2 * 100)
-                const active = group.ids.includes(scenario.presetId ?? '')
-                const left = group.pressurePsi > 5
-                return (
-                  <g key={group.ids.join('+')} transform={`translate(${hx},${hy})`} aria-hidden="true" pointerEvents="none" opacity={active ? 1 : 0.85}>
-                    <path d="M0,-6L6,0L0,6L-6,0Z" fill={active ? 'var(--habitat)' : 'var(--bg)'} stroke="var(--habitat)" strokeWidth={1.5} />
-                    {!compact && (!narrow || active) ? (
-                      <text x={left ? -10 : 10} y={4} textAnchor={left ? 'end' : 'start'} fontSize={11} fill="var(--habitat)" fontWeight={600} stroke="var(--bg)" strokeWidth={3} paintOrder="stroke">
-                        {group.label}
+              ) : null}
+              {curvePath ? (
+                <g aria-hidden="true">
+                  <title>A reference line, not data. It has no rows behind it.</title>
+                  <path d={curvePath} fill="none" stroke="var(--freefall)" strokeWidth={1.5} strokeDasharray="2 4" />
+                  {!compact && !narrow && curveLabel ? (
+                    <text x={x(curveLabel.psi) + 8} y={y(curveLabel.o2Pct) - 6} fontSize={11} fill="var(--freefall)">
+                      same oxygen for breathing as sea level
+                    </text>
+                  ) : null}
+                </g>
+              ) : null}
+              <MarkInk marks={drawn.marks} colorOf={markColor} radius={compact ? 2.6 : 3.2} intro={intro && !reduced && encodeZoom(domain) === startKey} order={order} />
+              <MarkTargets targets={targets} open={open} onFocusKey={setFocusKey} />
+              {focusAt ? <circle cx={focusAt.x} cy={focusAt.y} r={focusAt.r} fill="none" stroke="var(--freefall)" strokeWidth={2} pointerEvents="none" /> : null}
+              {drawn.stacks
+                .filter((s) => s.badge && (!narrow || s.count >= 100))
+                .map((stack) => {
+                  const accessions = Object.keys(stack.byAccession)
+                  const text = `${stack.count} ${accessions.length === 1 ? (invByAcc[accessions[0]]?.displayName ?? '') : 'tests'}`
+                  // An opened stack keeps its label just outside its marks.
+                  const offset = stack.radius <= STACK_RADIUS ? 14 : stack.radius * 0.72 + 6
+                  return (
+                    <g key={`b${stack.key}`} transform={`translate(${stack.x + offset},${stack.y - offset})`} aria-hidden="true" pointerEvents="none">
+                      <rect x={0} y={-11} width={text.length * 6.6 + 12} height={18} fill="var(--surface-2)" stroke="var(--line)" />
+                      <text x={6} y={2} fontSize={11} fill="var(--ink)" className="num">
+                        {text}
                       </text>
-                    ) : null}
-                  </g>
-                )
-              })
-            : null}
-        </g>
+                    </g>
+                  )
+                })}
+          </svg>
+        </div>
+      </div>
+      <svg width={size.width} height={size.height} className="absolute inset-0 select-none" style={{ touchAction: dragRing ? 'none' : 'manipulation' }}>
         <rect
+          ref={surface}
           x={0}
           y={0}
           width={size.width}
           height={size.height}
           fill="transparent"
-          style={{ cursor: hover ? 'pointer' : dragRing && showRing ? 'crosshair' : 'default' }}
+          style={{ cursor: hover ? 'pointer' : zoomed && onView ? 'grab' : dragRing && showRing ? 'crosshair' : 'default' }}
           onPointerMove={onMove}
           onPointerDown={onDown}
           onPointerUp={onUp}
+          onPointerCancel={(event) => {
+            endGesture(event)
+            preview(null)
+          }}
           onPointerLeave={() => setHover(null)}
         />
+        {onView ? <rect ref={boxRect} visibility="hidden" pointerEvents="none" fill="var(--ember)" fillOpacity={0.08} stroke="var(--ember)" strokeDasharray="4 3" /> : null}
+        <g ref={labelLayer}>
+        {/* The habitat presets sit above the clipped marks, so a label at the edge of the plot is
+            never cut. Only presets inside the view are drawn. */}
+        {showPresets
+          ? presetGroups.map((group) => {
+              const hx = x(group.pressurePsi)
+              const hy = y(group.o2 * 100)
+              if (!inBox(hx, hy, 1)) return null
+              const active = group.ids.includes(scenario.presetId ?? '')
+              // The label sits beside its marker, on the side with room for it.
+              const width = group.label.length * 6.4
+              const left = group.pressurePsi > 5 ? hx - 10 - width >= box.left : hx + 10 + width > box.left + box.width
+              // At the top edge the label goes just above the frame. Near the bottom it stays inside.
+              const ly = hy - box.top < 10 ? box.top - 3 - hy : Math.min(4, box.top + box.height - 3 - hy)
+              return (
+                <g key={group.ids.join('+')} transform={`translate(${hx},${hy})`} aria-hidden="true" pointerEvents="none" opacity={active ? 1 : 0.85}>
+                  <path d="M0,-6L6,0L0,6L-6,0Z" fill={active ? 'var(--habitat)' : 'var(--bg)'} stroke="var(--habitat)" strokeWidth={1.5} />
+                  {!compact && (!narrow || active) ? (
+                    <text x={left ? -10 : 10} y={ly} textAnchor={left ? 'end' : 'start'} fontSize={11} fill="var(--habitat)" fontWeight={600} stroke="var(--bg)" strokeWidth={3} paintOrder="stroke">
+                      {group.label}
+                    </text>
+                  ) : null}
+                </g>
+              )
+            })
+          : null}
         {showRegion && regionBox.w > 60 && regionBox.h > 40 ? (
           <g
             className="drillable"
@@ -580,6 +896,7 @@ function MapBody({
             )}
           </g>
         ) : null}
+        </g>
         {showRing ? (
           <g
             className="drillable"
@@ -599,9 +916,16 @@ function MapBody({
           switching habitat never repaints the two thousand marks under it. */}
       {showRing ? (
         <div aria-hidden="true" className="pointer-events-none absolute overflow-hidden" style={{ left: box.left, top: box.top, width: box.width, height: box.height }}>
+          <div ref={ringLayer} className="absolute inset-0" style={{ transformOrigin: '0 0' }}>
           <div ref={ringEl} className="map-ring" style={{ width: rx * 2, height: ry * 2, transform: ringTransform(ringX, ringY), transition: dragging || reduced ? 'none' : 'transform var(--t-scene) var(--ease-in-out)' }}>
             <span className="map-ring-dot" style={{ width: dragRing ? 9 : 5, height: dragRing ? 9 : 5 }} />
           </div>
+          </div>
+        </div>
+      ) : null}
+      {hint ? (
+        <div className="card card-solid pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 px-3 py-2 text-[13px]" role="status">
+          Hold Ctrl or Command and scroll to zoom, or pinch
         </div>
       ) : null}
       {tip ? (

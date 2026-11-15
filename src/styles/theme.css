@@ -173,6 +173,7 @@
   }
   button.chip, a.chip { min-height: 32px; padding: 0 10px; }
   button.chip:hover, a.chip:hover { border-color: var(--muted); color: var(--ink); text-decoration: none; }
+  button.chip[disabled] { opacity: 0.5; cursor: not-allowed; border-color: var(--line); color: var(--muted); }
   .chip[aria-pressed="true"], .chip-on { border-color: var(--ember); color: var(--ink); background: color-mix(in srgb, var(--ember) 14%, var(--surface)); }
   .chip-source { font-family: var(--font-mono); color: var(--freefall); border-color: color-mix(in srgb, var(--freefall) 45%, var(--line)); }
   .chip-gap { color: var(--gap); border-color: color-mix(in srgb, var(--gap) 45%, var(--line)); }
@@ -322,7 +323,6 @@
   .map-ring-dot { border-radius: 50%; background: var(--habitat); box-shadow: 0 0 0 1.5px var(--bg); }
 
   .mark { transition: opacity var(--t-standard); }
-  .mark-dim { opacity: 0.12; }
   .drillable { cursor: pointer; }
   /* A row of the count chart. Orange marks the row under the pointer or the keyboard, nothing else. */
   .count-row .count-bar { transition: fill var(--t-micro); }

@@ -9,9 +9,11 @@ import { ArrowRight, Flame, Focus, Gauge, Lightbulb, Play, SlidersHorizontal, Su
 import { Card, CardContent, CardHeader, CardTitle, CardToolbar } from '@/components/ui/card.tsx'
 import type { Test } from '../types.ts'
 import { distance } from '../lib/coverage.ts'
-import { FUEL_CLASSES, plottable } from '../lib/mapLayout.ts'
+import { FUEL_CLASSES, encodeZoom, parseZoom, plottable } from '../lib/mapLayout.ts'
+import type { MapDomain } from '../lib/mapLayout.ts'
 import { NEARBY_FUELS, gapStatement, nearbyReason, summarizeNearby } from '../lib/nearby.ts'
 import type { NearbySummary } from '../lib/nearby.ts'
+import { makeScope, scopeActive, scopeLabel, scopeStep, scopeTests } from '../lib/mapScope.ts'
 import { isFlightInvestigation } from '../lib/ranking.ts'
 import { formatNumber, formatPercent } from '../lib/units.ts'
 import { useData } from '../state/data.tsx'
@@ -39,9 +41,14 @@ function MapCard() {
   const inv = params.get('inv') ?? ''
   const hw = params.get('hw') ?? ''
   const table = params.get('view') === 'table'
-  const field = params.get('field') !== '0'
-  const zoom = params.get('zoom') === 'moon'
-  const filtered = Boolean(pillar || fuel || inv || hw)
+  // The coverage glow is a scientific layer drawn as a soft glow, so it waits to be asked for.
+  const field = params.get('field') === '1'
+  const zoomParam = params.get('zoom')
+  const zoom = zoomParam === 'moon'
+  const zoomView = useMemo(() => parseZoom(zoomParam), [zoomParam])
+  // One scope for the heading, the table and everything on the map, drills included.
+  const scope = useMemo(() => makeScope({ pillar, fuel, inv, hw }), [pillar, fuel, inv, hw])
+  const filtered = scopeActive(scope)
   const [showFilters, setShowFilters] = useState(filtered)
   const set = useCallback(
     (key: string, value: string) => {
@@ -57,20 +64,10 @@ function MapCard() {
     },
     [setParams],
   )
-  const matches = useCallback(
-    (t: Test) => {
-      const i = invByAcc[t.accession]
-      if (pillar && i.pillar !== pillar && !i.secondaryPillars.includes(pillar as never)) return false
-      if (fuel && t.fuelClass !== fuel) return false
-      if (inv && t.accession !== inv) return false
-      if (hw && i.hardwareFamily !== hw) return false
-      return true
-    },
-    [pillar, fuel, inv, hw, invByAcc],
-  )
-  const dim = useMemo(() => (filtered ? (t: Test) => !matches(t) : undefined), [filtered, matches])
+  const onZoom = useCallback((next: MapDomain | null) => set('zoom', next ? encodeZoom(next) : ''), [set])
   const plotted = useMemo(() => data.tests.filter(plottable), [data.tests])
-  const shown = useMemo(() => plotted.filter(matches), [plotted, matches])
+  const shown = useMemo(() => scopeTests(plotted, invByAcc, scope), [plotted, invByAcc, scope])
+  const drillScope = useMemo(() => scopeStep(scope), [scope])
   const columns: Column<Test>[] = [
     { key: 'inv', header: 'Investigation', cell: (t) => invByAcc[t.accession].displayName, sort: (t) => invByAcc[t.accession].displayName },
     { key: 'label', header: 'Test', cell: (t) => t.label, sort: (t) => t.label },
@@ -82,7 +79,7 @@ function MapCard() {
   ]
   const toolbar = (
     <div className="flex flex-wrap gap-1.5" role="group" aria-label="Map options">
-      <button type="button" className="chip" aria-pressed={field} onClick={() => set('field', field ? '0' : '')} title="Glow where NASA has flown tests">
+      <button type="button" className="chip" aria-pressed={field} onClick={() => set('field', field ? '' : '1')} title="Glow where NASA has flown tests. Off unless chosen.">
         <Sun size={13} aria-hidden="true" /> Coverage
       </button>
       <button type="button" className="chip" aria-pressed={zoom} onClick={() => set('zoom', zoom ? '' : 'moon')} title="Zoom to the Moon Base region">
@@ -155,16 +152,23 @@ function MapCard() {
         </>
       ) : (
         <AtmosphereMap
-          tests={plotted}
-          dim={dim}
+          tests={shown}
+          scope={drillScope}
           showField={field}
           zoomMoon={zoom}
+          zoom={zoomView}
+          onZoom={onZoom}
           dragRing
           title={`${shown.length} of ${plotted.length} tests`}
           toolbar={toolbar}
           footer={
-            <div className="mt-2">
+            <div className="mt-2 flex flex-col gap-1.5">
               <MapLegend />
+              {filtered ? (
+                <p className="text-[12px] text-muted">
+                  Only the {shown.length} tests of the filter are drawn: {scopeLabel(scope, invByAcc, data.hardwareName)}. The Moon Base counts and every drill count these tests only.
+                </p>
+              ) : null}
             </div>
           }
         />

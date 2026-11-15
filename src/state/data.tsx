@@ -41,6 +41,7 @@ export function buildData(snapshot: Snapshot, insightsFile: InsightsFile): Data 
     insightById,
     habitats: snapshot.habitats,
     lookup: pillarLookup(snapshot.investigations),
+    hardwareName: Object.fromEntries(snapshot.hardwareFamilies.map((f) => [f.id, f.name])),
   }
 }
 

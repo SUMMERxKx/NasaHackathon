@@ -32,6 +32,7 @@ import { D_SQUARED_FORMULA, validateDSquared } from './droplet.ts'
 import { flameLookup } from './flame.ts'
 import { burnLengthPairs, dropletSelection, extinctionBins, flexTests, parseDropletKey } from './lab.ts'
 import { FUEL_FILTERS, FUEL_LABEL, FUEL_WORD, NEARBY_FUELS, NEARBY_RULE, NEARBY_SUBSETS, isInverseFlame, nearbyTests } from './nearby.ts'
+import { inScope, makeScope, scopeActive, scopeLabel } from './mapScope.ts'
 import { RANK_FORMULAS } from './ranking.ts'
 import { inMoonRegion, onMoonEdge } from './regions.ts'
 import { byAccession, countBy } from './stats.ts'
@@ -45,6 +46,8 @@ export type DrillData = {
   insights: Insight[]
   habitats: Habitat[]
   lookup: PillarLookup
+  // Hardware family names, for the words of a map filter.
+  hardwareName?: Record<string, string>
 }
 
 // A test counts as "nearby" in a coverage drill when its weight is at least this much.
@@ -70,6 +73,7 @@ export function encodeStep(step: DrillStep): string {
     case 'bin': return `bin.${step.chart},${esc(step.key)}`
     case 'investigation': return `inv.${step.accession}`
     case 'test': return `test.${step.id}`
+    case 'scope': return `scope.${step.pillar ?? ''},${step.fuel ?? ''},${step.inv ?? ''},${step.hw ?? ''}`
   }
 }
 
@@ -140,6 +144,15 @@ function decodeStep(text: string): DrillStep | null {
         return ACCESSION.test(value) ? { kind: 'investigation', accession: value } : null
       case 'test':
         return TEST_ID.test(value) ? { kind: 'test', id: value } : null
+      case 'scope': {
+        const [pillar, fuel, inv, hw, ...rest] = value.split(',')
+        if (rest.length > 0 || hw == null) return null
+        const scope = makeScope({ pillar, fuel, inv, hw })
+        // Every part given must be well formed, and at least one must be given.
+        const given = [pillar, fuel, inv, hw].filter(Boolean).length
+        if (!scopeActive(scope) || Object.keys(scope).length !== given) return null
+        return { kind: 'scope', ...scope }
+      }
       default:
         return null
     }
@@ -475,7 +488,16 @@ export function resolveMark(step: DrillStep, data: DrillData, scenario: Scenario
       const test = data.testById.get(step.id)
       return { ...empty, title: test ? `Test ${test.label}` : 'This test is not in the current data.', label: test ? `Test ${test.label}` : step.id, tests: test ? [test] : [] }
     }
+    case 'scope':
+      return empty
   }
+}
+
+/** The mark of a path and the map filter it was drawn under, if any. Every crumb and link starts here. */
+export function drillHead(path: DrillPath): DrillPath {
+  const first = path[0]
+  const scope = path[1]?.kind === 'scope' && first.kind !== 'test' && first.kind !== 'investigation' ? path[1] : null
+  return scope ? [first, scope] : [first]
 }
 
 function groupTests(tests: Test[], effective?: Record<string, number>): DrillGroup[] {
@@ -496,11 +518,15 @@ function groupTests(tests: Test[], effective?: Record<string, number>): DrillGro
 
 export function resolveDrill(path: DrillPath, data: DrillData, scenario: Scenario, m: MethodConstants = DEFAULT_METHOD): DrillResult {
   const first = path[0]
-  const mark = resolveMark(first, data, scenario, m)
+  const base = drillHead(path)
+  // A mark drawn under a map filter counts only the tests of that filter.
+  const filter = base[1]?.kind === 'scope' ? base[1] : null
+  const scoped = filter ? { ...data, tests: data.tests.filter((t) => inScope(t, data.invByAcc[t.accession], filter)) } : data
+  const mark = resolveMark(first, scoped, scenario, m)
+  if (filter) mark.title = `${mark.title} Counted within the map filter: ${scopeLabel(filter, data.invByAcc, data.hardwareName)}.`
   const invStep = path.slice(1).find((s): s is Extract<DrillStep, { kind: 'investigation' }> => s.kind === 'investigation')
   const testStep = path.find((s): s is Extract<DrillStep, { kind: 'test' }> => s.kind === 'test')
   const crumbs: DrillResult['crumbs'] = []
-  const base: DrillPath = [first]
   if (first.kind !== 'test') crumbs.push({ label: mark.label, path: base })
   const groups = groupTests(mark.tests, mark.effective)
   const edge = groupTests(mark.edge)
