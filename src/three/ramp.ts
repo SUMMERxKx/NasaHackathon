@@ -24,6 +24,8 @@ export const SCALE = { minK: 300, maxK: 3000, cabinK: 300, flameK: 2300 }
 
 // Colours of the camera view. They are fixed and do not change with the theme.
 export const CAMERA = { deep: '#0b1736', blue: '#3f7bff', pale: '#bcd6ff', soot: '#ffd27a' }
+// The stage behind the fireball. A warm near black, the same in both themes.
+export const STAGE = '#0b0807'
 export const SCENE = { droplet: '#cfe6ff', candle: '#e9e2d0', wick: '#2a2320', module: '#8fa3c4', haze: '#9db4d6', oxygen: '#74b3ff' }
 
 export const kelvinToT = (kelvin: number): number => Math.min(1, Math.max(0, (kelvin - SCALE.minK) / (SCALE.maxK - SCALE.minK)))
@@ -76,5 +78,18 @@ export function rampBytes(steps = 256): Uint8Array {
   return out
 }
 
+// The hero sky. The solar preset of the halftone nebula, tuned to the flame ramp above.
+export const NEBULA = {
+  voidColor: '#070403',
+  hazeColor: '#211109',
+  duskColor: '#3a0d1c',
+  wineColor: '#6e1f0c',
+  crimsonColor: '#dc451a',
+  hotColor: '#ffa62b',
+  starColor: '#ffe8a6',
+}
+
+// The small corner mark on every SI-generated visual, and the words it stands for.
+export const SI_MARK = 'SI'
 export const SI_LABEL = 'SI-generated illustration'
 export const SCALE_NOTE = "Illustrative temperature pattern. Scale ends from NASA's Researcher's Guide."

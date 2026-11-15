@@ -11,14 +11,12 @@
     <meta property="og:url" content="https://ember-two-eta.vercel.app/" />
     <meta property="og:image" content="https://ember-two-eta.vercel.app/preview.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#0b1120" />
+    <meta name="theme-color" content="#0a0706" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script>
-      // Sets the theme before the first paint, so there is no flash.
+      // Sets the theme before the first paint, so there is no flash. EMBER opens dark.
       try {
-        var choice = localStorage.getItem('ember-theme') || 'system'
-        var dark = choice === 'dark' || (choice !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        document.documentElement.dataset.theme = localStorage.getItem('ember-theme') === 'light' ? 'light' : 'dark'
       } catch (error) {
         document.documentElement.dataset.theme = 'dark'
       }
