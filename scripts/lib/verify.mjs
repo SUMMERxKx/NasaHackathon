@@ -61,12 +61,14 @@ export function recomputeFromRaw(root) {
   // Card 2. Tests at or above 30 percent oxygen, and the Moon Base region, table by table.
   const gasTables = [
     { ending: '_Flame Design_Normal Flame.csv', o2: 'XO2 (init)', p: 'pmean (atm)', pAlt: 'pinit (atm)', toPsi: 14.696 },
-    { ending: '_Flame Design_Inverse Flame.csv', o2: 'XO2', p: 'pmean (atm)', toPsi: 14.696 },
+    { ending: '_Flame Design_Inverse Flame.csv', o2: 'XO2', p: 'pmean (atm)', toPsi: 14.696, inverse: true },
     { ending: '_CFI-G_Normal Flames.csv', o2: 'XO2 before test', p: 'approx p (bar)', toPsi: 0.98692 * 14.696 },
-    { ending: '_CFI-G_Inverse Flames.csv', o2: 'XO2', p: 'approx p (bar)', toPsi: 0.98692 * 14.696 },
+    { ending: '_CFI-G_Inverse Flames.csv', o2: 'XO2', p: 'approx p (bar)', toPsi: 0.98692 * 14.696, inverse: true },
   ]
   let gasHigh = 0
   let moon = 0
+  // Rows of the two inverse flame tables inside the region. Their oxygen is the oxidizer stream.
+  let moonInverse = 0
   let maxO2 = 0
   let atMax = 0
   const allO2 = []
@@ -80,7 +82,10 @@ export function recomputeFromRaw(root) {
       gasHigh += 1
       let p = strict(row[table.col(spec.p)])
       if (p == null && spec.pAlt) p = strict(row[table.col(spec.pAlt)])
-      if (p != null && Math.round(p * spec.toPsi * 10) / 10 <= 10.2) moon += 1
+      if (p != null && Math.round(p * spec.toPsi * 10) / 10 <= 10.2) {
+        moon += 1
+        if (spec.inverse) moonInverse += 1
+      }
     }
   }
   const flex = rawTable(root, '_FLEX.csv')
@@ -104,6 +109,7 @@ export function recomputeFromRaw(root) {
   out.I2 = {
     moonRegionTests: moon + flexMoon,
     moonRegionGas: moon,
+    moonRegionInverse: moonInverse,
     moonRegionLiquid: flexMoon,
     edgeDropletTests: edge,
     liquidAtOrAbove30: flexHigh,

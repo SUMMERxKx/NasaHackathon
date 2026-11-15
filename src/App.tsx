@@ -3,14 +3,16 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import HalftoneNebula, { NEBULA_QUIET } from '@/components/ui/halftone-nebula.tsx'
+import { withChunkReload } from './lib/chunkReload.ts'
 import { DataProvider } from './state/data.tsx'
 import { Skeleton } from './components/ui.tsx'
 import { makeRoutes } from './routes.tsx'
 import Hero from './screens/Hero.tsx'
 
-// Every screen behind the hero is its own chunk, loaded when its route is first opened.
+// Every screen behind the hero is its own chunk, loaded when its route is first opened. A chunk
+// left stale by a deploy reloads the page once before the error screen is shown.
 function onDemand(load: () => Promise<{ default: ComponentType }>): ComponentType {
-  const Lazy = lazy(load)
+  const Lazy = lazy(withChunkReload(load))
   return function OnDemand() {
     return (
       <Suspense fallback={<div className="page"><Skeleton className="h-64 w-full" /></div>}>

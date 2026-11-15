@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
+import { inverseClause } from '../lib/regions.ts'
 import type { Data } from '../state/data.tsx'
 import { useData } from '../state/data.tsx'
 
@@ -18,8 +19,8 @@ export type StoryStep = {
 export const STORY_STEPS: StoryStep[] = [
   { path: '/dashboard', habitat: 'iss', params: {}, template: 'NASA has burned things in orbit for decades. Near the ISS cabin, the evidence is deep.' },
   { path: '/dashboard', habitat: 'exploration', params: {}, template: 'A Moon Base will run richer in oxygen at lower pressure. Watch the evidence thin out.' },
-  { path: '/dashboard', habitat: 'exploration', params: { zoom: 'moon' }, template: 'Every mark is a real test. In this region there are {moonTests}, and {moonGas} of them are gas flames.' },
-  { path: '/dashboard', habitat: 'exploration', params: { drill: 'insight.I1.maxSolidO2Pct' }, template: 'Solid material tests stop at {maxSolid} percent oxygen. That gap is the finding.' },
+  { path: '/dashboard', habitat: 'exploration', params: { zoom: 'moon' }, template: 'Every mark is a real test. In this region there are {moonTests}, and {moonGas} of them are gas flames{moonInverse}.' },
+  { path: '/dashboard', habitat: 'exploration', params: { drill: 'insight.I1.maxSolidO2Pct' }, template: 'Solid material tests that state their oxygen stop at {maxSolid}%. That gap is the finding.' },
   { path: '/dashboard', habitat: 'exploration', params: { ask: 'What is missing for the Moon?' }, template: 'Ask in plain words. Every sentence is checked against its source.' },
 ]
 
@@ -28,9 +29,12 @@ export function storyCaption(step: StoryStep, data: Data): string {
   const i2 = data.insightById.I2
   const moonTests = i2?.numbers.moonRegionTests
   const moonGas = i2?.numbers.moonRegionGas
+  const moonInverse = i2?.numbers.moonRegionInverse
   const values: Record<string, string> = {
     moonTests: String(moonTests ?? ''),
     moonGas: moonGas === moonTests ? 'all' : String(moonGas ?? ''),
+    // An inverse flame's oxygen is the burner stream, not the chamber, so the caption says how many.
+    moonInverse: moonGas && moonInverse ? `, ${inverseClause(moonGas, moonInverse)}` : '',
     maxSolid: (i1?.display.maxSolidO2Pct ?? '').replace('%', ''),
   }
   return step.template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? '')

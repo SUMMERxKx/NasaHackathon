@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Info, Pause, Play, RotateCcw } from 'lucide-react'
 import type { Test } from '../types.ts'
-import { D_SQUARED_FORMULA, burnTimeToCompletion, burnTimeToExtinction, diameterAt, dropletValues, validateDSquared } from '../lib/droplet.ts'
+import { D_SQUARED_FORMULA, burnTimeToCompletion, diameterAt, dropletValues, modelEndTime, validateDSquared } from '../lib/droplet.ts'
 import type { DiluentFamily } from '../lib/droplet.ts'
 import type { BurnPair } from '../lib/lab.ts'
 import { DILUENT_FAMILIES, EXTINCTION_BINS, LAB_FUELS, ambiguousThickness, burnLengthPairs, dropletKey, dropletSelection, extinctionBins, extinctionPoints, flexTests } from '../lib/lab.ts'
@@ -67,7 +67,14 @@ function ToolIntro({ line, children }: { line: string; children: ReactNode }) {
           <Info size={13} aria-hidden="true" /> Notes
         </button>
       </div>
-      {open ? <div className="card mt-3 flex flex-col gap-4 p-4 text-[14px] [&_p]:max-w-[70ch]">{children}</div> : null}
+      {open ? (
+        <div className="card mt-3 flex flex-col gap-4 p-4 text-[14px] [&_p]:max-w-[70ch]">
+          {children}
+          <p className="text-[13px] text-muted">
+            Terms such as burning rate, extinction and diluent are defined in the <ScenarioLink to="/about?section=glossary">Glossary</ScenarioLink>.
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -165,7 +172,7 @@ function DropletCalculator() {
   const example = data.testById.get('PSI-69:0:2')
   const chosen = withAll.find((t) => t.id === params.get('test')) ?? (example && withAll.includes(example) ? example : withAll[0]) ?? null
   const row = chosen ? dropletValues(chosen) : null
-  const modelEnd = row ? burnTimeToExtinction(row.d0, row.dExt, row.k) : null
+  const modelEnd = row ? modelEndTime(row.d0, row.dExt, row.k) : null
   const k = selection.k
   const d0 = row?.d0 ?? selection.d0 ?? 2
   const tMax = Math.max(row ? Math.max(row.burnTime, modelEnd ?? 0) : 0, k ? burnTimeToCompletion(d0, k) : 1) * 1.05
@@ -323,15 +330,25 @@ function DropletCalculator() {
             <LegendItem swatch={<span className="inline-block h-0.5 w-5 bg-freefall" />}>This FLEX row, by the law</LegendItem>
             <LegendItem swatch={<span className="inline-block h-0 w-5 border-t-2 border-dashed border-muted" />}>Median burning rate near this condition</LegendItem>
           </div>
-          {row && chosen && modelEnd != null ? (
+          {row && chosen ? (
             <div className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
-              <div className="bg-surface-2 p-3">
-                <p className="stat-label">Model end</p>
-                <p className="num mt-1 text-[22px] text-freefall">{formatNumber(modelEnd, 2)} s</p>
-                <p className="num text-muted">
-                  ({formatNumber(row.d0, 2)}² − {formatNumber(row.dExt, 2)}²) ÷ {formatNumber(row.k, 2)}
-                </p>
-              </div>
+              {modelEnd != null ? (
+                <div className="bg-surface-2 p-3">
+                  <p className="stat-label">Model end</p>
+                  <p className="num mt-1 text-[22px] text-freefall">{formatNumber(modelEnd, 2)} s</p>
+                  <p className="num text-muted">
+                    ({formatNumber(row.d0, 2)}² − {formatNumber(row.dExt, 2)}²) ÷ {formatNumber(row.k, 2)}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-surface-2 p-3">
+                  <p className="stat-label">Model end</p>
+                  <p className="mt-1 text-[18px] text-warn">Model end not defined</p>
+                  <p className="text-muted">
+                    NASA lists an extinction diameter of <span className="num">{formatNumber(row.dExt, 2)} mm</span>, not smaller than the initial <span className="num">{formatNumber(row.d0, 2)} mm</span>, so the law gives no burn time.
+                  </p>
+                </div>
+              )}
               <div className="bg-surface-2 p-3">
                 <p className="stat-label">Measured</p>
                 <p className="mt-1 text-[22px]">

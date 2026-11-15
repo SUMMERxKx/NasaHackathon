@@ -29,7 +29,7 @@ import {
 } from './mapLayout.ts'
 import type { MapDomain } from './mapLayout.ts'
 import { makeScope, scopeStep, scopeTests } from './mapScope.ts'
-import { moonCounts, onMoonEdge } from './regions.ts'
+import { inMoonRegion, moonCounts, onMoonEdge } from './regions.ts'
 import { bindSkyClicks } from '../components/ui/halftone-nebula.tsx'
 import { skyClicksAt } from '../App.tsx'
 import { EMBED_DIM, chunksFor, decodeVectors, encodeVectors, scoreMeaning } from './meaning.ts'
@@ -512,10 +512,12 @@ describe('map filter scope', () => {
     }
   })
   it('counts the Moon Base region within the filter, as its drill does', () => {
-    expect(moonCounts(data.tests)).toMatchObject({ solid: 0, liquid: 0, gas: 66, edge: 17 })
-    expect(moonCounts(scoped('PSI-25'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, edge: 0 })
-    expect(moonCounts(scoped('PSI-99'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, edge: 0 })
-    expect(moonCounts(scoped('PSI-69'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, edge: 17 })
+    expect(moonCounts(data.tests)).toMatchObject({ solid: 0, liquid: 0, gas: 66, inverse: 46, edge: 17 })
+    // The inverse count follows the scope: ACME CFI-G alone holds 48 of the gas tests.
+    expect(moonCounts(scoped('PSI-159')).inverse).toBe(scoped('PSI-159').filter((t) => inMoonRegion(t) && t.flags?.includes('oxidizer-stream')).length)
+    expect(moonCounts(scoped('PSI-25'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, inverse: 0, edge: 0 })
+    expect(moonCounts(scoped('PSI-99'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, inverse: 0, edge: 0 })
+    expect(moonCounts(scoped('PSI-69'))).toEqual({ total: 0, solid: 0, liquid: 0, gas: 0, inverse: 0, edge: 17 })
     for (const inv of ['PSI-25', 'PSI-99', 'PSI-69']) {
       const step = scopeStep(makeScope({ inv }))
       expect(step).not.toBeNull()

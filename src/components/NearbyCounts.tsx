@@ -115,6 +115,7 @@ export function NearbyCounts({ summary, point, name }: { summary: NearbySummary;
         </ul>
         <p className="flex flex-wrap gap-x-4 gap-y-1">
           <ScenarioLink to="/about?section=nearby">Definition and limits</ScenarioLink>
+          <ScenarioLink to="/about?section=glossary">Glossary</ScenarioLink>
           <ScenarioLink to="/about?section=assumptions">Assumptions</ScenarioLink>
         </p>
       </CardFooter>

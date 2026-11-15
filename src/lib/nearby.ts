@@ -35,6 +35,15 @@ export const NOT_PROOF = 'A nearby row is not a test of this habitat and not pro
 export const NO_PARTIAL_GRAVITY = 'No partial-gravity data in this snapshot.'
 export const NO_NEARBY = 'No nearby rows'
 
+// ACME BRE's objective names the Shuttle EVA atmosphere (26.5% oxygen at 10.2 psi) and the
+// exploration atmosphere (34% at 8.2 psi), which Mars shares. Its summary table says the chamber
+// pressures varied but does not say which test ran at which, so EMBER plots BRE at an assumed
+// 14.7 psi. The gap statement for those habitats says so rather than assigning a pressure.
+export const BRE_HABITATS = ['shuttle-eva', 'exploration', 'mars']
+export const BRE_ACCESSION = 'PSI-20'
+export const BRE_GAP_NOTE = 'targeted this atmosphere, but its summary table does not say which tests ran at which pressure, so EMBER plots its tests at an assumed 14.7 psi.'
+export const breGapNote = (presetId: string | null | undefined): string | null => (presetId && BRE_HABITATS.includes(presetId) ? BRE_GAP_NOTE : null)
+
 // An inverse flame burns a jet of oxidizer inside fuel. Its oxygen value is the oxidizer stream,
 // not a cabin atmosphere.
 export const isInverseFlame = (test: Test): boolean => test.flags?.includes('oxidizer-stream') ?? false

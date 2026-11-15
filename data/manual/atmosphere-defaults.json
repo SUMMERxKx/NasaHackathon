@@ -11,7 +11,7 @@
     { "accession": "PSI-99", "o2": null, "pressureAtm": 1.0, "reason": "Saffire-II ran in a Cygnus cargo vehicle cabin, near one atmosphere. Oxygen comes from the table.", "status": "needs human check" },
     { "accession": "PSI-100", "o2": null, "pressureAtm": 1.0, "reason": "Saffire-III ran in a Cygnus cargo vehicle cabin, near one atmosphere. Its table has no oxygen column.", "status": "needs human check" },
     { "accession": "PSI-25", "o2": null, "pressureAtm": 1.0, "reason": "BASS-II ran in the Microgravity Science Glovebox at cabin pressure. Oxygen comes from the table.", "status": "needs human check" },
-    { "accession": "PSI-20", "o2": null, "pressureAtm": 1.0, "reason": "The ACME BRE table lists oxygen levels for each test day and no pressure. One atmosphere is assumed.", "status": "needs human check" },
+    { "accession": "PSI-20", "o2": null, "pressureAtm": 1.0, "reason": "The ACME BRE table lists oxygen levels for each test day and no pressure. Its own note says: \"The chamber pressures were also varied but are not identified in this summary table.\" One atmosphere is assumed only to place the tests on the map, so a plotted BRE pressure may not be the pressure that test ran at.", "status": "needs human check" },
     { "accession": "PSI-23", "o2": null, "pressureAtm": 1.0, "reason": "A note in the ACME s-Flame table says the atmosphere is about 1 atm. Oxygen comes from the table.", "status": "needs human check" }
   ]
 }

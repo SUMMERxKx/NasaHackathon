@@ -104,7 +104,7 @@ No data rebuild is needed for these two. Run `npm run ci`.
 
 ## 9. Glossary, context cards and the Artemis quote
 
-- **Files:** `data/manual/glossary.json` (26 terms) and `data/manual/resources.json` (6 context cards under `context`, 2 quotes under `quotes`).
+- **Files:** `data/manual/glossary.json` (28 terms) and `data/manual/resources.json` (6 context cards under `context`, 2 quotes under `quotes`).
 - **What to read:** every sentence of the six context cards against the NASA page in its `url`: Apollo 1, Apollo 13, the fire aboard Mir, and the three spinoff cards. Each quote against its `url`, word for word. Each glossary definition against NASA's Researcher's Guide to Combustion Science, the challenge statement and the PSI records.
 - **What to set when approved:** there is no flag. Correct the text where needed, rebuild, and tick the item in the sign-off table.
 

@@ -9,6 +9,12 @@ export function burnTimeToExtinction(d0: number, dExt: number, k: number): numbe
   return (d0 * d0 - dExt * dExt) / k
 }
 
+/** The Lab's model end time. When NASA's extinction diameter is not smaller than the initial
+ * diameter, the law gives zero or a negative time, which is not a burn time, so there is none. */
+export function modelEndTime(d0: number, dExt: number, k: number): number | null {
+  return dExt < d0 ? burnTimeToExtinction(d0, dExt, k) : null
+}
+
 export function burnTimeToCompletion(d0: number, k: number): number {
   return (d0 * d0) / k
 }

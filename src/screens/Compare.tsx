@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Investigation, Test } from '../types.ts'
 import { encodeZoom, parseZoom, unplottedNote } from '../lib/mapLayout.ts'
+import { compareScope, scopeStep } from '../lib/mapScope.ts'
 import { materialFamily } from '../lib/parse.ts'
 import { countBy } from '../lib/stats.ts'
 import { atmToPsi, formatNumber, formatPercent } from '../lib/units.ts'
@@ -24,7 +25,19 @@ function range(values: number[], format: (v: number) => string): string {
   return lo === hi ? format(lo) : `${format(lo)} to ${format(hi)}`
 }
 
-type Row = { label: string; cells: (inv: Investigation, tests: Test[]) => string }
+// assumed, given, says whether an investigation's value is only EMBER's declared assumption.
+type Row = { label: string; cells: (inv: Investigation, tests: Test[]) => string; assumed?: (tests: Test[]) => boolean }
+
+const allAssumed = (tests: Test[], has: (t: Test) => boolean, assumed: (t: Test) => boolean): boolean => {
+  const list = tests.filter(has)
+  return list.length > 0 && list.every(assumed)
+}
+const o2Assumed = (tests: Test[]) => allAssumed(tests, (t) => t.o2 != null, (t) => t.o2Source === 'assumed')
+const pressureAssumed = (tests: Test[]) => allAssumed(tests, (t) => t.pressureAtm != null, (t) => t.pressureSource === 'assumed')
+
+// A value that is assumed for every compared investigation is not something they were found to
+// share, so the table and the summary both say so.
+const assumedTag = (count: number): string => (count === 2 ? 'both assumed' : 'all assumed')
 
 export default function Compare() {
   const { snapshot, invByAcc, testsByAcc } = useData()
@@ -67,15 +80,17 @@ export default function Compare() {
       label: 'Oxygen range',
       cells: (_, tests) => {
         const list = tests.filter((t) => t.o2 != null)
-        return range(list.map((t) => t.o2 as number), (v) => formatPercent(v)) + (list.length > 0 && list.every((t) => t.o2Source === 'assumed') ? ', assumed' : '')
+        return range(list.map((t) => t.o2 as number), (v) => formatPercent(v)) + (o2Assumed(tests) ? ', assumed' : '')
       },
+      assumed: o2Assumed,
     },
     {
       label: 'Pressure range',
       cells: (_, tests) => {
         const list = tests.filter((t) => t.pressureAtm != null)
-        return range(list.map((t) => atmToPsi(t.pressureAtm as number)), (v) => `${formatNumber(v, 1)} psi`) + (list.length > 0 && list.every((t) => t.pressureSource === 'assumed') ? ', assumed' : '')
+        return range(list.map((t) => atmToPsi(t.pressureAtm as number)), (v) => `${formatNumber(v, 1)} psi`) + (pressureAssumed(tests) ? ', assumed' : '')
       },
+      assumed: pressureAssumed,
     },
     { label: 'Flow range', cells: (_, tests) => range(tests.filter((t) => t.flowCmS != null).map((t) => t.flowCmS as number), (v) => `${formatNumber(v, 1)} cm/s`) },
     {
@@ -91,17 +106,22 @@ export default function Compare() {
   ]
   const chosen = ids.map((id) => invByAcc[id])
   const tests = useMemo(() => ids.flatMap((id) => testsByAcc[id] ?? []), [ids.join(','), testsByAcc]) // eslint-disable-line react-hooks/exhaustive-deps
+  // The map's Moon Base counts and every drill it opens keep to the compared investigations,
+  // as the dashboard's do to its filter.
+  const scope = useMemo(() => scopeStep(compareScope(ids)), [ids.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
   const colorOf = useMemo(() => {
     const map = Object.fromEntries(ids.map((id, i) => [id, SERIES[i]]))
     return (accession: string) => map[accession] ?? 'var(--muted)'
   }, [ids.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
   const shared: string[] = []
   const different: string[] = []
-  const table: { label: string; values: string[]; same: boolean }[] = rows.map((row) => {
+  const table: { label: string; values: string[]; same: boolean; assumed: boolean }[] = rows.map((row) => {
     const values = chosen.map((inv) => row.cells(inv, testsByAcc[inv.accession] ?? []))
     const same = values.length > 1 && values.every((v) => v === values[0])
-    if (chosen.length > 1 && !['What was burned', 'What was varied', 'Years', 'Tests in the PSI table'].includes(row.label)) (same ? shared : different).push(row.label.toLowerCase())
-    return { label: row.label, values, same }
+    const assumed = same && Boolean(row.assumed) && chosen.every((inv) => row.assumed?.(testsByAcc[inv.accession] ?? []))
+    const name = row.label.toLowerCase() + (assumed ? ` (${assumedTag(chosen.length)})` : '')
+    if (chosen.length > 1 && !['What was burned', 'What was varied', 'Years', 'Tests in the PSI table'].includes(row.label)) (same ? shared : different).push(name)
+    return { label: row.label, values, same, assumed }
   })
 
   return (
@@ -145,6 +165,7 @@ export default function Compare() {
                     <th scope="row" className="!static whitespace-normal align-top font-medium text-ink">
                       {row.label}
                       {row.same ? <span className="block text-[11px] font-normal text-ok">shared</span> : <span className="block text-[11px] font-normal text-warn">differs</span>}
+                      {row.assumed ? <span className="block text-[11px] font-normal text-warn">({assumedTag(chosen.length)})</span> : null}
                     </th>
                     {row.values.map((value, i) => (
                       <Cell key={chosen[i].accession} same={row.same}>
@@ -173,6 +194,7 @@ export default function Compare() {
             {tests.some((t) => t.o2 != null && t.pressureAtm != null) ? (
               <AtmosphereMap
                 tests={tests}
+                scope={scope}
                 colorOf={colorOf}
                 zoom={zoom}
                 onZoom={setZoom}

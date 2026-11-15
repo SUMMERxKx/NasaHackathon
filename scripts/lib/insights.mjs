@@ -3,7 +3,8 @@
 import { computeCoverage, pillarLookup, scenarioPoint } from '../../src/lib/coverage.ts'
 import { diluentFamily, dropletValues, extinctionRatio, validateDSquared } from '../../src/lib/droplet.ts'
 import { materialFamily } from '../../src/lib/parse.ts'
-import { inMoonRegion, onMoonEdge } from '../../src/lib/regions.ts'
+import { inMoonRegion, inverseClause, onMoonEdge } from '../../src/lib/regions.ts'
+import { isInverseFlame } from '../../src/lib/nearby.ts'
 import { countBy, groupBy, median, round } from '../../src/lib/stats.ts'
 import { atmToPsi, formatBytes, formatCount, formatNumber, formatPercent } from '../../src/lib/units.ts'
 
@@ -37,12 +38,15 @@ export function buildInsightList(snapshot) {
     const top = solid.filter((t) => t.o2 === max)
     const topInv = names[top[0].accession]
     const topInvTests = solid.filter((t) => t.accession === top[0].accession)
+    // Solid tests whose tables give no oxygen are left out of the maximum, and the card says so.
+    const unstated = tests.filter((t) => t.fuelClass === 'solid' && t.o2Source !== 'table')
+    const unstatedIn = [...new Set(unstated.map((t) => names[t.accession]))].join(' and ')
     const above30 = tests.filter((t) => t.fuelClass === 'solid' && t.o2 != null && t.o2 >= 0.3 - 1e-9)
     out.push(card({
       id: 'I1',
       pillar: 'gap',
-      headline: `Solid material tests in PSI stop at ${pct(max)} oxygen. A Moon Base is planned at 30% or more.`,
-      detail: `The highest oxygen level in any solid material test is ${pct(max)}, in ${topInv}, over ${topInvTests.length} tests. PSI holds ${above30.length} solid material tests at or above 30% oxygen. The challenge statement names two planned experiments that could close this gap: the Lunar-g Combustion Investigation (LUCI) and Flammability of Materials on the Moon (FM2).`,
+      headline: `Solid material tests in PSI that state their oxygen stop at ${pct(max)}. A Moon Base is planned at 30% or more.`,
+      detail: `The highest oxygen level in any solid material test whose table states oxygen is ${pct(max)}, in ${topInv}, over ${topInvTests.length} tests. ${solid.length} solid material tests state their oxygen. The other ${unstated.length}, in ${unstatedIn}, have no oxygen in their tables. PSI holds ${above30.length} solid material tests at or above 30% oxygen. The challenge statement names two planned experiments that could close this gap: the Lunar-g Combustion Investigation (LUCI) and Flammability of Materials on the Moon (FM2).`,
       numbers: { maxSolidO2Pct: round(max * 100, 3), solidTestsWithTableOxygen: solid.length, topInvestigationTests: topInvTests.length, solidTestsAtOrAbove30: above30.length },
       display: { maxSolidO2Pct: pct(max), solidTestsWithTableOxygen: String(solid.length), topInvestigationTests: String(topInvTests.length), solidTestsAtOrAbove30: String(above30.length) },
       primary: 'maxSolidO2Pct',
@@ -61,6 +65,8 @@ export function buildInsightList(snapshot) {
     const moon = tests.filter(inMoonRegion)
     const edge = tests.filter(onMoonEdge)
     const moonClass = countBy(moon, (t) => t.fuelClass)
+    const moonInverse = moon.filter((t) => t.fuelClass === 'gas' && isInverseFlame(t))
+    const inverseText = moonInverse.length > 0 ? `, ${inverseClause(moonClass.gas || 0, moonInverse.length)}` : ''
     const edgePsi = edge.map((t) => atmToPsi(t.pressureAtm))
     const edgeDroplet = edge.filter((t) => t.fuelClass === 'liquid')
     const highLiquid = high.filter((t) => t.fuelClass === 'liquid')
@@ -69,20 +75,20 @@ export function buildInsightList(snapshot) {
     out.push(card({
       id: 'I2',
       pillar: 'gap',
-      headline: `Inside the Moon Base region PSI holds ${moon.length} tests, and all ${moonClass.gas || 0} are gas flames. ${moonClass.solid || 0} solid, ${moonClass.liquid || 0} liquid.`,
+      headline: `Inside the Moon Base region PSI holds ${moon.length} tests, and all ${moonClass.gas || 0} are gas flames${inverseText}. ${moonClass.solid || 0} solid, ${moonClass.liquid || 0} liquid.`,
       detail: `The region is 30% oxygen or more at 10.2 psi or less, from the challenge statement. Counting every test at or above 30% oxygen at any pressure gives ${high.length}: ${byClass.gas || 0} gas flame tests, ${byClass.liquid || 0} droplet tests and ${byClass.solid || 0} solid material tests (${invList}). ${edgeDroplet.length} FLEX droplet tests sit just outside the region, at ${formatNumber(Math.min(...edgePsi), 1)} to ${formatNumber(Math.max(...edgePsi), 1)} psi.`,
       numbers: {
-        moonRegionTests: moon.length, moonRegionGas: moonClass.gas || 0, moonRegionSolid: moonClass.solid || 0, moonRegionLiquid: moonClass.liquid || 0,
+        moonRegionTests: moon.length, moonRegionGas: moonClass.gas || 0, moonRegionInverse: moonInverse.length, moonRegionSolid: moonClass.solid || 0, moonRegionLiquid: moonClass.liquid || 0,
         edgeDropletTests: edgeDroplet.length, testsAtOrAbove30: high.length, gasAtOrAbove30: byClass.gas || 0, liquidAtOrAbove30: byClass.liquid || 0, solidAtOrAbove30: byClass.solid || 0,
       },
       display: {
-        moonRegionTests: String(moon.length), moonRegionGas: String(moonClass.gas || 0), moonRegionSolid: String(moonClass.solid || 0), moonRegionLiquid: String(moonClass.liquid || 0),
+        moonRegionTests: String(moon.length), moonRegionGas: String(moonClass.gas || 0), moonRegionInverse: String(moonInverse.length), moonRegionSolid: String(moonClass.solid || 0), moonRegionLiquid: String(moonClass.liquid || 0),
         edgeDropletTests: String(edgeDroplet.length), testsAtOrAbove30: String(high.length), gasAtOrAbove30: String(byClass.gas || 0), liquidAtOrAbove30: String(byClass.liquid || 0), solidAtOrAbove30: String(byClass.solid || 0),
       },
       primary: 'moonRegionTests',
       evidence: Object.entries(groups).map(([accession, list]) => ({ accession, testIds: ids(list), field: 'oxygen' })),
       byNumber: {
-        moonRegionTests: ids(moon), moonRegionGas: ids(moon.filter((t) => t.fuelClass === 'gas')), moonRegionSolid: [], moonRegionLiquid: [],
+        moonRegionTests: ids(moon), moonRegionGas: ids(moon.filter((t) => t.fuelClass === 'gas')), moonRegionInverse: ids(moonInverse), moonRegionSolid: [], moonRegionLiquid: [],
         edgeDropletTests: ids(edgeDroplet), testsAtOrAbove30: ids(high), gasAtOrAbove30: ids(high.filter((t) => t.fuelClass === 'gas')), liquidAtOrAbove30: ids(highLiquid), solidAtOrAbove30: [],
       },
       formula: 'A test is inside the region when its table states oxygen of 0.30 or more and a pressure of 10.2 psi or less.',
