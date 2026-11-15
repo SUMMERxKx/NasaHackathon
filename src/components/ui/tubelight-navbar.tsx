@@ -1,6 +1,7 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
 // The tubelight navbar. Adapted from the component the owner supplied (21st.dev style) to
 // React Router: NavLink lights the tab of the current route, and every link keeps the habitat.
+// Its bar, its tabs and its lamp are rectangles, like every other corner in EMBER.
 // The lamp is measured only when the route changes, not each time the habitat in the address does.
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
@@ -24,8 +25,8 @@ export function NavBar({ items, className }: NavBarProps) {
   const query = scenarioQuery(params)
 
   return (
-    <nav aria-label="Main" className={cn('no-print fixed bottom-0 left-1/2 z-50 mb-4 -translate-x-1/2 sm:bottom-auto sm:top-0 sm:mb-0 sm:pt-4', className)}>
-      <div className="flex items-center gap-1 rounded-full border border-border bg-surface/70 px-1 py-1 shadow-lg backdrop-blur-lg sm:gap-2">
+    <nav aria-label="Main" className={cn('no-print fixed bottom-0 left-1/2 z-50 mb-4 -translate-x-1/2 sm:static sm:z-auto sm:mb-0 sm:translate-x-0', className)}>
+      <div className="flex items-center gap-1 border border-border bg-surface px-1 py-1 shadow-lg sm:gap-2 sm:shadow-none">
         {items.map((item) => {
           const Icon = item.icon
           return (
@@ -35,7 +36,7 @@ export function NavBar({ items, className }: NavBarProps) {
               aria-label={item.name}
               className={({ isActive }) =>
                 cn(
-                  'relative cursor-pointer rounded-full px-5 py-2 text-sm font-semibold no-underline transition-colors hover:no-underline md:px-6',
+                  'relative cursor-pointer px-5 py-2 text-sm font-semibold no-underline transition-colors hover:no-underline md:px-4 lg:px-6',
                   'text-foreground/75 hover:text-primary',
                   isActive && 'bg-surface-2 text-primary',
                 )
@@ -48,11 +49,11 @@ export function NavBar({ items, className }: NavBarProps) {
                     <Icon size={18} strokeWidth={2.5} aria-hidden="true" />
                   </span>
                   {isActive && (
-                    <motion.div layoutId="lamp" layoutDependency={item.url} className="absolute inset-0 -z-10 w-full rounded-full bg-primary/5" initial={false} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                      <div className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 rounded-t-full bg-primary">
-                        <div className="absolute -left-2 -top-2 h-6 w-12 rounded-full bg-primary/20 blur-md" />
-                        <div className="absolute -top-1 h-6 w-8 rounded-full bg-primary/20 blur-md" />
-                        <div className="absolute left-2 top-0 h-4 w-4 rounded-full bg-primary/20 blur-sm" />
+                    <motion.div layoutId="lamp" layoutDependency={item.url} className="absolute inset-0 -z-10 w-full bg-primary/5" initial={false} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
+                      <div className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 bg-primary">
+                        <div className="absolute -left-2 -top-2 h-6 w-12 bg-primary/20 blur-md" />
+                        <div className="absolute -top-1 h-6 w-8 bg-primary/20 blur-md" />
+                        <div className="absolute left-2 top-0 h-4 w-4 bg-primary/20 blur-sm" />
                       </div>
                     </motion.div>
                   )}

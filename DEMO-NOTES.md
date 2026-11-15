@@ -8,12 +8,12 @@ Press **Tour** at the top right of the dashboard. Five steps drive the real app 
 
 ## The click path for a 30 second screen recording
 
-Record in the dark theme at 1920 by 1080. Keep the small "SI" mark in the corner of the fireball and of the start page sky inside the frame whenever either is on screen.
+Record at 1920 by 1080. Keep the small "SI" mark in the corner of the fireball and of the start page sky inside the frame whenever either is on screen.
 
 | Seconds | What to do | What to say |
 |---|---|---|
 | 0 to 3 | Open `https://ember-two-eta.vercel.app/`. Hold on the start page: the sky, the round flame in freefall and the name. Press "Open the dashboard". | "On Earth a flame streams upward. In freefall it becomes a sphere." |
-| 3 to 9 | On the dashboard, open the habitat dropdown at the bottom and pick the Exploration atmosphere. The ring glides on the map, the dial sweeps from 100 to 67, the bars shrink, the list reorders, and the fireball burns faster while its three numbers change. | "Pick your habitat. A Moon Base runs richer in oxygen. The fire burns harder, and the evidence thins out." |
+| 3 to 9 | On the dashboard, open the habitat picker at the top right and pick the Exploration atmosphere. The ring glides on the map, the dial sweeps from 100 to 67, the bars shrink, the list reorders, and the fireball burns faster while its three numbers change. | "Pick your habitat. A Moon Base runs richer in oxygen. The fire burns harder, and the evidence thins out." |
 | 9 to 16 | Press "Moon zoom" on the map. Click the region caption. In the panel, click ACME CFI-G, then one test. The raw NASA row is on screen. | "Every mark is a real NASA test, one click away. Here there are 66, all gas flames. Solid material tests stop at 22.2 percent oxygen." |
 | 16 to 19 | Open Lab. Show the droplet model with FLEX test 20CAL10: 4.29 seconds from the model beside 5 seconds measured. | "Simple models, checked against 196 real burns." |
 | 19 to 27 | Press the robot at the bottom right. Tap "What is missing for the Moon?". Then type one short question and let the live answer stream in with its source chips. | "Ask in plain words. Every sentence is checked against its source." |
@@ -70,10 +70,10 @@ On 14 November 2026, against the local production build of the redesign, in Chro
 | Check | Result |
 |---|---|
 | Unit tests, both levels of insight verification, server tests with stubbed models | 122 tests pass |
-| Every route renders in both themes, and every old address redirects | Pass, in the tests |
+| Every route renders, and every old address redirects | Pass, in the tests |
 | Every screen at 1440 pixels wide: start page, dashboard, Investigations, Detail, Compare, the three Lab models and the eight About tabs | All render. No console errors. No sideways scroll. |
 | Start page, dashboard, Investigations, Lab and About at 390 pixels wide | No sideways scroll |
-| The habitat dropdown: each preset, then custom sliders | The ring, the score, the fireball and the list all follow |
+| The habitat picker: each preset, then custom sliders | The ring, the score, the fireball and the list all follow |
 | The chat panel with the local mock model: an example question and a typed question | The answer streams, is checked and lists its sources. The habitat follows the question. |
 | A question in the address, `/ask?q=`, from before the redesign | Redirects to the dashboard, opens the chat and asks it |
 | The tour, five steps | Pass. The last step opens the chat. |
@@ -93,7 +93,7 @@ On 14 November 2026, against the local build, in Chrome. These name the screens 
 | Check | Result |
 |---|---|
 | Unit tests, both levels of insight verification, server tests with stubbed models | 112 tests pass |
-| Every route renders in both themes | Pass, in the tests |
+| Every route renders | Pass, in the tests |
 | Lighthouse accessibility, Brief | 93 before the accessible name fixes |
 | Lighthouse accessibility, Map | 96 before the accessible name fixes |
 | Lighthouse accessibility, Ask | 100 |

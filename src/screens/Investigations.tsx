@@ -72,7 +72,7 @@ export default function Investigations() {
   return (
     <div className="page">
       <PageHeader title="Investigations" lead={`Ranked for ${name}`} />
-      <div className="mb-3 flex flex-wrap items-center gap-2" role="group" aria-label="List controls">
+      <div className="card mb-3 flex flex-wrap items-center gap-2 p-2" role="group" aria-label="List controls">
         <div className="hide-scrollbar max-w-full overflow-x-auto">
           <Segmented label="Sort" value={sort} options={SORTS} onChange={(v) => set('sort', v === 'relevance' ? '' : v)} />
         </div>
@@ -87,7 +87,7 @@ export default function Investigations() {
         <button type="button" className={`chip ${filterCount > 0 ? 'chip-on' : ''}`} aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>
           <SlidersHorizontal size={13} aria-hidden="true" /> Filters{filterCount > 0 ? ` ${filterCount}` : ''}
         </button>
-        <span className="num ml-auto text-[12px] text-muted" role="status">
+        <span className="num ml-auto pr-2 text-[12px] text-muted" role="status">
           {list.length} of {snapshot.investigations.length}
         </span>
       </div>
@@ -156,7 +156,7 @@ export default function Investigations() {
 
       {selected.length >= 1 ? (
         <div className="no-print fixed inset-x-0 bottom-[128px] z-30 px-4 sm:bottom-[76px]">
-          <div className="card mx-auto flex max-w-[640px] flex-wrap items-center justify-between gap-3 px-4 py-2.5" style={{ boxShadow: 'var(--shadow-pop)' }}>
+          <div className="card card-solid mx-auto flex max-w-[640px] flex-wrap items-center justify-between gap-3 px-4 py-2.5">
             <p className="min-w-0 truncate text-[13px]">
               <span className="num">{selected.length}</span> selected: {selected.map((a) => invByAcc[a]?.displayName ?? a).join(', ')}
             </p>

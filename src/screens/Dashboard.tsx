@@ -1,5 +1,5 @@
 // SI disclosure: this file was drafted with an SI coding assistant and reviewed by the team.
-// The dashboard: one screen around the map. The habitat dropdown at the bottom changes all of it:
+// The dashboard: one screen around the map. The habitat picker in the top bar changes all of it:
 // the ring on the map, the coverage score, the fireball and the most relevant investigations.
 import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -131,7 +131,7 @@ function MapCard() {
       ) : null}
       {table ? (
         <>
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="panel-head">
             <span className="font-display text-[16px] font-semibold">
               {shown.length} of {plotted.length} tests
             </span>
@@ -211,7 +211,7 @@ function TopInvestigations() {
   const ranking = useRanking()
   return (
     <section className="card p-4 lg:col-span-7" aria-labelledby="top-title">
-      <div className="mb-2 flex items-center justify-between gap-3">
+      <div className="panel-head !mb-2">
         <h2 id="top-title" className="stat-label">
           Most relevant investigations
         </h2>
@@ -233,7 +233,7 @@ function TopInvestigations() {
                     {PILLAR_NAME[inv.pillar]} · {inv.testCount} tests
                   </span>
                 </span>
-                <span className="hidden h-1.5 w-20 overflow-hidden rounded-full bg-line sm:block" aria-hidden="true">
+                <span className="hidden h-1.5 w-20 overflow-hidden bg-line sm:block" aria-hidden="true">
                   <span className="block h-full bg-ember" style={bar(r.score)} />
                 </span>
                 <span className="num w-7 shrink-0 text-right text-[15px] text-ink" title="Relevance, out of 100">
@@ -273,7 +273,7 @@ export default function Dashboard() {
   const { scenario, name } = useScenario()
   return (
     <div className="page">
-      <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <header className="page-head !flex-row flex-wrap items-end justify-between">
         <div className="min-w-0">
           <p className="stat-label">Habitat</p>
           <h1 id="page-title" tabIndex={-1} className="text-[26px] outline-none md:text-[32px]">

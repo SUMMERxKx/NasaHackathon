@@ -72,7 +72,7 @@ export function StoryStepper() {
       transition={{ duration: 0.32 }}
       aria-label="The guided tour"
     >
-      <div className="card glow-ember flex flex-col gap-2 border-ember px-4 py-3" style={{ boxShadow: 'var(--shadow-pop)' }}>
+      <div className="card card-solid flex flex-col gap-2 border-ember px-4 py-3">
         <div className="min-w-0 flex-1">
           <p className="eyebrow">
             The Moon Base tour · step <span className="num">{n}</span> of <span className="num">{STORY_STEPS.length}</span>

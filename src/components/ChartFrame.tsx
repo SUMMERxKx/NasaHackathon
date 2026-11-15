@@ -43,7 +43,7 @@ export function ChartFrame({
   const height = Math.round(Math.max(minHeight, Math.min(maxHeight, width * ratio)))
   return (
     <figure className="m-0">
-      <figcaption className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      <figcaption className="panel-head">
         <span className="font-display text-[16px] font-semibold">{title}</span>
         {toolbar}
       </figcaption>
@@ -54,7 +54,7 @@ export function ChartFrame({
         aria-label={`${description} Use the arrow keys to move between marks and Enter to open the rows behind one.`}
         tabIndex={0}
         onKeyDown={arrowNav}
-        className="relative w-full rounded-control"
+        className="relative w-full"
         style={{ height }}
       >
         {children({ width, height })}

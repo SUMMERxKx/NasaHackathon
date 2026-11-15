@@ -25,7 +25,7 @@ import { LIMITS, fromHabitat, matchPreset } from '../state/scenario.ts'
 import { ChartFrame } from './ChartFrame.tsx'
 import type { FrameSize } from './ChartFrame.tsx'
 import { oxygenText, pressureText } from './DrillPanel.tsx'
-import { drillProps, usePrefersReducedMotion, useThemeVersion } from './ui.tsx'
+import { drillProps, usePrefersReducedMotion } from './ui.tsx'
 
 export const MOON_DOMAIN: MapDomain = { psi: [3, 17], o2Pct: [22, 100] }
 
@@ -105,7 +105,6 @@ const TestDots = memo(function TestDots({
 function CoverageField({ box, domain, size, tests }: { box: MapBox; domain: MapDomain; size: FrameSize; tests: Test[] }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const { lookup } = useData()
-  const theme = useThemeVersion()
   const groups = useMemo(() => fieldGroups(tests, lookup), [tests, lookup])
   useEffect(() => {
     const canvas = ref.current
@@ -136,7 +135,7 @@ function CoverageField({ box, domain, size, tests }: { box: MapBox; domain: MapD
       }
     }
     context.putImageData(image, 0, 0)
-  }, [groups, domain, theme])
+  }, [groups, domain])
   return (
     <div aria-hidden="true" className="pointer-events-none absolute overflow-hidden" style={{ left: box.left, top: box.top, width: box.width, height: box.height }}>
       <canvas ref={ref} className="h-full w-full" style={{ filter: 'blur(6px)', opacity: size.width > 0 ? 1 : 0, transition: 'opacity var(--t-emphasis)' }} />
@@ -511,7 +510,7 @@ function MapBody({
               const text = `${stack.count} ${accessions.length === 1 ? (invByAcc[accessions[0]]?.displayName ?? '') : 'tests'}`
               return (
                 <g key={`b${stack.key}`} transform={`translate(${stack.x + 14},${stack.y - 14})`} aria-hidden="true" pointerEvents="none">
-                  <rect x={0} y={-11} width={text.length * 6.6 + 12} height={18} rx={9} fill="var(--surface-2)" stroke="var(--line)" />
+                  <rect x={0} y={-11} width={text.length * 6.6 + 12} height={18} fill="var(--surface-2)" stroke="var(--line)" />
                   <text x={6} y={2} fontSize={11} fill="var(--ink)" className="num">
                     {text}
                   </text>
@@ -561,7 +560,7 @@ function MapBody({
               open,
             )}
           >
-            <rect width={compact ? 132 : zoomMoon && !narrow ? 250 : 196} height={compact ? 22 : zoomMoon && !narrow ? 66 : 50} rx={8} fill="var(--surface)" stroke="var(--gap)" fillOpacity={0.94} />
+            <rect width={compact ? 132 : zoomMoon && !narrow ? 250 : 196} height={compact ? 22 : zoomMoon && !narrow ? 66 : 50} fill="var(--surface)" stroke="var(--gap)" fillOpacity={0.94} />
             {compact ? (
               <text x={8} y={15} fontSize={11} fill="var(--ink)">
                 Moon Base region
@@ -607,15 +606,15 @@ function MapBody({
       ) : null}
       {tip ? (
         <div
-          className="card pointer-events-none absolute z-10 max-w-[260px] px-3 py-2 text-[12px]"
-          style={{ left: Math.min(size.width - 270, Math.max(4, tip.x + 14)), top: Math.max(4, tip.y - 12), boxShadow: 'var(--shadow-pop)' }}
+          className="card card-solid pointer-events-none absolute z-10 max-w-[260px] px-3 py-2 text-[12px]"
+          style={{ left: Math.min(size.width - 270, Math.max(4, tip.x + 14)), top: Math.max(4, tip.y - 12) }}
           role="tooltip"
         >
           <MapTip hit={tip} test={tipTest ?? null} />
         </div>
       ) : null}
       {pinned ? (
-        <div className="card absolute inset-x-2 bottom-2 z-10 flex items-center justify-between gap-3 px-3 py-2 text-[12px]" style={{ boxShadow: 'var(--shadow-pop)' }}>
+        <div className="card card-solid absolute inset-x-2 bottom-2 z-10 flex items-center justify-between gap-3 px-3 py-2 text-[12px]">
           <div>
             <MapTip hit={pinned} test={pinTest ?? null} />
           </div>

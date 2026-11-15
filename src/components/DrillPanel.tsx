@@ -39,7 +39,7 @@ const FLAG_WORDS: Record<string, string> = {
 function Crumbs({ pageName, crumbs, hrefFor, onClose }: { pageName: string; crumbs: { label: string; path: DrillPath }[]; hrefFor: (p: DrillPath) => string; onClose: () => void }) {
   return (
     <nav aria-label="Drill path" className="flex flex-wrap items-center gap-1 text-[13px] text-muted">
-      <button type="button" className="rounded px-1 hover:text-ink" onClick={onClose}>
+      <button type="button" className="px-1 hover:text-ink" onClick={onClose}>
         {pageName}
       </button>
       {crumbs.map((crumb, i) => (
@@ -48,7 +48,7 @@ function Crumbs({ pageName, crumbs, hrefFor, onClose }: { pageName: string; crum
           {i === crumbs.length - 1 ? (
             <span aria-current="page" className="font-semibold text-ink">{crumb.label}</span>
           ) : (
-            <Link to={hrefFor(crumb.path)} preventScrollReset className="rounded px-1 text-muted hover:text-ink">
+            <Link to={hrefFor(crumb.path)} preventScrollReset className="px-1 text-muted hover:text-ink">
               {crumb.label}
             </Link>
           )}
@@ -142,7 +142,7 @@ export function TestDetail({ test }: { test: Test }) {
   return (
     <div className="flex flex-col gap-5">
       {isAssumed(test) ? (
-        <p className="rounded-control border border-line bg-surface-2 px-3 py-2 text-[13px]">
+        <p className="border border-line bg-surface-2 px-3 py-2 text-[13px]">
           <strong className="text-warn">Assumed.</strong> The table for this test does not state{' '}
           {test.o2Source === 'assumed' && test.pressureSource === 'assumed' ? 'an atmosphere' : test.o2Source === 'assumed' ? 'an oxygen level' : 'a pressure'}. EMBER uses a declared assumption and counts this test at half weight.
         </p>
@@ -271,7 +271,7 @@ export function DrillPanel({ pageName }: { pageName: string }) {
             <h2 id="drill-title" ref={headingRef} tabIndex={-1} className="text-[20px] leading-snug outline-none">
               {result.title}
             </h2>
-            {result.formula ? <p className="num mt-3 rounded-control bg-surface-2 px-3 py-2 text-[12px] text-muted">{result.formula}</p> : null}
+            {result.formula ? <p className="num mt-3 bg-surface-2 px-3 py-2 text-[12px] text-muted">{result.formula}</p> : null}
             {result.note ? <p className="mt-3 text-[14px] text-muted">{result.note}</p> : null}
           </div>
           {result.level === 'test' && result.test ? <TestDetail test={result.test} /> : null}

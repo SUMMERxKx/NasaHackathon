@@ -144,7 +144,7 @@ function MatchingRows({ rows }: { rows: NonNullable<RetrievalResult['rows']> }) 
       <ul className="m-0 mt-1 flex list-none flex-col p-0">
         {tests.slice(0, 4).map((t) => (
           <li key={t.id}>
-            <button type="button" className="flex w-full items-baseline justify-between gap-2 rounded px-1 py-0.5 text-left hover:bg-surface-2" data-drill={`test.${t.id}`} onClick={() => open([{ kind: 'test', id: t.id }])}>
+            <button type="button" className="flex w-full items-baseline justify-between gap-2 px-1 py-0.5 text-left hover:bg-surface-2" data-drill={`test.${t.id}`} onClick={() => open([{ kind: 'test', id: t.id }])}>
               <span className="min-w-0 truncate">
                 {invByAcc[t.accession]?.displayName} <span className="num text-muted">{t.label}</span>
               </span>
@@ -386,7 +386,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
   return (
     <section className="chat-panel no-print" role="dialog" aria-label="Ask EMBER" data-meaning={meaningStatus}>
       <header className="flex items-center gap-2 border-b border-line px-4 py-3">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ember text-on-ember">
+        <span className="flex h-7 w-7 items-center justify-center bg-ember text-on-ember">
           <Bot size={16} aria-hidden="true" />
         </span>
         <h2 className="flex-1 text-[15px]">Ask EMBER</h2>
@@ -427,7 +427,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
           <input
             ref={input}
             id="chat-box"
-            className="input !min-h-10 !rounded-full"
+            className="input !min-h-10"
             value={draft}
             maxLength={300}
             onChange={(e) => {
@@ -437,7 +437,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
             placeholder="Ask a question"
             autoComplete="off"
           />
-          <button type="submit" className="btn btn-primary btn-icon !min-h-10 !w-10 shrink-0 !rounded-full" disabled={!engine || busy || draft.trim() === ''} aria-label="Send">
+          <button type="submit" className="btn btn-primary btn-icon !min-h-10 !w-10 shrink-0" disabled={!engine || busy || draft.trim() === ''} aria-label="Send">
             <ArrowUp size={16} aria-hidden="true" />
           </button>
         </div>

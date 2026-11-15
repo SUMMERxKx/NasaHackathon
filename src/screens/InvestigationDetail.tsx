@@ -55,10 +55,10 @@ function ProfileRow({ inv, tableIndex, columnIndex, column }: { inv: Investigati
           </span>
         ) : null}
         {range ? (
-          <button type="button" className="flex w-full min-w-[180px] items-center gap-2 rounded bg-transparent p-0 text-left" {...props(path('*'), `${column.displayHeader} ranges from ${column.min} to ${column.max}. Press Enter for the rows.`)} role={undefined}>
+          <button type="button" className="flex w-full min-w-[180px] items-center gap-2 bg-transparent p-0 text-left" {...props(path('*'), `${column.displayHeader} ranges from ${column.min} to ${column.max}. Press Enter for the rows.`)} role={undefined}>
             <span className="num text-[12px]">{formatNumber(column.min as number, 3)}</span>
-            <span className="relative h-2 flex-1 rounded-full bg-line">
-              <span className="absolute inset-y-0 left-0 right-0 rounded-full bg-freefall opacity-60" />
+            <span className="relative h-2 flex-1 bg-line">
+              <span className="absolute inset-y-0 left-0 right-0 bg-freefall opacity-60" />
               {column.median != null && column.max !== column.min ? (
                 <span className="absolute top-[-3px] h-3.5 w-0.5 bg-ink" style={{ left: `${(((column.median as number) - (column.min as number)) / ((column.max as number) - (column.min as number))) * 100}%` }} title={`Median ${formatNumber(column.median, 3)}`} />
               ) : null}
@@ -165,9 +165,11 @@ export default function InvestigationDetail() {
   return (
     <div className="page">
       <p className="mb-3 text-[13px]">
-        <ScenarioLink to="/investigations">All investigations</ScenarioLink>
+        <ScenarioLink to="/investigations" className="chip">
+          All investigations
+        </ScenarioLink>
       </p>
-      <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-start">
+      <header className="page-head !flex-col !items-start !justify-start !gap-4 md:!flex-row">
         <Thumb inv={inv} size={96} />
         <div className="min-w-0 flex-1">
           <h1 id="page-title" tabIndex={-1} className="text-[28px] outline-none md:text-[36px]">
@@ -202,7 +204,7 @@ export default function InvestigationDetail() {
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="grid gap-4 lg:grid-cols-12">
         <section className="card p-5 lg:col-span-7" aria-labelledby="summary-title">
           <h2 id="summary-title" className="mb-3 text-[18px]">
             Summary
@@ -222,12 +224,12 @@ export default function InvestigationDetail() {
             </div>
           </dl>
           {inverse ? (
-            <p className="mt-4 rounded-control bg-surface-2 px-3 py-2 text-[13px]">
+            <p className="mt-4 bg-surface-2 px-3 py-2 text-[13px]">
               Some of these tests are inverse flames. The oxidizer flows from the burner into a fuel atmosphere, so the oxygen value is the oxidizer stream and not a cabin atmosphere.
             </p>
           ) : null}
           {assumption ? (
-            <p className="mt-4 rounded-control bg-surface-2 px-3 py-2 text-[13px]">
+            <p className="mt-4 bg-surface-2 px-3 py-2 text-[13px]">
               <strong className="text-warn">Assumed atmosphere.</strong> {assumption.reason} Status: {assumption.status}.{' '}
               <ScenarioLink to="/about?section=assumptions">All assumptions</ScenarioLink>
             </p>
@@ -247,7 +249,7 @@ export default function InvestigationDetail() {
       </div>
 
       {profiles.length > 0 ? (
-        <section className="mt-8" aria-labelledby="profile-title">
+        <section className="card mt-4 p-4 md:p-5" aria-labelledby="profile-title">
           <h2 id="profile-title" className="text-[22px]">
             What varied and what stayed fixed
           </h2>
@@ -267,7 +269,7 @@ export default function InvestigationDetail() {
         </section>
       ) : null}
 
-      <section className="mt-8" aria-labelledby="tests-title">
+      <section className="card mt-4 p-4 md:p-5" aria-labelledby="tests-title">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 id="tests-title" className="text-[22px]">
@@ -316,7 +318,7 @@ export default function InvestigationDetail() {
         ) : null}
       </section>
 
-      <details className="card mt-8 p-4 md:p-5">
+      <details className="card mt-4 p-4 md:p-5">
         <summary className="cursor-pointer font-display text-[18px] font-semibold">The record, in NASA's words</summary>
         <div className="mt-4 flex flex-col gap-5">
           <Block title="Objectives" text={inv.objective} />
@@ -349,7 +351,7 @@ export default function InvestigationDetail() {
         </div>
       </details>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <section className="card p-5" aria-labelledby="files-title">
           <h2 id="files-title" className="text-[18px]">
             Data types in the archive
@@ -413,7 +415,7 @@ export default function InvestigationDetail() {
         </section>
       </div>
 
-      <details className="card mt-6 p-4 md:p-5">
+      <details className="card mt-4 p-4 md:p-5">
         <summary className="cursor-pointer font-display text-[18px] font-semibold">
           Publications <span className="num text-[14px] font-normal text-muted">{inv.publications.length}</span>
         </summary>

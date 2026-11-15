@@ -10,6 +10,7 @@ export function RouteError({ standalone = false }: { standalone?: boolean }) {
   }, [error])
   return (
     <div className={`page ${standalone ? 'flex min-h-screen flex-col justify-center' : ''}`}>
+      <div className="card p-6">
       <h1 id="page-title" tabIndex={-1} className="text-[28px]">
         This screen could not be shown
       </h1>
@@ -19,6 +20,7 @@ export function RouteError({ standalone = false }: { standalone?: boolean }) {
           Go to the dashboard
         </Link>
       </p>
+      </div>
     </div>
   )
 }
