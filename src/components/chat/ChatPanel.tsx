@@ -13,7 +13,9 @@ import type { Health, LiveFailure } from '../../lib/ask.ts'
 import { REFUSAL, checkAnswer } from '../../lib/grounding.ts'
 import { appHref } from '../../lib/links.ts'
 import { decodeVectors, scoreMeaning } from '../../lib/meaning.ts'
+import { RATE_MESSAGE, checkRate } from '../../lib/rateLimit.ts'
 import { buildEngine, retrieve } from '../../lib/retrieve.ts'
+import { TOPIC_HINT, buildTopicVocab, screenQuestion } from '../../lib/topic.ts'
 import { formatNumber, formatPercent } from '../../lib/units.ts'
 import { loadAskData, useAskData, useData } from '../../state/data.tsx'
 import { useDrill, useScenario } from '../../state/hooks.ts'
@@ -33,6 +35,25 @@ export const CHIPS: { id: string; question: string; habitat: string | null }[] =
 ]
 
 export const CHAT_NOTE = "Answers come from NASA's data. They can make mistakes, so check the sources."
+export const CHAT_SCOPE = "Ask about NASA's microgravity fire tests in EMBER"
+
+// The browser's own copy of the question limit, kept for this tab only. The server keeps its own.
+const TIMES_KEY = 'ember-ask-times'
+function readTimes(): number[] {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(TIMES_KEY) ?? '[]')
+    return Array.isArray(parsed) ? parsed.filter((t): t is number => typeof t === 'number') : []
+  } catch {
+    return []
+  }
+}
+function writeTimes(times: number[]) {
+  try {
+    sessionStorage.setItem(TIMES_KEY, JSON.stringify(times))
+  } catch {
+    // Storage is off. The server's limit still holds.
+  }
+}
 
 type LiveState =
   | { kind: 'hidden' }
@@ -46,7 +67,7 @@ type LiveState =
 type Turn = {
   id: number
   question: string
-  phase: 'retrieving' | 'no_evidence' | 'evidence'
+  phase: 'retrieving' | 'no_evidence' | 'off_topic' | 'evidence'
   items: EvidenceItem[]
   rows: RetrievalResult['rows']
   line: string
@@ -159,13 +180,29 @@ function MatchingRows({ rows }: { rows: NonNullable<RetrievalResult['rows']> }) 
   )
 }
 
+function OffTopic() {
+  return (
+    <>
+      <p>{REFUSAL}</p>
+      <p className="mt-1.5 text-[12px] text-muted">{TOPIC_HINT}</p>
+    </>
+  )
+}
+
 function Answer({ turn, shown, onGo }: { turn: Turn; shown: number; onGo: () => void }) {
   if (turn.phase === 'retrieving') return <span className="chat-dots" aria-label="Looking" />
   if (turn.phase === 'no_evidence') return <p>{REFUSAL} Try one of the examples.</p>
+  if (turn.phase === 'off_topic') return <OffTopic />
   const live = turn.live
+  if (live.kind === 'unavailable' && live.reason === 'off_topic') return <OffTopic />
   return (
     <>
       {turn.notice ? <p className="mb-2 text-[12px] text-warn">{turn.notice}</p> : null}
+      {live.kind === 'unavailable' && live.reason === 'rate_limited' ? (
+        <p className="mb-2 text-[12px] text-warn" role="status">
+          {RATE_MESSAGE} Here is the evidence meanwhile.
+        </p>
+      ) : null}
       {live.kind === 'waiting' ? <span className="chat-dots" aria-label="Writing" /> : null}
       {live.kind === 'streaming' ? <p className={shown < live.text.length ? 'caret' : ''}>{live.text.slice(0, shown)}</p> : null}
       {live.kind === 'verified' ? <Sentences segments={live.result.segments.filter((s) => s.status === 'kept')} items={turn.items} line={turn.line} onGo={onGo} /> : null}
@@ -200,6 +237,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
   const list = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLInputElement>(null)
   const engine = useMemo(() => (ask.data ? buildEngine(ask.data.search) : null), [ask.data])
+  const topicVocab = useMemo(() => (ask.data ? buildTopicVocab(ask.data.search) : null), [ask.data])
   // Search by meaning. Its model loads in a Web Worker when the first question is typed.
   const embedding = ask.data?.search.embedding ?? null
   const vectors = useMemo(() => (embedding ? decodeVectors(embedding.vectors) : null), [embedding])
@@ -221,12 +259,17 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
 
   const start = useCallback(
     async (question: string, chipId: string | null) => {
-      if (!engine || !ask.data) return
+      if (!engine || !ask.data || !topicVocab) return
       const text = question.replace(/\s+/g, ' ').trim().slice(0, 300)
       if (text === '') return
       const mine = ++run.current
       abort.current?.abort()
       setShown(0)
+      // The same topic screen as the server, so an off-topic question is refused at once and sends nothing.
+      if (!screenQuestion(text, topicVocab).ok) {
+        setTurns((all) => [...all, { id: mine, question: text, phase: 'off_topic', items: [], rows: null, line: '', notice: null, live: { kind: 'hidden' } }])
+        return
+      }
       setTurns((all) => [...all, { id: mine, question: text, phase: 'retrieving', items: [], rows: null, line: '', notice: null, live: { kind: 'hidden' } }])
       let current: Scenario = scenarioRef.current
       let notice: string | null = null
@@ -287,6 +330,12 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
         patch(mine, { ...base, live: hit.verdict === 'refusal' ? { kind: 'refusal' } : { kind: 'verified', result: hit } })
         return
       }
+      const rate = checkRate(readTimes(), Date.now())
+      writeTimes(rate.times)
+      if (!rate.ok) {
+        patch(mine, { ...base, live: { kind: 'unavailable', reason: 'rate_limited' } })
+        return
+      }
       patch(mine, { ...base, live: { kind: 'waiting' } })
       const controller = new AbortController()
       abort.current = controller
@@ -325,7 +374,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
       cache.set(key, check)
       patch(mine, { live: check.verdict === 'refusal' ? { kind: 'refusal' } : { kind: 'verified', result: check } })
     },
-    [engine, ask.data, snapshot, health, setScenario, embedding, vectors, embedQuestion, patch],
+    [engine, topicVocab, ask.data, snapshot, health, setScenario, embedding, vectors, embedQuestion, patch],
   )
 
   // A question in the address is asked once the search index has loaded.
@@ -441,7 +490,8 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
             <ArrowUp size={16} aria-hidden="true" />
           </button>
         </div>
-        <p className="mt-2 text-center text-[11px] leading-snug text-faint">{CHAT_NOTE}</p>
+        <p className="mt-2 text-center text-[12px] leading-snug text-muted">{CHAT_SCOPE}</p>
+        <p className="mt-0.5 text-center text-[11px] leading-snug text-faint">{CHAT_NOTE}</p>
       </form>
     </section>
   )
