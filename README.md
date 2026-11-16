@@ -14,6 +14,17 @@ Built by team **Low Cortisol Gng** for the NASA Space Apps Challenge 2026, chall
 - What the science lead still has to read and approve: `REVIEW-CHECKLIST.md`.
 - The build plan the team worked from: `plan.html` in this repository.
 
+## Docs and submission
+
+- Live site: https://ember-two-eta.vercel.app
+- Demo video, 30 seconds: [submission/EMBER-demo-30s.mp4](submission/EMBER-demo-30s.mp4)
+- Pitch deck: [PDF](submission/EMBER-pitch.pdf) and [PowerPoint](submission/EMBER-pitch.pptx)
+- Speaker script for the pitch: [submission/EMBER-pitch-script.md](submission/EMBER-pitch-script.md)
+- Architecture, as built: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Every calculation, explained simply: [docs/explainers/EMBER-calculations-explained.md](docs/explainers/EMBER-calculations-explained.md)
+- The assumptions and flame gates, with sources: [docs/explainers/EMBER-assumptions-review-guide.md](docs/explainers/EMBER-assumptions-review-guide.md)
+- A short context file to give an AI assistant: [docs/explainers/EMBER-explained-for-AI.md](docs/explainers/EMBER-explained-for-AI.md)
+
 ## How EMBER answers the challenge
 
 The challenge asks teams "to build an SI-powered, web-based dashboard that summarizes, ranks, and interprets combustion science investigations to deliver critical foundational insights for fire safety". It then names three abilities and one optional one.
@@ -120,6 +131,8 @@ src/screens/         Hero, Dashboard, Investigations, Detail, Compare, Lab, Abou
 src/three/           the fireball, its colour ramp and its inputs
 src/styles/theme.css every design token, for the one dark look
 plan.html            the build plan. Not part of the site.
+docs/                the architecture and the explainers. Not part of the site.
+submission/          the demo video, the pitch deck and its script
 ```
 
 ## Limitations
